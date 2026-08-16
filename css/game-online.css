@@ -14,28 +14,26 @@ body {
   background-position: center top;
   color: #f0f6ff;
   text-align: center;
-  padding: 6px 20px;   /* CAMBIADO de 10px a 6px: menos aire arriba/abajo en toda la página,
-                           así se aprovecha mejor la altura de la pantalla */
+  padding: 6px 20px;
   margin: 0;
   overflow-x: hidden;
 
-  /* body como contenedor flex vertical: todo el contenido se apila y centra */
   display: flex;
   flex-direction: column;
   align-items: center;
   min-height: 100vh;
-  gap: 6px;   /* CAMBIADO de 10px a 6px: menos separación entre bloques (header, tablero, panel especial) */
+  gap: 6px;
 }
 
 .game-header {
   display: flex;
-  flex-wrap: wrap; /* permite que en pantallas chicas los elementos bajen de línea */
+  flex-wrap: wrap;
   justify-content: space-between;
-  align-items: center; 
+  align-items: center;
   gap: 12px;
   width: 100%;
   max-width: 1250px;
-  margin: 0 auto 4px;   /* CAMBIADO de "0 auto 5px" a "0 auto 4px": ajuste fino, casi igual, menos espacio abajo del header */
+  margin: 0 auto 4px;
 }
 .player-info { text-align: left; }
 .turn-info { font-weight: 700; color: #ffd166; }
@@ -46,35 +44,26 @@ body {
   gap: 12px;
 }
 
-/* cada <span> directo dentro de .stats (Tiempo, Movimientos, Puntaje)
-   se convierte en un mini panel con fondo, borde dorado y esquinas redondeadas.
-   El ">" hace que aplique SOLO a los hijos directos, no a los <span> internos
-   como #timer, #moves, #score (así no se anida un panel dentro de otro) */
 .stats > span {
-  background: rgba(10, 10, 10, .75);      /* fondo oscuro semitransparente, mismo estilo que .special-panel */
-  border: 1.5px solid #b8843b;             /* borde dorado, igual tono que #boardFrame */
-  border-radius: 8px;                      /* esquinas redondeadas */
-  padding: 6px 14px;                        /* aire interno */
-  color: #bcd3ff;                           /* mantiene el color celeste original */
-  box-shadow: 0 0 4px rgba(255,150,0,.08);  /* leve resplandor naranja */
+  background: rgba(10, 10, 10, .75);
+  border: 1.5px solid #b8843b;
+  border-radius: 8px;
+  padding: 6px 14px;
+  color: #bcd3ff;
+  box-shadow: 0 0 4px rgba(255,150,0,.08);
 }
 
-/* ===== Contenedor principal del juego (panel lateral + tablero) ===== */
 .contenedor-principal-juego {
   display: flex;
-  flex-wrap: wrap;          /* en pantallas chicas los paneles bajan debajo del tablero */
-  justify-content: space-between;  /* con 3 bloques (panel Sasuke, #boardFrame, panel Naruto),
-                                       esto empuja el primero y el último hacia los extremos
-                                       del contenedor, dejando el tablero centrado en medio */
+  flex-wrap: wrap;
+  justify-content: space-between;
   align-items: flex-start;
   gap: 16px;
-  max-width: 1400px;   /* da más ancho total para que los paneles tengan espacio
-                           real de "abrirse" hacia los bordes */
+  max-width: 1400px;
   width: 100%;
-  margin: 0 auto;   /* CAMBIADO de "5px auto" a "0 auto": elimina el pequeño margen extra arriba/abajo */
+  margin: 0 auto;
 }
 
-/* Marco alrededor del tablero */
 #boardFrame {
   display: flex;
   justify-content: center;
@@ -89,7 +78,6 @@ body {
   box-shadow: 0 10px 30px rgba(0,0,0,0.6);
 }
 
-/* Tablero: flexbox con wrap en vez de grid, para que se adapte a cualquier ancho */
 #board {
   display: flex;
   flex-wrap: wrap;
@@ -99,10 +87,9 @@ body {
   padding: 8px;
   background: #2a2a2a;
   border-radius: 8px;
-  max-width: 420px; /* 4 cartas de 90px + gaps, referencia PC */
+  max-width: 420px;
 }
 
-/* Carta */
 .card {
   width: 90px;
   height: 125px;
@@ -120,13 +107,15 @@ body {
 }
 
 .card img {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  left: 0; top: 0;
-  backface-visibility: hidden;
-  border-radius: 8px;
-  object-fit: cover;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    border-radius: 8px;
+    backface-visibility: hidden;
+    object-fit: fill;
+    image-rendering: auto;
 }
 
 .front {
@@ -182,11 +171,6 @@ body {
   border-radius: 8px;
   margin: 0;
 }
-
-/* =====================================================
-   🖤 CANDELA NEGRA 3D — QUEMA Y DESAPARECE CARTA PAR
-   SOLO CSS — NO TOCA JS NI HTML
-   ===================================================== */
 
 .card.emparejada {
   position: relative;
@@ -346,8 +330,6 @@ video {
     pointer-events:none;
 }
 
-/*================ HEADER ================*/
-
 .personaje-header{
     display:flex;
     align-items:center;
@@ -366,8 +348,6 @@ video {
     letter-spacing:1px;
     text-transform:uppercase;
 }
-
-/*================ AVATAR ================*/
 
 .personaje-imagen-container{
     display:flex;
@@ -411,8 +391,6 @@ video {
     0 0 18px rgba(150,70,255,.45);
 }
 
-/*================ VIDA ================*/
-
 .hp-compacto{
 
     display:flex;
@@ -455,8 +433,6 @@ video {
     font-size:9px;
     font-weight:bold;
 }
-
-/*================ HABILIDAD ================*/
 
 .personaje-habilidad{
 
@@ -522,8 +498,6 @@ video {
     font-size:9px;
     line-height:12px;
 }
-
-/*================ CHAKRA ================*/
 
 .personaje-chakra{
 
@@ -627,8 +601,6 @@ video {
     pointer-events:none;
 }
 
-/*========================================*/
-
 .panel-naruto-lateral .personaje-header{
     display:flex;
     align-items:center;
@@ -654,8 +626,6 @@ video {
 
     text-shadow:0 0 6px rgba(180,120,255,.4);
 }
-
-/*========================================*/
 
 .panel-naruto-lateral .personaje-imagen-container{
     display:flex;
@@ -699,8 +669,6 @@ video {
     box-shadow:
     0 0 18px rgba(130,70,255,.45);
 }
-
-/*========================================*/
 
 .panel-naruto-lateral .hp-compacto{
 
@@ -767,8 +735,6 @@ video {
 
     font-weight:bold;
 }
-
-/*========================================*/
 
 .panel-naruto-lateral .personaje-habilidad{
 
@@ -849,8 +815,6 @@ video {
 
     line-height:12px;
 }
-
-/*========================================*/
 
 .panel-naruto-lateral .personaje-chakra{
 
@@ -998,14 +962,14 @@ video {
   flex-direction: column;
   align-items: center;
 
-  --icon-w: 50px;      /* CAMBIADO: reemplaza a --icon-size, ahora ancho */
-  --icon-h: 50px;      /* NUEVO: alto por separado, para íconos no cuadrados */
+  --icon-w: 50px;
+  --icon-h: 50px;
   --uses-bottom: 22px;
 }
 
 .skill img {
-    width: var(--icon-w);   /* CAMBIADO: antes var(--icon-size) */
-    height: var(--icon-h);  /* CAMBIADO: antes var(--icon-size) */
+    width: var(--icon-w);
+    height: var(--icon-h);
   object-fit: contain;
   transition: .25s;
   filter: drop-shadow(0 0 4px rgba(255,150,0,.4));
@@ -1060,7 +1024,6 @@ video {
    📱💻🖥️ RESPONSIVE — TELÉFONO / TABLET / PC
    ===================================================== */
 
-/* ---------- TABLET (hasta 1024px) ---------- */
 @media (max-width: 1024px) {
   .contenedor-principal-juego {
     gap: 12px;
@@ -1077,7 +1040,6 @@ video {
   }
 }
 
-/* ---------- MÓVIL (hasta 768px) ---------- */
 @media (max-width: 768px) {
   body {
     padding: 8px;
@@ -1128,7 +1090,6 @@ video {
   }
 }
 
-/* ---------- MÓVIL PEQUEÑO (hasta 520px) ---------- */
 @media (max-width: 520px) {
   .card {
     width: 60px;
@@ -1155,12 +1116,12 @@ video {
 
 .turno-estado {
     display: block;
-    min-height: 1.1em; /* para que no salte el layout cuando está vacío */
+    min-height: 1.1em;
     font-family: 'Permanent Marker', cursive;
     font-size: 0.85rem;
     letter-spacing: 1px;
     text-transform: uppercase;
-    color: #b892ff; /* morado suave, coincide con tu paleta */
+    color: #b892ff;
     text-align: center;
     margin-top: 4px;
 }
@@ -1169,12 +1130,11 @@ video {
     display: block;
     font-family: 'Permanent Marker', cursive;
     font-size: 1.15rem;
-    color: #e6c667; /* dorado, coincide con tu paleta */
+    color: #e6c667;
     text-align: center;
     margin-top: 2px;
 }
 
-/* Cuando el turno está activo, se resalta con brillo dorado + pulso */
 .turno-estado.turno-activo {
     color: #ffd700;
     text-shadow: 0 0 6px rgba(255, 215, 0, 0.85), 0 0 14px rgba(255, 215, 0, 0.5);
@@ -1193,7 +1153,7 @@ video {
     min-height: 1.1em;
     font-family: 'Permanent Marker', cursive;
     font-size: 0.95rem;
-    color: #ff8a3d; /* naranja, distinto del morado/dorado del turno */
+    color: #ff8a3d;
     text-align: center;
     margin-top: 2px;
     animation: comboAparece 0.25s ease-out;
@@ -1220,4 +1180,173 @@ video {
 
 .chakra-progreso {
     transition: width 0.4s ease-out;
+}
+
+
+
+
+/*poderes  especiales*/
+
+
+/* ==========================================
+   EFECTO BYAKUGAN
+========================================== */
+
+.card.byakugan-revelada {
+
+    animation:
+        byakuganPulse 0.8s ease-in-out infinite alternate;
+
+    filter:
+        brightness(1.35)
+        drop-shadow(0 0 8px rgba(255, 255, 255, 0.9))
+        drop-shadow(0 0 18px rgba(120, 220, 255, 0.9));
+
+    transform: scale(1.04);
+
+    z-index: 10;
+}
+
+
+/* ==========================================
+   ANIMACIÓN DE PULSO
+========================================== */
+
+@keyframes byakuganPulse {
+
+    from {
+
+        transform: scale(1.02);
+
+        filter:
+            brightness(1.15)
+            drop-shadow(0 0 6px rgba(255, 255, 255, 0.8))
+            drop-shadow(0 0 12px rgba(120, 220, 255, 0.7));
+
+    }
+
+    to {
+
+        transform: scale(1.07);
+
+        filter:
+            brightness(1.5)
+            drop-shadow(0 0 12px rgba(255, 255, 255, 1))
+            drop-shadow(0 0 25px rgba(120, 220, 255, 1));
+
+    }
+
+}
+
+
+/* ==========================================
+   PODER AGOTADO
+========================================== */
+
+.skill.poder-agotado {
+
+    opacity: 0.35;
+
+    filter: grayscale(1);
+
+    cursor: not-allowed;
+
+}
+
+/* ==========================================
+   ANIMACIÓN BYAKUGAN — brillo + símbolo (NUEVO)
+   Sin esto, la animación no se ve aunque el JS
+   la dispare, porque estas clases no existían.
+========================================== */
+
+.byakugan-brillo-avatar {
+    animation: byakuganBrilloAvatar 0.6s ease-out;
+}
+
+@keyframes byakuganBrilloAvatar {
+    0%   { box-shadow: 0 0 0px rgba(120, 220, 255, 0); }
+    50%  { box-shadow: 0 0 30px rgba(120, 220, 255, 0.9); }
+    100% { box-shadow: 0 0 0px rgba(120, 220, 255, 0); }
+}
+
+.byakugan-simbolo-central {
+    position: fixed;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.5);
+    font-family: 'Permanent Marker', cursive;
+    font-size: 2rem;
+    color: #9be8ff;
+    text-shadow: 0 0 12px rgba(120, 220, 255, 0.9), 0 0 24px rgba(120, 220, 255, 0.6);
+    z-index: 999;
+    pointer-events: none;
+    animation: byakuganSimboloAparece 0.9s ease-out forwards;
+}
+
+@keyframes byakuganSimboloAparece {
+    0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
+    30%  { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+    70%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+}
+
+
+
+/* ==========================================
+   SUSTITUCIÓN — animación + estados (NUEVO)
+========================================== */
+
+.sustitucion-brillo-avatar {
+    animation: sustitucionBrilloAvatar 0.6s ease-out;
+}
+
+@keyframes sustitucionBrilloAvatar {
+    0%   { box-shadow: 0 0 0px rgba(140, 100, 60, 0); }
+    50%  { box-shadow: 0 0 30px rgba(180, 140, 90, 0.9); }
+    100% { box-shadow: 0 0 0px rgba(140, 100, 60, 0); }
+}
+
+.sustitucion-simbolo-central {
+    position: fixed;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.5);
+    font-family: 'Permanent Marker', cursive;
+    font-size: 2rem;
+    color: #d8b26a;
+    text-shadow: 0 0 12px rgba(180, 140, 90, 0.9), 0 0 24px rgba(180, 140, 90, 0.6);
+    z-index: 999;
+    pointer-events: none;
+    animation: sustitucionSimboloAparece 0.9s ease-out forwards;
+}
+
+@keyframes sustitucionSimboloAparece {
+    0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
+    30%  { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+    70%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+}
+
+.sustitucion-estado {
+    display: block;
+    min-height: 1.1em;
+    font-family: 'Permanent Marker', cursive;
+    font-size: 0.8rem;
+    text-align: center;
+    margin-top: 2px;
+}
+
+.sustitucion-estado.sustitucion-activa {
+    color: #d8b26a;
+    animation: sustitucionPulso 1s ease-in-out infinite;
+}
+
+.sustitucion-estado.sustitucion-usada {
+    color: #8ce08c;
+    animation: comboAparece 0.3s ease-out;
+}
+
+@keyframes sustitucionPulso {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.5; }
 }

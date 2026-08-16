@@ -52,6 +52,7 @@
             <span class="turno-estado" id="turnoSasuke"></span>
             <span class="tiempo-jugador" id="tiempoSasuke">03:00</span>
             <span class="combo-jugador" id="comboSasuke"></span>
+            <span class="sustitucion-estado" id="sustitucionEstado"></span>
             <div class="personaje-habilidad">
                 <div class="titulo-panel">HABILIDAD</div>
                 <div class="habilidad-contenido">
@@ -109,9 +110,7 @@
             <!-- NUEVO: turno + tiempo individual de Naruto -->
             <span class="turno-estado" id="turnoNaruto"></span>
             <span class="tiempo-jugador" id="tiempoNaruto">03:00</span>
-             <span class="combo-jugador" id="comboNaruto"></span>
-
-
+            <span class="combo-jugador" id="comboNaruto"></span>
 
             <div class="personaje-habilidad">
                 <div class="titulo-panel text-derecha">HABILIDAD</div>
@@ -164,18 +163,31 @@
     </div>
     <div class="skills">
         <!-- 1. JUTSU SUSTITUCIÓN -->
-        <button class="skill" style="--icon-w: 55px; --icon-h: 58px;">
-            <img src="Agrupar/img/online%20-%20juts-sustit.png" alt="Jutsu Sustitución">
-            <div class="name">SUSTITUCIÓN</div>
-            <div class="uses">1</div>
-        </button>
+      <button
+    id="btnSustitucion"
+    class="skill"
+    style="--icon-w: 55px; --icon-h: 58px;"
+    type="button"
+>
+    <img src="Agrupar/img/online%20-%20juts-sustit.png" alt="Jutsu Sustitución">
+    <div class="name">SUSTITUCIÓN</div>
+    <div class="uses" id="usosSustitucion">2</div>
+</button>
 
-        <!-- 2. BYAKUGAN -->
-        <button class="skill" style="--icon-w: 55px; --icon-h: 58px;">
-            <img src="Agrupar/img/logo-online-byakugan.png" alt="Byakugan">
-            <div class="name">BYAKUGAN</div>
-            <div class="uses">1</div>
-        </button>
+
+       <!-- 2. BYAKUGAN -->
+<button
+    id="btnByakugan"
+    class="skill"
+    style="--icon-w: 55px; --icon-h: 58px;"
+    type="button"
+>
+    <img src="Agrupar/img/logo-online-byakugan.png" alt="Byakugan">
+
+    <div class="name">BYAKUGAN</div>
+
+    <div class="uses" id="usosByakugan">2</div>
+</button>
 
         <!-- 3. ROBO DE CHAKRA -->
         <button class="skill" style="--icon-w: 49px; --icon-h: 64px; --uses-bottom: 26px;">

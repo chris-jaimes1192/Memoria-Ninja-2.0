@@ -19,6 +19,23 @@ let onPartidaCompletada = null;
 // el tablero funciona exactamente igual que antes, sin bloqueo.
 let onEsMiTurno = null;
 
+
+// ==========================================
+// BYAKUGAN
+// ==========================================
+
+function obtenerCartasOcultas() {
+    const tablero = document.getElementById("board");
+
+    if (!tablero) return [];
+
+    return [...tablero.querySelectorAll(".card")]
+        .filter(carta =>
+            !carta.classList.contains("volteada") &&
+            !carta.classList.contains("emparejada")
+        );
+}
+
 function actualizarMovimientos() {
     const el = document.getElementById("moves");
     if (el) el.textContent = movimientos;
@@ -28,6 +45,22 @@ export const BoardManager = {
     // NUEVO: se agregó el tercer parámetro "callbackEsMiTurno".
     // Los dos primeros parámetros (callbackResultado, callbackFinal)
     // funcionan exactamente igual que antes.
+        obtenerCartasParaByakugan() {
+
+        const cartas = obtenerCartasOcultas();
+
+        if (cartas.length < 2) {
+            return [];
+        }
+
+        // Mezclamos las cartas disponibles
+        const mezcladas = [...cartas]
+            .sort(() => Math.random() - 0.5);
+
+        // Tomamos solamente 2
+        return mezcladas.slice(0, 2);
+    },
+    
     renderBoard(callbackResultado, callbackFinal, callbackEsMiTurno) {
         onResultado = callbackResultado || null;
         onPartidaCompletada = callbackFinal || null;

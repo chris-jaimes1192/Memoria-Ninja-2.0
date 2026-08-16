@@ -555,12 +555,19 @@ function procesarResultado(esAcierto, puntajeTotal){
             actualizarCombo();
             ganarChakra(true);
             // acertó: sigue su turno
-        } else {
-            jugador.errores++;
-            if(erroresJugador) erroresJugador.textContent = jugador.errores;
-            if(jugador.combo > 0) mostrarComboRoto(true);
-            jugador.combo = 0;
-            cambiarTurno(); // falló: pasa el turno a NARUTO
+               } else {
+            if (sustitucionArmada) {
+                // La Sustitución absorbe el error: no cuenta como fallo,
+                // no rompe combo, no cambia el turno.
+                desarmarSustitucion();
+                mostrarAvisoSustitucionUsada();
+            } else {
+                jugador.errores++;
+                if(erroresJugador) erroresJugador.textContent = jugador.errores;
+                if(jugador.combo > 0) mostrarComboRoto(true);
+                jugador.combo = 0;
+                cambiarTurno(); // falló: pasa el turno a NARUTO
+            }
         }
     } 
     
@@ -668,6 +675,339 @@ function mostrarComboRoto(esSasuke){
 ==================================================*/
 
 const CHAKRA_POR_ACIERTO = 5;
+
+
+/*==================================================
+                BYAKUGAN
+==================================================*/
+
+const COSTO_BYAKUGAN = 30;
+const DURACION_BYAKUGAN = 3000;
+const USOS_INICIALES_BYAKUGAN = 2;
+
+let usosByakugan = USOS_INICIALES_BYAKUGAN;
+let byakuganActivo = false;
+
+const botonByakugan = document.getElementById("btnByakugan");
+const contadorUsosByakugan = document.getElementById("usosByakugan");
+
+function usarByakugan() {
+
+    // ------------------------------------------
+    // 1. Evitar doble activación
+    // ------------------------------------------
+
+    if (byakuganActivo) {
+        return;
+    }
+
+    // ------------------------------------------
+    // 2. Comprobar turno
+    // ------------------------------------------
+
+    if (!esMiTurno()) {
+        mostrarMensajeByakugan("NO ES TU TURNO");
+        return;
+    }
+
+    // ------------------------------------------
+    // 3. Comprobar usos
+    // ------------------------------------------
+
+    if (usosByakugan <= 0) {
+        mostrarMensajeByakugan("SIN USOS");
+        return;
+    }
+
+    // ------------------------------------------
+    // 4. Comprobar Chakra
+    // ------------------------------------------
+
+    if (jugador.chakra < COSTO_BYAKUGAN) {
+        mostrarMensajeByakugan("CHAKRA INSUFICIENTE");
+        return;
+    }
+
+    // ------------------------------------------
+    // 5. Buscar cartas disponibles
+    // ------------------------------------------
+
+    const cartas = BoardManager.obtenerCartasParaByakugan();
+
+    if (cartas.length < 2) {
+        mostrarMensajeByakugan("NO HAY CARTAS DISPONIBLES");
+        return;
+    }
+
+    // ------------------------------------------
+    // 6. Activar estado
+    // ------------------------------------------
+
+    byakuganActivo = true;
+
+    // ------------------------------------------
+    // 7. Gastar Chakra
+    // ------------------------------------------
+
+    jugador.chakra -= COSTO_BYAKUGAN;
+
+    actualizarChakra();
+
+    // ------------------------------------------
+    // 8. Gastar uso
+    // ------------------------------------------
+
+    usosByakugan--;
+
+    actualizarUsosByakugan();
+
+    // ------------------------------------------
+    // 9. Animación
+    // ------------------------------------------
+
+    activarAnimacionByakugan();
+
+    // ------------------------------------------
+    // 10. Revelar cartas
+    // ------------------------------------------
+
+    revelarCartasByakugan(cartas);
+
+}
+
+/*==================================================
+        ANIMACIÓN BYAKUGAN (NUEVO)
+        Esto es lo que faltaba: usarByakugan() la llamaba
+        pero nunca estaba definida, así que el poder se
+        cortaba acá y las cartas nunca se revelaban.
+==================================================*/
+
+function activarAnimacionByakugan() {
+
+    // Brillo en el avatar de Sasuke, si existe el contenedor
+    const avatarSasuke = document.querySelector(".panel-personaje-lateral .personaje-imagen");
+    if (avatarSasuke) {
+        avatarSasuke.classList.add("byakugan-brillo-avatar");
+        setTimeout(() => {
+            avatarSasuke.classList.remove("byakugan-brillo-avatar");
+        }, 600);
+    }
+
+    // Símbolo grande "👁️ BYAKUGAN" en el centro de la pantalla
+    const simbolo = document.createElement("div");
+    simbolo.className = "byakugan-simbolo-central";
+    simbolo.textContent = "👁️ BYAKUGAN";
+    document.body.appendChild(simbolo);
+
+    setTimeout(() => {
+        simbolo.remove();
+    }, 900);
+
+}
+
+function revelarCartasByakugan(cartas) {
+
+    cartas.forEach(carta => {
+
+        const imagen = carta.querySelector("img");
+
+        if (!imagen) return;
+
+        // Guardamos la imagen original
+        carta.dataset.backOriginal = imagen.src;
+
+        // Mostramos la carta
+        imagen.src =
+            `${RUTA_ALDEAS}arena/${carta.dataset.valor}.png`;
+
+        // Efecto visual
+        carta.classList.add("byakugan-revelada");
+
+    });
+
+    // Después de 3 segundos
+    setTimeout(() => {
+
+        cartas.forEach(carta => {
+
+            const imagen = carta.querySelector("img");
+
+            if (!imagen) return;
+
+            imagen.src = RUTA_BACK;
+
+            carta.classList.remove("byakugan-revelada");
+
+        });
+
+        byakuganActivo = false;
+
+    }, DURACION_BYAKUGAN);
+}
+
+function actualizarUsosByakugan() {
+
+    if (contadorUsosByakugan) {
+
+        contadorUsosByakugan.textContent =
+            usosByakugan;
+
+    }
+
+    if (botonByakugan) {
+
+        botonByakugan.classList.toggle(
+            "poder-agotado",
+            usosByakugan <= 0
+        );
+
+    }
+
+}
+if (botonByakugan) {
+
+    botonByakugan.addEventListener(
+        "click",
+        usarByakugan
+    );
+
+}
+function mostrarMensajeByakugan(mensaje) {
+
+    console.log("BYAKUGAN:", mensaje);
+
+}
+
+
+/*==================================================
+                SUSTITUCIÓN
+==================================================*/
+
+const COSTO_SUSTITUCION = 25;
+const DURACION_ARMADA_SUSTITUCION = 8000;
+const USOS_INICIALES_SUSTITUCION = 2;
+
+let usosSustitucion = USOS_INICIALES_SUSTITUCION;
+let sustitucionArmada = false;
+let timeoutSustitucion = null;
+
+const botonSustitucion = document.getElementById("btnSustitucion");
+const contadorUsosSustitucion = document.getElementById("usosSustitucion");
+const spanSustitucionEstado = document.getElementById("sustitucionEstado");
+
+function usarSustitucion() {
+
+    if (sustitucionArmada) {
+        return;
+    }
+
+    if (!esMiTurno()) {
+        mostrarMensajeSustitucion("NO ES TU TURNO");
+        return;
+    }
+
+    if (usosSustitucion <= 0) {
+        mostrarMensajeSustitucion("SIN USOS");
+        return;
+    }
+
+    if (jugador.chakra < COSTO_SUSTITUCION) {
+        mostrarMensajeSustitucion("CHAKRA INSUFICIENTE");
+        return;
+    }
+
+    jugador.chakra -= COSTO_SUSTITUCION;
+    actualizarChakra();
+
+    usosSustitucion--;
+    actualizarUsosSustitucion();
+
+    sustitucionArmada = true;
+
+    activarAnimacionSustitucion();
+
+    if (spanSustitucionEstado) {
+        spanSustitucionEstado.textContent = "🔄 SUSTITUCIÓN ARMADA";
+        spanSustitucionEstado.classList.add("sustitucion-activa");
+    }
+
+    timeoutSustitucion = setTimeout(() => {
+        desarmarSustitucion();
+    }, DURACION_ARMADA_SUSTITUCION);
+
+}
+
+function activarAnimacionSustitucion() {
+
+    const avatarSasuke = document.querySelector(".panel-personaje-lateral .personaje-imagen");
+    if (avatarSasuke) {
+        avatarSasuke.classList.add("sustitucion-brillo-avatar");
+        setTimeout(() => {
+            avatarSasuke.classList.remove("sustitucion-brillo-avatar");
+        }, 600);
+    }
+
+    const simbolo = document.createElement("div");
+    simbolo.className = "sustitucion-simbolo-central";
+    simbolo.textContent = "🪵💨 SUSTITUCIÓN";
+    document.body.appendChild(simbolo);
+
+    setTimeout(() => {
+        simbolo.remove();
+    }, 900);
+
+}
+
+function desarmarSustitucion() {
+
+    sustitucionArmada = false;
+
+    if (timeoutSustitucion) {
+        clearTimeout(timeoutSustitucion);
+        timeoutSustitucion = null;
+    }
+
+    if (spanSustitucionEstado) {
+        spanSustitucionEstado.classList.remove("sustitucion-activa");
+        spanSustitucionEstado.textContent = "";
+    }
+
+}
+
+function mostrarAvisoSustitucionUsada() {
+
+    if (!spanSustitucionEstado) return;
+
+    spanSustitucionEstado.textContent = "🪵💨 ¡SUSTITUCIÓN!";
+    spanSustitucionEstado.classList.add("sustitucion-usada");
+
+    setTimeout(() => {
+        spanSustitucionEstado.classList.remove("sustitucion-usada");
+        spanSustitucionEstado.textContent = "";
+    }, 900);
+
+}
+
+function actualizarUsosSustitucion() {
+
+    if (contadorUsosSustitucion) {
+        contadorUsosSustitucion.textContent = usosSustitucion;
+    }
+
+    if (botonSustitucion) {
+        botonSustitucion.classList.toggle("poder-agotado", usosSustitucion <= 0);
+    }
+
+}
+
+if (botonSustitucion) {
+    botonSustitucion.addEventListener("click", usarSustitucion);
+}
+
+function mostrarMensajeSustitucion(mensaje) {
+    console.log("SUSTITUCIÓN:", mensaje);
+}
+
 
 function ganarChakra(esSasuke){
 
