@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <!-- CONFIGURACIÓN -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Ninja Memory</title>
+
+    <!-- FUENTE -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/menu.css">
+</head>
+
+<body>
+
+    <!-- VIDEO DE FONDO -->
+    <video autoplay muted loop class="video-bg">
+        <source src="assets/naruto vs sasuke.mp4" type="video/mp4">
+    </video>
+
+ <div class="modal-overlay" id="gameModeModal">
+    <div class="modal-content-juego">
+        <div class="avatar-modal-juego">👤</div>
+        <h2 class="modal-juego-titulo">ELIGE EL MODO DE JUEGO</h2>
+        
+        <div class="opciones-juego-container">
+            <div class="opcion-card verde-card" id="btnEncontrarPares">
+                <h3>ENCONTRAR PARES</h3>
+                <div class="opcion-centro-box">
+                    <div class="cartas-icon">🎴👤🎴</div>
+                </div>
+                <p class="opcion-desc">Encuentra los pares</p>
+            </div>
+
+            <div class="opcion-card morada-card" id="btnMemoria">
+                <h3>MEMORIA</h3>
+                <div class="opcion-centro-box">
+                    <div class="cerebro-icon">🧠</div>
+                </div>
+                <p class="opcion-desc">¿Eres capaz de memorizar todo?</p>
+            </div>
+
+            <div class="opcion-card azul-card" id="btnCarpetas">
+                <h3>CARPETAS</h3>
+                <div class="opcion-centro-box">
+                    <div class="carpetas-icon">🗂️👤🗂️</div>
+                </div>
+                <p class="opcion-desc">Organízalo todo</p>
+            </div>
+
+            <div class="opcion-card roja-card" id="btnMuerte">
+                <h3>Muerte</h3>
+                <div class="opcion-centro-box">
+                    <div class="tumba-icon">🪦</div>
+                </div>
+                <p class="opcion-desc">EL tiempo es limitado</p>
+            </div>
+        </div>
+
+        <button class="btn-volver-modal" id="closeGameModeBtn">VOLVER</button>
+    </div>
+</div>
+
+
+<div class="modal-overlay" id="twoPlayersModal">
+    <div class="modal-content-dos-jugadores">
+        
+        <div class="modal-juego-titulo-dos">
+            <span>👥 DOS JUGADORES</span>
+        </div>
+        
+        <div class="desafio-container">
+            <p class="desafio-subtitulo">DESAFÍA A UN AMIGO ONLINE</p>
+            
+            <div class="vs-match-box">
+                <div class="perfil-match">
+                    <div class="avatar-match border-azul">
+                        <img src="assets/img/itachi-avatar.png" alt="Tu Avatar" onerror="this.innerText='🥷'; this.style.fontSize='30px'">
+                    </div>
+                    <span class="match-label label-azul">TU</span>
+                </div>
+
+                <div class="vs-text-intermedio">VS</div>
+
+                <div class="perfil-match">
+                    <div class="avatar-match border-gris">
+                        <span class="incognito">?</span>
+                    </div>
+                    <span class="match-label label-gris">RIVAL</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="lobby-acciones-container">
+            
+            <div class="lobby-card crear-sala-card">
+                <div class="lobby-card-header">
+                    <span class="lobby-icon">➕</span>
+                    <div>
+                        <h4>CREAR SALA</h4>
+                        <p>CREA TU PROPIA SALA</p>
+                    </div>
+                </div>
+                <div class="lobby-action-box">
+                    <label>TU CÓDIGO:</label>
+                    <div class="codigo-generado-box" id="txtCodigoGenerado">123456</div>
+                </div>
+            </div>
+
+            <div class="lobby-card unirse-sala-card">
+                <div class="lobby-card-header">
+                    <span class="lobby-icon">🚪</span>
+                    <div>
+                        <h4>UNIRSE A SALA</h4>
+                        <p>ÚNETE CON UN CÓDIGO</p>
+                    </div>
+                </div>
+                <div class="lobby-action-box">
+                    <label>INGRESA EL CÓDIGO:</label>
+                    <input type="text" class="input-codigo-sala" id="inputCodigoSala" placeholder="CÓDIGO" maxlength="6">
+                </div>
+            </div>
+
+        </div>
+
+        <button class="btn-volver-modal color-fucsia" id="closeTwoPlayersBtn">SALIR</button>
+    </div>
+</div>
+
+
+<div class="modal-overlay" id="multiplayerModal">
+    <div class="modal-content-multijugador">
+        
+        <div class="multijugador-header-box">
+            <div class="globo-icon">🌐</div>
+            <div class="multijugador-titulo-texto">
+                <h2>MULTIJUGADOR ONLINE</h2>
+                <p class="sub-verde">CREA O ÚNETE A SALAS — CHAT EN TIEMPO REAL</p>
+            </div>
+        </div>
+
+        <div class="lista-salas-container">
+            
+            <div class="sala-row" id="btnFilaItachi" style="cursor: pointer;">
+                <span class="sala-creador">Itachi969</span>
+                <span class="sala-mapa">Mapa</span>
+                <span class="sala-badge">🌀</span>
+                <span class="sala-slots">1/2</span>
+            </div>
+
+            <div class="sala-row">
+                <span class="sala-creador">Sasukexd</span>
+                <span class="sala-mapa">Mapa</span>
+                <span class="sala-badge">🔴</span>
+                <span class="sala-slots">2/2</span>
+            </div>
+
+            <div class="sala-row">
+                <span class="sala-creador">Bebecitaprr</span>
+                <span class="sala-mapa">Mapa</span>
+                <span class="sala-badge">🔥</span>
+                <span class="sala-slots">1/2</span>
+            </div>
+
+            <div class="sala-row">
+                <span class="sala-creador">Neji2008</span>
+                <span class="sala-mapa">Mapa</span>
+                <span class="sala-badge">🦅</span>
+                <span class="sala-slots">0/2</span>
+            </div>
+
+            <div class="sala-row">
+                <span class="sala-creador">Tralaleritos67</span>
+                <span class="sala-mapa">Mapa</span>
+                <span class="sala-badge">⛰️</span>
+                <span class="sala-slots">1/2</span>
+            </div>
+
+            <div class="sala-row">
+                <span class="sala-creador">Narutoo</span>
+                <span class="sala-mapa">Mapa</span>
+                <span class="sala-badge">⏳</span>
+                <span class="sala-slots">2/2</span>
+            </div>
+
+            <div class="sala-row">
+                <span class="sala-creador">Sakuratrash</span>
+                <span class="sala-mapa">Mapa</span>
+                <span class="sala-badge">🌊</span>
+                <span class="sala-slots">1/2</span>
+            </div>
+
+        </div>
+
+        <button class="btn-volver-modal color-verde-btn" id="closeMultiplayerBtn">SALIR</button>
+    </div>
+</div>
+
+
+
+
+
+<!-- VENTANA MODAL: RANKING (TOP JUGADORES) -->
+<div class="modal-overlay" id="rankingModal">
+    <div class="modal-content-ranking">
+        
+        <!-- Cabecera del Ranking -->
+        <div class="ranking-header-box">
+            <div class="medalla-icon">🏅</div>
+            <div class="ranking-titulo-texto">
+                <h2>RANKING</h2>
+                <p class="sub-amarillo">TOP JUGADORES DE NINJA MEMORY</p>
+            </div>
+        </div>
+
+        <!-- Tabla de Posiciones -->
+        <div class="tabla-ranking-container">
+            <!-- Encabezados de Columna -->
+            <div class="ranking-row-header">
+                <span class="col-pos">#</span>
+                <span class="col-jugador">JUGADOR</span>
+                <span class="col-nivel">NIVEL</span>
+                <span class="col-xp">XP</span>
+            </div>
+
+            <!-- Puesto 1 (Oro) -->
+            <div class="ranking-row">
+                <div class="col-pos"><span class="badge-rank oro">1</span></div>
+                <div class="col-jugador">
+                    <div class="avatar-table"><img src="assets/img/itachi-avatar.png" alt="Itachi" onerror="this.innerText='🥷'"></div>
+                    <span class="nombre-jugador">Itachi</span>
+                </div>
+                <div class="col-nivel"><span class="punto-online">🟢</span> 25</div>
+                <div class="col-xp txt-oro">3250</div>
+            </div>
+
+            <!-- Puesto 2 (Plata) -->
+            <div class="ranking-row">
+                <div class="col-pos"><span class="badge-rank plata">2</span></div>
+                <div class="col-jugador">
+                    <div class="avatar-table">🦊</div>
+                    <span class="nombre-jugador">Naruto</span>
+                </div>
+                <div class="col-nivel"><span class="punto-online">🟢</span> 24</div>
+                <div class="col-xp">3100</div>
+            </div>
+
+            <!-- Puesto 3 (Bronce) -->
+            <div class="ranking-row">
+                <div class="col-pos"><span class="badge-rank bronce">3</span></div>
+                <div class="col-jugador">
+                    <div class="avatar-table">⚡</div>
+                    <span class="nombre-jugador">Sasuke</span>
+                </div>
+                <div class="col-nivel"><span class="punto-online">🟢</span> 23</div>
+                <div class="col-xp">2980</div>
+            </div>
+
+            <!-- Puesto 4 -->
+            <div class="ranking-row">
+                <div class="col-pos"><span class="num-rank">4</span></div>
+                <div class="col-jugador">
+                    <div class="avatar-table">🍃</div>
+                    <span class="nombre-jugador">Minato</span>
+                </div>
+                <div class="col-nivel"><span class="punto-online">🟢</span> 22</div>
+                <div class="col-xp">2800</div>
+            </div>
+
+            <!-- Puesto 5 -->
+            <div class="ranking-row">
+                <div class="col-pos"><span class="num-rank">5</span></div>
+                <div class="col-jugador">
+                    <div class="avatar-table">👁️</div>
+                    <span class="nombre-jugador">Madara</span>
+                </div>
+                <div class="col-nivel"><span class="punto-online">🟢</span> 21</div>
+                <div class="col-xp">2600</div>
+            </div>
+
+            <!-- Puesto 6 -->
+            <div class="ranking-row">
+                <div class="col-pos"><span class="num-rank">6</span></div>
+                <div class="col-jugador">
+                    <div class="avatar-table">🐕</div>
+                    <span class="nombre-jugador">Kakashi</span>
+                </div>
+                <div class="col-nivel"><span class="punto-online">🟢</span> 21</div>
+                <div class="col-xp">2400</div>
+            </div>
+
+            <!-- Puesto 7 -->
+            <div class="ranking-row">
+                <div class="col-pos"><span class="num-rank">7</span></div>
+                <div class="col-jugador">
+                    <div class="avatar-table">⏳</div>
+                    <span class="nombre-jugador">Gaara</span>
+                </div>
+                <div class="col-nivel"><span class="punto-online">🟢</span> 20</div>
+                <div class="col-xp">2200</div>
+            </div>
+
+        </div>
+
+        <!-- Botón Volver -->
+        <button class="btn-volver-modal color-morado-btn" id="closeRankingBtn">VOLVER</button>
+    </div>
+</div>
+
+
+
+
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="menu-principal">
+
+        <!-- CABECERA -->
+        <div class="header">
+
+            <!-- PERFIL (Activa el modal) -->
+            <div class="perfil-panel" id="openProfileBtn" style="cursor: pointer;">
+                <div class="avatar">🥷</div>
+                <div>
+                    <div class="nivel-badge" style="margin: 0;">VER PERFIL</div>
+                    <p style="font-size: 12px; color: #ccc;">Estadísticas Shinobi</p>
+                </div>
+            </div>
+
+
+
+
+
+
+
+            
+            <!-- LOGO -->
+            <div class="logo-panel">
+                <img src="assets/img/logo.png" alt="Logo">
+            </div>
+
+            <!-- PANEL DERECHO -->
+            <div class="derecha">
+                <div class="menu-superior">
+                    ⚙ Configuración
+                </div>
+                <div class="ranking-panel">
+                    🏆 Ranking
+                </div>
+            </div>
+<div class="menu-button" id="btnConfiguracionMain">
+   
+</div>
+
+        </div>
+
+        
+
+
+
+
+
+
+
+        <!-- MODOS DE JUEGO -->
+        <div class="modos-juego">
+
+            <!-- UN JUGADOR -->
+            <div class="panel azul">
+                <div class="panel-titulo">
+                    👤 UN JUGADOR
+                </div>
+                <div class="panel-centro">
+                    <div class="texto-centro">
+                        JUEGA CONTRA EL TIEMPO
+                    </div>
+                    <div class="icono-centro">
+                        🎴
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    10 NIVELES PROGRESIVOS
+                </div>
+            </div>
+
+
+
+
+
+
+            <!-- DOS JUGADORES -->
+            <div class="panel morado">
+                <div class="panel-titulo">
+                    👥 DOS JUGADORES
+                </div>
+                <div class="panel-centro">
+                    <div class="texto-centro">
+                        DESAFÍA A UN AMIGO
+                    </div>
+                    <div class="vs">
+                        VS
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    PARTIDAS LOCALES
+                </div>
+            </div>
+
+
+
+
+
+
+            <!-- MULTIJUGADOR -->
+            <div class="panel verde">
+                <div class="panel-titulo">
+                    🌐 MULTIJUGADOR
+                </div>
+                <div class="panel-centro">
+                    <div class="texto-centro">
+                        CREA O ÚNETE A SALAS
+                    </div>
+                    <div class="icono-centro">
+                        👥
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    CHAT EN TIEMPO REAL
+                </div>
+            </div>
+
+        </div>
+
+
+
+
+
+        <<!-- PANEL INFERIOR (Actualizado con ID y cursor) -->
+<div class="contenedor-inferior">
+    <div class="barra-inferior">
+        <!-- Añadimos ID y cursor pointer -->
+        <div class="item" id="btnInfoPuntaje" style="cursor: pointer;">
+            <div class="item-icono">🏆</div>
+            <h3>PUNTAJE</h3>
+            <p>Gana puntos</p>
+        </div>
+        <div class="item">
+            <div class="item-icono">🎖️</div>
+            <h3>NIVELES</h3>
+            <p>10 niveles</p>
+        </div>
+ <!-- Botón -->
+    <div class="item" id="btnHistorial">
+        <div class="item-icono">📜</div>
+        <h3>HISTORIAL</h3>
+        <p>Partidas jugadas</p>
+    </div>
+
+    <!-- Modal -->
+    <div id="modalHistorial" class="modal-historial hidden">
+
+        <div class="historial-caja">
+
+            <button class="historial-cerrar" id="cerrarHistorial">×</button>
+
+            <h2>Historial de Jugador</h2>
+            <p class="historial-sub">
+                Consulta tus últimas partidas.
+            </p>
+
+            <div class="historial-tabs">
+
+                <button class="tab-historial activo" data-tab="normales">
+                    <strong>Partidas Normales</strong>
+                    <span>1 Jugador</span>
+                </button>
+
+                <button class="tab-historial" data-tab="online">
+                    <strong>Online 1vs1</strong>
+                    <span>Enfréntate a otros jugadores</span>
+                </button>
+
+                <button class="tab-historial" data-tab="sala">
+                    <strong>Unirse a sala</strong>
+                    <span>Partidas personalizadas</span>
+                </button>
+
+            </div>
+
+            <div class="historial-tabla-wrap">
+
+                <table class="historial-tabla">
+
+                    <thead>
+
+                        <tr>
+                            <th>Resultado</th>
+                            <th>Modo</th>
+                            <th>Puntaje</th>
+                            <th>Fecha y hora</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="historialBody"></tbody>
+
+                </table>
+
+            </div>
+
+            <p class="historial-nota">
+                Solo se muestran las últimas 20 partidas.
+            </p>
+
+        </div>
+
+    </div>
+
+        
+        <div class="item">
+            <div class="item-icono">👥</div>
+            <h3>AMIGOS</h3>
+            <p>Invita jugadores</p>
+        </div>
+    </div>
+</div>
+
+<!-- NUEVO MODAL: EXPLICACIÓN SISTEMA DE PUNTAJE (Basado en image_a9e286.png) -->
+<div class="modal-overlay" id="puntajeInfoModal">
+    <div class="modal-content-info-puntaje">
+        <h2 class="modal-info-titulo">SISTEMA DE PUNTAJE</h2>
+        <div class="modal-info-separador"></div>
+        
+        <div class="modal-info-cuerpo">
+            <div class="modal-info-icono-cartas">🎴⭐</div>
+            <p class="modal-info-texto">
+                Cuando encuentras dos cartas se llama par, cada par que encuentres te dará un total de 100 puntos que se van acumulando al final de la partida.
+            </p>
+        </div>
+
+        <button class="btn-volver-info" id="closePuntajeInfoBtn">Volver</button>
+    </div>
+</div>
+
+
+
+
+
+
+        <!-- ESTADO -->
+        <div class="estado">
+            <span>🟢 Conectado</span>
+            <span>Servidor Online</span>
+            <span>Ping: 45ms</span>
+            <span>Versión 1.0</span>
+        </div>
+
+    </div>
+
+
+    
+
+    <!-- VENTANA MODAL DE PERFIL RPG -->
+    <div class="modal-overlay" id="profileModal">
+        <div class="modal-content-perfil">
+            <span class="cerrar-modal" id="closeProfileBtn">&times;</span>
+            
+            <div class="perfil-header-modal">
+                <div class="avatar-modal">🥷</div>
+                <div class="perfil-info-modal">
+                    <h2 id="modalName">Shinobi Player</h2>
+                    <div class="nivel-badge">NIVEL <span id="modalLevel">1</span></div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="modalExpBar" style="width: 65%;"></div>
+                    </div>
+                    <div class="exp-texto">EXP: <span id="modalExpText">650 / 1000</span></div>
+                </div>
+            </div>
+
+            <div class="estadisticas-container">
+                <h3>📜 ESTADÍSTICAS DE SHINOBI</h3>
+                <div class="stat-row">
+                    <span>Partidas Ganadas:</span>
+                    <span class="stat-val verde-txt" id="statWins">0</span>
+                </div>
+                <div class="stat-row">
+                    <span>Partidas Perdidas:</span>
+                    <span class="stat-val rojo-txt" id="statLosses">0</span>
+                </div>
+                <div class="stat-row">
+                    <span>Racha Actual:</span>
+                    <span class="stat-val amarillo-txt" id="statStreak">0 🔥</span>
+                </div>
+                <div class="stat-row">
+                    <span>Puntaje Máximo:</span>
+                    <span class="stat-val azul-txt" id="statHighScore">0 XP</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+<button onclick="cerrarSesion()">
+    Cerrar sesión
+</button>
+
+    <!-- JAVASCRIPT -->
+    <script src="js/menu.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Juego — Memorice Duel</title>
+
+    <!-- FUENTE -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/game-online.css">
+
+</head>
+
+<body>
+
+    <audio id="gameMusic" loop>
+        <source src="assets/game music.mp3" type="audio/mpeg">
+    </audio>
+    <video autoplay muted loop playsinline id="videofondo">
+        <source src="assets/fondo.mp4" type="video/mp4">
+    </video>
+
+    <div id="stats" class="stats">
+        <span>Tiempo: <span id="timer">00:00</span></span>
+        <span>Movimientos: <span id="moves">0</span></span>
+        <span>Puntaje: <span id="score">0</span></span>
+    </div>
+
+    <!-- CONTENEDOR PRINCIPAL: Alinea los 3 elementos en fila horizontal -->
+    <div class="contenedor-principal-juego">
+
+        <!-- ==========================================
+              PANEL IZQUIERDO (SASUKE)
+        =========================================== -->
+        <div class="panel-personaje-lateral">
+            <div class="personaje-header">
+                <span class="nombre-personaje">SASUKE</span>
+            </div>
+
+            <div class="personaje-imagen-container">
+                <div class="personaje-imagen">
+                    <img src="Agrupar/img/avatars/default.png" alt="Sasuke">
+                </div>
+                <div class="hp-compacto">
+                </div>
+            </div>
+
+            <!-- NUEVO: turno + tiempo individual de Sasuke -->
+            <span class="turno-estado" id="turnoSasuke"></span>
+            <span class="tiempo-jugador" id="tiempoSasuke">03:00</span>
+            <span class="combo-jugador" id="comboSasuke"></span>
+            <div class="personaje-habilidad">
+                <div class="titulo-panel">HABILIDAD</div>
+                <div class="habilidad-contenido">
+                    <div class="habilidad-logo">
+                        <img src="Agrupar/img/robo-chakra.png" alt="Sharingan">
+                    </div>
+                    <div class="habilidad-texto">
+                        <h4>SHARINGAN</h4>
+                        <p>Revela 2 pares durante 5 segundos.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="personaje-chakra">
+                <div class="titulo-panel">CHAKRA</div>
+                <div class="chakra-contenido">
+                    <div class="chakra-logo">
+                        <img src="Agrupar/img/avatars/logo-chakra barra .png" alt="Chakra">
+                    </div>
+            <div class="chakra-barra">
+    <div class="chakra-progreso" id="chakraBarraSasuke"></div>
+</div>
+                    <div class="chakra-cantidad">
+    <span id="chakraTextoSasuke">70/100</span>
+</div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+              TABLERO DE CARTAS (CENTRO)
+        =========================================== -->
+        <div id="boardFrame">
+            <div id="board"></div>
+        </div>
+
+        <!-- ==========================================
+              PANEL DERECHO (NARUTO)
+        =========================================== -->
+        <div class="panel-naruto-lateral">
+            <div class="personaje-header header-derecha">
+                <span class="nombre-personaje">NARUTO</span>
+            </div>
+
+            <div class="personaje-imagen-container">
+                <div class="personaje-imagen">
+                    <img src="Agrupar/img/avatars/default.png" alt="Naruto">
+                </div>
+                <div class="hp-compacto">
+                    </span>
+                </div>
+            </div>
+
+            <!-- NUEVO: turno + tiempo individual de Naruto -->
+            <span class="turno-estado" id="turnoNaruto"></span>
+            <span class="tiempo-jugador" id="tiempoNaruto">03:00</span>
+             <span class="combo-jugador" id="comboNaruto"></span>
+
+
+
+            <div class="personaje-habilidad">
+                <div class="titulo-panel text-derecha">HABILIDAD</div>
+                <div class="habilidad-contenido invertido">
+                    <div class="habilidad-texto text-derecha">
+                        <h4>CLON DE SOMBRA</h4>
+                        <p>Evita el próximo error sin penalización.</p>
+                    </div>
+                    <div class="habilidad-logo">
+                        <img src="Agrupar/img/logo%20-sllo%20bloq.png" alt="Clon de Sombra">
+                    </div>
+                </div>
+            </div>
+
+            <div class="personaje-chakra">
+                <div class="titulo-panel text-derecha">CHAKRA</div>
+                <div class="chakra-contenido invertido">
+
+                    <div class="chakra-barra">
+    <div class="chakra-progreso" id="chakraBarraNaruto" style="width: 68%;"></div>
+</div>
+
+                    <div class="chakra-cantidad">
+    <span id="chakraTextoNaruto">68/100</span>
+</div>
+
+                    <div class="chakra-logo">
+                        <img src="Agrupar/img/avatars/logo-chakra barra .png" alt="Chakra">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MODAL DE FIN DE PARTIDA -->
+    <div id="modal" class="hidden">
+        <div class="panel">
+            <h2>¡Partida terminada!</h2>
+            <p id="finalStats"></p>
+            <button id="saveRecord">Guardar en historial</button>
+            <button id="closeModal">Cerrar</button>
+        </div>
+    </div>
+<div class="special-panel">
+    <div class="panel-title">
+        <span></span>
+        <h2>CARTAS ESPECIALES</h2>
+        <span></span>
+    </div>
+    <div class="skills">
+        <!-- 1. JUTSU SUSTITUCIÓN -->
+        <button class="skill" style="--icon-w: 55px; --icon-h: 58px;">
+            <img src="Agrupar/img/online%20-%20juts-sustit.png" alt="Jutsu Sustitución">
+            <div class="name">SUSTITUCIÓN</div>
+            <div class="uses">1</div>
+        </button>
+
+        <!-- 2. BYAKUGAN -->
+        <button class="skill" style="--icon-w: 55px; --icon-h: 58px;">
+            <img src="Agrupar/img/logo-online-byakugan.png" alt="Byakugan">
+            <div class="name">BYAKUGAN</div>
+            <div class="uses">1</div>
+        </button>
+
+        <!-- 3. ROBO DE CHAKRA -->
+        <button class="skill" style="--icon-w: 49px; --icon-h: 64px; --uses-bottom: 26px;">
+            <img src="Agrupar/img/robo-chakra.png" alt="Robo de Chakra">
+            <div class="uses">1</div>
+            <div class="name">ROBO</div>
+        </button>
+
+        <!-- 4. GENJUTSU -->
+        <button class="skill" style="--icon-w: 58px; --icon-h: 58px;">
+            <img src="Agrupar/img/logo-genyugsu online.png" alt="Genjutsu">
+            <div class="name">GENJUTSU</div>
+            <div class="uses">1</div>
+        </button>
+
+        <!-- 5. SELLO DE BLOQUEO -->
+        <button class="skill" style="--icon-w: 50px; --icon-h: 50px;">
+            <img src="Agrupar/img/logo%20-sllo%20bloq.png" alt="Sello de Bloqueo">
+            <div class="name">SELLO</div>
+            <div class="uses">1</div>
+        </button>
+
+        <!-- 6. BOMBA / EXPLOSIVA -->
+        <button class="skill" style="--icon-w: 50px; --icon-h: 50px;">
+            <img src="Agrupar/img/logo%20-online-%20bomba%20.png" alt="Bomba Explosiva">
+            <div class="name">EXPLOSIVA</div>
+            <div class="uses">1</div>
+        </button>
+    </div>
+</div>
+    
+    <a href="menu.html" class="boton">volver</a>
+
+<script type="module" src="js/game-online.js"></script>
+</body>
+
+</html>

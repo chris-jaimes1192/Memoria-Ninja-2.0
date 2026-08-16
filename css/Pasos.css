@@ -1,0 +1,58 @@
+.indicador-pasos {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin: 6px 0 18px;
+}
+
+.paso-punto {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    opacity: 0.45;
+    transition: opacity 0.3s ease;
+}
+
+.paso-punto.activo,
+.paso-punto.completado {
+    opacity: 1;
+}
+
+.paso-numero {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.12);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.paso-punto.activo .paso-numero {
+    border-color: #4db0ff;
+    box-shadow: 0 0 10px #4db0ff;
+}
+
+.paso-punto.completado .paso-numero {
+    background: #00c853;
+    border-color: #00c853;
+}
+
+.paso-texto {
+    font-size: 10px;
+    color: #cfe0f5;
+    white-space: nowrap;
+}
+
+.paso-linea {
+    width: 24px;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.25);
+    margin-bottom: 16px;
+}
