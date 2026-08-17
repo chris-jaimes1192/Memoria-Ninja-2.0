@@ -1291,7 +1291,6 @@ video {
 }
 
 
-
 /* ==========================================
    SUSTITUCIÓN — animación + estados (NUEVO)
 ========================================== */
@@ -1349,4 +1348,63 @@ video {
 @keyframes sustitucionPulso {
     0%, 100% { opacity: 1; }
     50%      { opacity: 0.5; }
+}
+
+/* ==========================================
+   AVISO RÁPIDO COMPARTIDO (NUEVO)
+   Para errores de uso de poder: sin chakra,
+   sin usos, no es tu turno, etc.
+========================================== */
+
+.aviso-rapido-central {
+    position: fixed;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Permanent Marker', cursive;
+    font-size: 1.1rem;
+    color: #ff6b6b;
+    background: rgba(10, 10, 10, .88);
+    border: 1.5px solid #ff6b6b;
+    padding: 8px 18px;
+    border-radius: 10px;
+    z-index: 999;
+    pointer-events: none;
+    animation: avisoRapidoAparece 1.2s ease-out forwards;
+}
+
+@keyframes avisoRapidoAparece {
+    0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+    15%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    85%  { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* ==========================================
+   BONO DE CHAKRA POR COMBO — texto flotante (NUEVO)
+========================================== */
+
+.chakra-barra {
+    position: relative; /* necesario para que el texto flote justo encima */
+}
+
+.chakra-bono-flotante {
+    position: absolute;
+    left: 50%;
+    bottom: 100%;
+    transform: translateX(-50%);
+    font-family: 'Permanent Marker', cursive;
+    font-size: 0.7rem;
+    color: #4db8ff;
+    white-space: nowrap;
+    text-shadow: 0 0 6px rgba(77, 184, 255, 0.8);
+    pointer-events: none;
+    animation: chakraBonoFlota 0.9s ease-out forwards;
+}
+
+@keyframes chakraBonoFlota {
+    0%   { opacity: 0; transform: translate(-50%, 0px); }
+    20%  { opacity: 1; transform: translate(-50%, -4px); }
+    80%  { opacity: 1; transform: translate(-50%, -14px); }
+    100% { opacity: 0; transform: translate(-50%, -20px); }
 }

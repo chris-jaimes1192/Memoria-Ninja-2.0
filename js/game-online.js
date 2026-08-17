@@ -6,12 +6,11 @@ window.onload = () => {
     const data = MockServer.getData();
     UIManager.renderPlayers(data.players);
 
-    // CAMBIO: se agrega "esMiTurno" como tercer argumento.
-    // No se tocó nada de lo que ya estaba, solo se sumó un parámetro más.
     BoardManager.renderBoard(procesarResultado, mostrarModalFinal, esMiTurno);
 
     iniciarTemporizadores();
     actualizarIndicadorTurno();
+    actualizarVida();
     console.log("Sistema modular iniciado correctamente.");
 };
 
@@ -31,9 +30,7 @@ const movimientos = document.getElementById("moves");
 const puntaje = document.getElementById("score");
 const btnConfiguracion = document.getElementById("settingsButton");
 
-// ---------- Turno + tiempo individual (NUEVO) ----------
-// Estos elementos hay que agregarlos al HTML dentro de cada
-// personaje-header (ver mensaje aparte con el snippet a pegar).
+// ---------- Turno + tiempo + combo (NUEVO) ----------
 
 const turnoSasuke = document.getElementById("turnoSasuke");
 const turnoNaruto = document.getElementById("turnoNaruto");
@@ -47,6 +44,14 @@ const chakraTextoSasuke = document.getElementById("chakraTextoSasuke");
 const chakraTextoNaruto = document.getElementById("chakraTextoNaruto");
 const chakraBarraSasuke = document.getElementById("chakraBarraSasuke");
 const chakraBarraNaruto = document.getElementById("chakraBarraNaruto");
+
+// ---------- Vida (NUEVO) ----------
+
+const vidaTextoSasuke = document.getElementById("vidaTextoSasuke");
+const vidaTextoNaruto = document.getElementById("vidaTextoNaruto");
+const vidaBarraSasuke = document.getElementById("vidaBarraSasuke");
+const vidaBarraNaruto = document.getElementById("vidaBarraNaruto");
+
 // ---------- Panel jugador izquierdo ----------
 
 const nombreJugador = document.getElementById("playerName");
@@ -123,8 +128,6 @@ let juegoIniciado = false;
 
 let partidaFinalizada = false;
 
-// ---------- Tiempo individual (NUEVO) ----------
-
 let tiempoSasukeActual = 0;
 let tiempoNarutoActual = 0;
 let intervaloTiempo = null;
@@ -140,34 +143,27 @@ const TOTAL_PAREJAS = 8;
 
 const CHAKRA_MAXIMO = 100;
 
-const TIEMPO_INICIAL = 180; // 3:00 para cada jugador
+const TIEMPO_INICIAL = 180;
 
 
 /*==================================================
-        IDENTIDAD LOCAL / MODO DE PRUEBA (NUEVO)
+        IDENTIDAD LOCAL / MODO DE PRUEBA
 ==================================================*/
 
-// Por ahora el juego no tiene servidor real conectado, así que no hay
-// forma de saber "quién sos vos" en la partida. Dejamos esto como una
-// constante fija por ahora. El día que se conecte el servidor real
-// (Etapa 3 del plan), este valor lo va a definir el login/socket
-// en vez de estar escrito a mano acá.
-const miPersonaje = "sasuke"; // cambiar a "naruto" para probar esa perspectiva
+const miPersonaje = "sasuke";
 
-// Bandera para pruebas sin servidor: mientras esté en true, el tablero
-// NUNCA bloquea el click por turno, así podés probar todo el juego
-// vos solo sin tener que recargar y cambiar "miPersonaje" a mano.
-// Cuando conectes el servidor/socket real, poné esto en false y ahí
-// sí se va a respetar el turno de verdad entre los dos navegadores.
-const MODO_PRUEBA_LOCAL = true; // cambiar a false cuando haya servidor real
+const MODO_PRUEBA_LOCAL = true;
 
-// Devuelve true si, en este momento, a este navegador le toca jugar.
 function esMiTurno(){
 
-    if (MODO_PRUEBA_LOCAL) return true; // sin bloqueo mientras se prueba local
+    if (MODO_PRUEBA_LOCAL) return true;
 
     return miPersonaje === "sasuke" ? turnoJugador : !turnoJugador;
 
+}
+
+function jugadorActivo(){
+    return turnoJugador ? jugador : rival;
 }
 
 
@@ -232,6 +228,8 @@ const jugador = {
 
     chakra : 70,
 
+    vida : 100,
+
     aciertos : 0,
 
     errores : 0,
@@ -251,6 +249,8 @@ const rival = {
 
     chakra : 65,
 
+    vida : 100,
+
     aciertos : 0,
 
     errores : 0,
@@ -269,27 +269,18 @@ const rival = {
 const habilidades = {
 
     sharingan : {
-
         nombre : "Sharingan",
-
         disponible : true
-
     },
 
     chidori : {
-
         nombre : "Chidori",
-
         disponible : true
-
     },
 
     susanoo : {
-
         nombre : "Susanoo",
-
         disponible : false
-
     }
 
 };
@@ -302,24 +293,12 @@ const habilidades = {
 const conexion = {
 
     servidor : false,
-
     socket : false,
-
     rivalConectado : true,
-
     ping : 35
 
 };
 
-
-/*==================================================
-                FIN PARTE 1
-==================================================*/
-
-/*==================================================
-            PARTE 2
-            INICIALIZACIÓN GENERAL
-==================================================*/
 
 /*==================================================
                 INICIAR JUEGO
@@ -328,122 +307,62 @@ const conexion = {
 function iniciarJuegoOnline(){
 
     cargarPanelSuperior();
-
     cargarJugador();
-
     cargarRival();
-
     cargarPanelInferior();
-
     cargarEstadoConexion();
 
 }
 
-/*==================================================
-            CARGAR PANEL SUPERIOR
-==================================================*/
-
 function cargarPanelSuperior(){
 
-    if(movimientos)
-        movimientos.textContent="0";
-
-    if(puntaje)
-        puntaje.textContent="0";
+    if(movimientos) movimientos.textContent="0";
+    if(puntaje) puntaje.textContent="0";
 
 }
-
-/*==================================================
-            CARGAR JUGADOR
-==================================================*/
 
 function cargarJugador(){
 
-    if(nombreJugador)
-        nombreJugador.textContent=jugador.nombre;
-
-    if(avatarJugador)
-        avatarJugador.src="assets/img/sasuke.png";
-
-    if(chakraJugador)
-        chakraJugador.style.width=jugador.chakra+"%";
-
-    if(chakraTextoJugador)
-        chakraTextoJugador.textContent=
-        jugador.chakra+" / "+CHAKRA_MAXIMO;
-
-    if(aciertosJugador)
-        aciertosJugador.textContent=jugador.aciertos;
-
-    if(erroresJugador)
-        erroresJugador.textContent=jugador.errores;
-
-    if(comboJugador)
-        comboJugador.textContent="x"+jugador.combo;
+    if(nombreJugador) nombreJugador.textContent=jugador.nombre;
+    if(avatarJugador) avatarJugador.src="assets/img/sasuke.png";
+    if(chakraJugador) chakraJugador.style.width=jugador.chakra+"%";
+    if(chakraTextoJugador) chakraTextoJugador.textContent = jugador.chakra+" / "+CHAKRA_MAXIMO;
+    if(aciertosJugador) aciertosJugador.textContent = jugador.aciertos;
+    if(erroresJugador) erroresJugador.textContent = jugador.errores;
+    if(comboJugador) comboJugador.textContent = "x"+jugador.combo;
 
 }
-
-/*==================================================
-            CARGAR RIVAL
-==================================================*/
 
 function cargarRival(){
 
-    if(nombreRival)
-        nombreRival.textContent=rival.nombre;
-
-    if(avatarRival)
-        avatarRival.src="assets/img/naruto.png";
-
-    if(chakraRival)
-        chakraRival.style.width=rival.chakra+"%";
-
-    if(chakraTextoRival)
-        chakraTextoRival.textContent=
-        rival.chakra+" / "+CHAKRA_MAXIMO;
-
-    if(aciertosRival)
-        aciertosRival.textContent=rival.aciertos;
-
-    if(erroresRival)
-        erroresRival.textContent=rival.errores;
-
-    if(comboRival)
-        comboRival.textContent="x"+rival.combo;
+    if(nombreRival) nombreRival.textContent=rival.nombre;
+    if(avatarRival) avatarRival.src="assets/img/naruto.png";
+    if(chakraRival) chakraRival.style.width=rival.chakra+"%";
+    if(chakraTextoRival) chakraTextoRival.textContent = rival.chakra+" / "+CHAKRA_MAXIMO;
+    if(aciertosRival) aciertosRival.textContent = rival.aciertos;
+    if(erroresRival) erroresRival.textContent = rival.errores;
+    if(comboRival) comboRival.textContent = "x"+rival.combo;
 
 }
-
-/*==================================================
-            PANEL INFERIOR
-==================================================*/
 
 function cargarPanelInferior(){
 
     if(estadoPartida){
-
-        estadoPartida.textContent=
-        "Esperando inicio de la partida...";
-
+        estadoPartida.textContent = "Esperando inicio de la partida...";
     }
 
 }
 
-/*==================================================
-        ESTADO DE CONEXIÓN
-==================================================*/
-
 function cargarEstadoConexion(){
 
     console.log("Servidor:",conexion.servidor);
-
     console.log("Socket:",conexion.socket);
-
     console.log("Ping:",conexion.ping+" ms");
 
 }
 
 /*==================================================
-        TURNOS (NUEVO)
+        TURNOS
 ==================================================*/
 
 function actualizarIndicadorTurno(){
@@ -459,9 +378,7 @@ function actualizarIndicadorTurno(){
     }
 
     if(estadoPartida){
-        estadoPartida.textContent = turnoJugador
-            ? "Turno de SASUKE"
-            : "Turno de NARUTO";
+        estadoPartida.textContent = turnoJugador ? "Turno de SASUKE" : "Turno de NARUTO";
     }
 
 }
@@ -470,13 +387,13 @@ function cambiarTurno(){
 
     turnoJugador = !turnoJugador;
     actualizarIndicadorTurno();
+    actualizarUsosByakugan();
+    actualizarUsosSustitucion();
 
 }
 
 /*==================================================
-        TEMPORIZADORES INDIVIDUALES (NUEVO)
-        Cada jugador tiene su propio contador.
-        Solo baja el del jugador con el turno activo.
+        TEMPORIZADORES INDIVIDUALES
 ==================================================*/
 
 function iniciarTemporizadores(){
@@ -502,8 +419,6 @@ function iniciarTemporizadores(){
 
         if(tiempoSasukeActual <= 0 || tiempoNarutoActual <= 0){
             clearInterval(intervaloTiempo);
-            // El jugador que se quedó sin tiempo pierde el turno
-            // (la resolución de victoria/derrota por tiempo se define en Etapa 2)
         }
 
     }, 1000);
@@ -515,11 +430,8 @@ function actualizarTextosTiempo(){
     if(tiempoSasuke) tiempoSasuke.textContent = formatearTiempo(tiempoSasukeActual);
     if(tiempoNaruto) tiempoNaruto.textContent = formatearTiempo(tiempoNarutoActual);
 
-    // El #timer superior muestra el tiempo del jugador con el turno activo
     if(tiempo){
-        tiempo.textContent = formatearTiempo(
-            turnoJugador ? tiempoSasukeActual : tiempoNarutoActual
-        );
+        tiempo.textContent = formatearTiempo(turnoJugador ? tiempoSasukeActual : tiempoNarutoActual);
     }
 
 }
@@ -535,8 +447,6 @@ function formatearTiempo(segundos){
 
 /*==================================================
         RESULTADO DE CADA JUGADA
-        Se llama cada vez que se voltean 2 cartas.
-        esAcierto = true si formaron pareja.
 ==================================================*/
 
 function procesarResultado(esAcierto, puntajeTotal){
@@ -552,42 +462,48 @@ function procesarResultado(esAcierto, puntajeTotal){
             jugador.aciertos++;
             jugador.combo++;
             if(aciertosJugador) aciertosJugador.textContent = jugador.aciertos;
-            actualizarCombo();
+            if(jugador.combo >= 1) actualizarCombo();
             ganarChakra(true);
-            // acertó: sigue su turno
-               } else {
-            if (sustitucionArmada) {
-                // La Sustitución absorbe el error: no cuenta como fallo,
-                // no rompe combo, no cambia el turno.
-                desarmarSustitucion();
+            if(jugador.combo >= 2) ganarChakraPorCombo(true);
+        } else {
+            if (sustitucionArmadaSasuke) {
+                desarmarSustitucion(true);
                 mostrarAvisoSustitucionUsada();
             } else {
                 jugador.errores++;
                 if(erroresJugador) erroresJugador.textContent = jugador.errores;
                 if(jugador.combo > 0) mostrarComboRoto(true);
                 jugador.combo = 0;
-                cambiarTurno(); // falló: pasa el turno a NARUTO
+                perderVida(true, VIDA_PERDIDA_POR_ERROR);
+                cambiarTurno();
             }
         }
-    } 
-    
-    else {
+
+    } else {
 
         // Le tocaba a NARUTO
-                if(esAcierto){
+
+        if(esAcierto){
             rival.aciertos++;
             rival.combo++;
             if(aciertosRival) aciertosRival.textContent = rival.aciertos;
             actualizarCombo();
             ganarChakra(false);
-            // acertó: sigue su turno
+            if(rival.combo >= 2) ganarChakraPorCombo(false);
         } else {
-            rival.errores++;
-            if(erroresRival) erroresRival.textContent = rival.errores;
-            if(rival.combo > 0) mostrarComboRoto(false);
-            rival.combo = 0;
-            cambiarTurno(); // falló: pasa el turno a SASUKE
+            if (sustitucionArmadaNaruto) {
+                desarmarSustitucion(false);
+                mostrarAvisoSustitucionUsada();
+            } else {
+                rival.errores++;
+                if(erroresRival) erroresRival.textContent = rival.errores;
+                if(rival.combo > 0) mostrarComboRoto(false);
+                rival.combo = 0;
+                perderVida(false, VIDA_PERDIDA_POR_ERROR);
+                cambiarTurno();
+            }
         }
+
     }
 
 }
@@ -628,19 +544,7 @@ if(botonCerrar){
 }
 
 /*==================================================
-            WINDOW LOAD
-==================================================*/
-
-window.addEventListener("load",()=>{
-
-    iniciarJuegoOnline();
-
-});
-
-
-
-/*==================================================
-        COMBO (NUEVO)
+        COMBO
 ==================================================*/
 
 function actualizarCombo(){
@@ -671,11 +575,115 @@ function mostrarComboRoto(esSasuke){
 }
 
 /*==================================================
-        CHAKRA (NUEVO)
+        CHAKRA
 ==================================================*/
 
 const CHAKRA_POR_ACIERTO = 5;
+const CHAKRA_POR_NIVEL_COMBO = 3;
 
+function ganarChakraPorCombo(esSasuke){
+
+    const bono = CHAKRA_POR_NIVEL_COMBO;
+
+    if(esSasuke){
+        jugador.chakra = Math.min(CHAKRA_MAXIMO, jugador.chakra + bono);
+    } else {
+        rival.chakra = Math.min(CHAKRA_MAXIMO, rival.chakra + bono);
+    }
+
+    actualizarChakra();
+    mostrarBonoChakraVisual(esSasuke, bono);
+
+}
+
+function mostrarBonoChakraVisual(esSasuke, cantidad){
+
+    const barraChakra = esSasuke ? chakraBarraSasuke : chakraBarraNaruto;
+    if(!barraChakra) return;
+
+    const contenedor = barraChakra.closest(".chakra-barra");
+    if(!contenedor) return;
+
+    const aviso = document.createElement("div");
+    aviso.className = "chakra-bono-flotante";
+    aviso.textContent = "+" + cantidad + " 🔵 COMBO";
+    contenedor.appendChild(aviso);
+
+    setTimeout(() => {
+        aviso.remove();
+    }, 900);
+
+}
+
+function ganarChakra(esSasuke){
+
+    if(esSasuke){
+        jugador.chakra = Math.min(CHAKRA_MAXIMO, jugador.chakra + CHAKRA_POR_ACIERTO);
+    } else {
+        rival.chakra = Math.min(CHAKRA_MAXIMO, rival.chakra + CHAKRA_POR_ACIERTO);
+    }
+
+    actualizarChakra();
+
+}
+
+function actualizarChakra(){
+
+    if(chakraTextoSasuke) chakraTextoSasuke.textContent = jugador.chakra + "/" + CHAKRA_MAXIMO;
+    if(chakraBarraSasuke) chakraBarraSasuke.style.width = jugador.chakra + "%";
+
+    if(chakraTextoNaruto) chakraTextoNaruto.textContent = rival.chakra + "/" + CHAKRA_MAXIMO;
+    if(chakraBarraNaruto) chakraBarraNaruto.style.width = rival.chakra + "%";
+
+}
+
+/*==================================================
+        VIDA (NUEVO)
+==================================================*/
+
+const VIDA_MAXIMA = 100;
+const VIDA_PERDIDA_POR_ERROR = 5;
+
+function perderVida(esSasuke, cantidad){
+
+    if(esSasuke){
+        jugador.vida = Math.max(0, jugador.vida - cantidad);
+    } else {
+        rival.vida = Math.max(0, rival.vida - cantidad);
+    }
+
+    actualizarVida();
+
+}
+
+function actualizarVida(){
+
+    if(vidaTextoSasuke) vidaTextoSasuke.textContent = jugador.vida + "/" + VIDA_MAXIMA;
+    if(vidaBarraSasuke) vidaBarraSasuke.style.width = jugador.vida + "%";
+
+    if(vidaTextoNaruto) vidaTextoNaruto.textContent = rival.vida + "/" + VIDA_MAXIMA;
+    if(vidaBarraNaruto) vidaBarraNaruto.style.width = rival.vida + "%";
+
+}
+
+/*==================================================
+        AVISO RÁPIDO COMPARTIDO (NUEVO)
+        Mensaje flotante para errores de uso de poder
+        (sin chakra, sin usos, no es tu turno).
+==================================================*/
+
+function mostrarAvisoRapido(mensaje) {
+
+    const aviso = document.createElement("div");
+    aviso.className = "aviso-rapido-central";
+    aviso.textContent = "⚠️ " + mensaje;
+    document.body.appendChild(aviso);
+
+    setTimeout(() => {
+        aviso.remove();
+    }, 1200);
+
+}
 
 /*==================================================
                 BYAKUGAN
@@ -685,7 +693,8 @@ const COSTO_BYAKUGAN = 30;
 const DURACION_BYAKUGAN = 3000;
 const USOS_INICIALES_BYAKUGAN = 2;
 
-let usosByakugan = USOS_INICIALES_BYAKUGAN;
+let usosByakuganSasuke = USOS_INICIALES_BYAKUGAN;
+let usosByakuganNaruto = USOS_INICIALES_BYAKUGAN;
 let byakuganActivo = false;
 
 const botonByakugan = document.getElementById("btnByakugan");
@@ -693,44 +702,26 @@ const contadorUsosByakugan = document.getElementById("usosByakugan");
 
 function usarByakugan() {
 
-    // ------------------------------------------
-    // 1. Evitar doble activación
-    // ------------------------------------------
-
-    if (byakuganActivo) {
-        return;
-    }
-
-    // ------------------------------------------
-    // 2. Comprobar turno
-    // ------------------------------------------
+    if (byakuganActivo) return;
 
     if (!esMiTurno()) {
         mostrarMensajeByakugan("NO ES TU TURNO");
         return;
     }
 
-    // ------------------------------------------
-    // 3. Comprobar usos
-    // ------------------------------------------
+    const esSasuke = turnoJugador;
+    const p = jugadorActivo();
+    let usos = esSasuke ? usosByakuganSasuke : usosByakuganNaruto;
 
-    if (usosByakugan <= 0) {
+    if (usos <= 0) {
         mostrarMensajeByakugan("SIN USOS");
         return;
     }
 
-    // ------------------------------------------
-    // 4. Comprobar Chakra
-    // ------------------------------------------
-
-    if (jugador.chakra < COSTO_BYAKUGAN) {
+    if (p.chakra < COSTO_BYAKUGAN) {
         mostrarMensajeByakugan("CHAKRA INSUFICIENTE");
         return;
     }
-
-    // ------------------------------------------
-    // 5. Buscar cartas disponibles
-    // ------------------------------------------
 
     const cartas = BoardManager.obtenerCartasParaByakugan();
 
@@ -739,61 +730,34 @@ function usarByakugan() {
         return;
     }
 
-    // ------------------------------------------
-    // 6. Activar estado
-    // ------------------------------------------
-
+    
     byakuganActivo = true;
 
-    // ------------------------------------------
-    // 7. Gastar Chakra
-    // ------------------------------------------
-
-    jugador.chakra -= COSTO_BYAKUGAN;
-
+    p.chakra -= COSTO_BYAKUGAN;
     actualizarChakra();
 
-    // ------------------------------------------
-    // 8. Gastar uso
-    // ------------------------------------------
-
-    usosByakugan--;
-
+    if (esSasuke) { usosByakuganSasuke--; } else { usosByakuganNaruto--; }
     actualizarUsosByakugan();
 
-    // ------------------------------------------
-    // 9. Animación
-    // ------------------------------------------
-
-    activarAnimacionByakugan();
-
-    // ------------------------------------------
-    // 10. Revelar cartas
-    // ------------------------------------------
-
+    activarAnimacionByakugan(esSasuke);
     revelarCartasByakugan(cartas);
 
 }
 
-/*==================================================
-        ANIMACIÓN BYAKUGAN (NUEVO)
-        Esto es lo que faltaba: usarByakugan() la llamaba
-        pero nunca estaba definida, así que el poder se
-        cortaba acá y las cartas nunca se revelaban.
-==================================================*/
+function activarAnimacionByakugan(esSasuke) {
 
-function activarAnimacionByakugan() {
+    const selector = esSasuke
+        ? ".panel-personaje-lateral .personaje-imagen"
+        : ".panel-naruto-lateral .personaje-imagen";
 
-    // Brillo en el avatar de Sasuke, si existe el contenedor
-    const avatarSasuke = document.querySelector(".panel-personaje-lateral .personaje-imagen");
-    if (avatarSasuke) {
-        avatarSasuke.classList.add("byakugan-brillo-avatar");
+    const avatar = document.querySelector(selector);
+    if (avatar) {
+        avatar.classList.add("byakugan-brillo-avatar");
         setTimeout(() => {
-            avatarSasuke.classList.remove("byakugan-brillo-avatar");
+            avatar.classList.remove("byakugan-brillo-avatar");
         }, 600);
     }
 
-    // Símbolo grande "👁️ BYAKUGAN" en el centro de la pantalla
     const simbolo = document.createElement("div");
     simbolo.className = "byakugan-simbolo-central";
     simbolo.textContent = "👁️ BYAKUGAN";
@@ -808,36 +772,20 @@ function activarAnimacionByakugan() {
 function revelarCartasByakugan(cartas) {
 
     cartas.forEach(carta => {
-
         const imagen = carta.querySelector("img");
-
         if (!imagen) return;
-
-        // Guardamos la imagen original
         carta.dataset.backOriginal = imagen.src;
-
-        // Mostramos la carta
-        imagen.src =
-            `${RUTA_ALDEAS}arena/${carta.dataset.valor}.png`;
-
-        // Efecto visual
+        imagen.src = `${RUTA_ALDEAS}arena/${carta.dataset.valor}.png`;
         carta.classList.add("byakugan-revelada");
-
     });
 
-    // Después de 3 segundos
     setTimeout(() => {
 
         cartas.forEach(carta => {
-
             const imagen = carta.querySelector("img");
-
             if (!imagen) return;
-
             imagen.src = RUTA_BACK;
-
             carta.classList.remove("byakugan-revelada");
-
         });
 
         byakuganActivo = false;
@@ -847,37 +795,26 @@ function revelarCartasByakugan(cartas) {
 
 function actualizarUsosByakugan() {
 
+    const usos = turnoJugador ? usosByakuganSasuke : usosByakuganNaruto;
+
     if (contadorUsosByakugan) {
-
-        contadorUsosByakugan.textContent =
-            usosByakugan;
-
+        contadorUsosByakugan.textContent = usos;
     }
 
     if (botonByakugan) {
-
-        botonByakugan.classList.toggle(
-            "poder-agotado",
-            usosByakugan <= 0
-        );
-
+        botonByakugan.classList.toggle("poder-agotado", usos <= 0);
     }
 
 }
+
 if (botonByakugan) {
-
-    botonByakugan.addEventListener(
-        "click",
-        usarByakugan
-    );
-
+    botonByakugan.addEventListener("click", usarByakugan);
 }
+
 function mostrarMensajeByakugan(mensaje) {
-
     console.log("BYAKUGAN:", mensaje);
-
+    mostrarAvisoRapido(mensaje);
 }
-
 
 /*==================================================
                 SUSTITUCIÓN
@@ -887,8 +824,10 @@ const COSTO_SUSTITUCION = 25;
 const DURACION_ARMADA_SUSTITUCION = 8000;
 const USOS_INICIALES_SUSTITUCION = 2;
 
-let usosSustitucion = USOS_INICIALES_SUSTITUCION;
-let sustitucionArmada = false;
+let usosSustitucionSasuke = USOS_INICIALES_SUSTITUCION;
+let usosSustitucionNaruto = USOS_INICIALES_SUSTITUCION;
+let sustitucionArmadaSasuke = false;
+let sustitucionArmadaNaruto = false;
 let timeoutSustitucion = null;
 
 const botonSustitucion = document.getElementById("btnSustitucion");
@@ -897,34 +836,38 @@ const spanSustitucionEstado = document.getElementById("sustitucionEstado");
 
 function usarSustitucion() {
 
-    if (sustitucionArmada) {
-        return;
-    }
+    const esSasuke = turnoJugador;
+    const armada = esSasuke ? sustitucionArmadaSasuke : sustitucionArmadaNaruto;
+
+    if (armada) return;
 
     if (!esMiTurno()) {
         mostrarMensajeSustitucion("NO ES TU TURNO");
         return;
     }
 
-    if (usosSustitucion <= 0) {
+    const p = jugadorActivo();
+    const usos = esSasuke ? usosSustitucionSasuke : usosSustitucionNaruto;
+
+    if (usos <= 0) {
         mostrarMensajeSustitucion("SIN USOS");
         return;
     }
 
-    if (jugador.chakra < COSTO_SUSTITUCION) {
+    if (p.chakra < COSTO_SUSTITUCION) {
         mostrarMensajeSustitucion("CHAKRA INSUFICIENTE");
         return;
     }
 
-    jugador.chakra -= COSTO_SUSTITUCION;
+    p.chakra -= COSTO_SUSTITUCION;
     actualizarChakra();
 
-    usosSustitucion--;
+    if (esSasuke) { usosSustitucionSasuke--; } else { usosSustitucionNaruto--; }
     actualizarUsosSustitucion();
 
-    sustitucionArmada = true;
+    if (esSasuke) { sustitucionArmadaSasuke = true; } else { sustitucionArmadaNaruto = true; }
 
-    activarAnimacionSustitucion();
+    activarAnimacionSustitucion(esSasuke);
 
     if (spanSustitucionEstado) {
         spanSustitucionEstado.textContent = "🔄 SUSTITUCIÓN ARMADA";
@@ -932,18 +875,22 @@ function usarSustitucion() {
     }
 
     timeoutSustitucion = setTimeout(() => {
-        desarmarSustitucion();
+        desarmarSustitucion(esSasuke);
     }, DURACION_ARMADA_SUSTITUCION);
 
 }
 
-function activarAnimacionSustitucion() {
+function activarAnimacionSustitucion(esSasuke) {
 
-    const avatarSasuke = document.querySelector(".panel-personaje-lateral .personaje-imagen");
-    if (avatarSasuke) {
-        avatarSasuke.classList.add("sustitucion-brillo-avatar");
+    const selector = esSasuke
+        ? ".panel-personaje-lateral .personaje-imagen"
+        : ".panel-naruto-lateral .personaje-imagen";
+
+    const avatar = document.querySelector(selector);
+    if (avatar) {
+        avatar.classList.add("sustitucion-brillo-avatar");
         setTimeout(() => {
-            avatarSasuke.classList.remove("sustitucion-brillo-avatar");
+            avatar.classList.remove("sustitucion-brillo-avatar");
         }, 600);
     }
 
@@ -958,9 +905,9 @@ function activarAnimacionSustitucion() {
 
 }
 
-function desarmarSustitucion() {
+function desarmarSustitucion(esSasuke) {
 
-    sustitucionArmada = false;
+    if (esSasuke) { sustitucionArmadaSasuke = false; } else { sustitucionArmadaNaruto = false; }
 
     if (timeoutSustitucion) {
         clearTimeout(timeoutSustitucion);
@@ -990,12 +937,14 @@ function mostrarAvisoSustitucionUsada() {
 
 function actualizarUsosSustitucion() {
 
+    const usos = turnoJugador ? usosSustitucionSasuke : usosSustitucionNaruto;
+
     if (contadorUsosSustitucion) {
-        contadorUsosSustitucion.textContent = usosSustitucion;
+        contadorUsosSustitucion.textContent = usos;
     }
 
     if (botonSustitucion) {
-        botonSustitucion.classList.toggle("poder-agotado", usosSustitucion <= 0);
+        botonSustitucion.classList.toggle("poder-agotado", usos <= 0);
     }
 
 }
@@ -1006,27 +955,15 @@ if (botonSustitucion) {
 
 function mostrarMensajeSustitucion(mensaje) {
     console.log("SUSTITUCIÓN:", mensaje);
+    mostrarAvisoRapido(mensaje);
 }
 
+/*==================================================
+            WINDOW LOAD
+==================================================*/
 
-function ganarChakra(esSasuke){
+window.addEventListener("load",()=>{
 
-    if(esSasuke){
-        jugador.chakra = Math.min(CHAKRA_MAXIMO, jugador.chakra + CHAKRA_POR_ACIERTO);
-    } else {
-        rival.chakra = Math.min(CHAKRA_MAXIMO, rival.chakra + CHAKRA_POR_ACIERTO);
-    }
+    iniciarJuegoOnline();
 
-    actualizarChakra();
-
-}
-
-function actualizarChakra(){
-
-    if(chakraTextoSasuke) chakraTextoSasuke.textContent = jugador.chakra + "/" + CHAKRA_MAXIMO;
-    if(chakraBarraSasuke) chakraBarraSasuke.style.width = jugador.chakra + "%";
-
-    if(chakraTextoNaruto) chakraTextoNaruto.textContent = rival.chakra + "/" + CHAKRA_MAXIMO;
-    if(chakraBarraNaruto) chakraBarraNaruto.style.width = rival.chakra + "%";
-
-}
+});
