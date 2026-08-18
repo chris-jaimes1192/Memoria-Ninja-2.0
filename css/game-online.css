@@ -1408,3 +1408,397 @@ video {
     80%  { opacity: 1; transform: translate(-50%, -14px); }
     100% { opacity: 0; transform: translate(-50%, -20px); }
 }
+
+/* ==========================================
+   BONIFICACIÓN DE COMBO — impacto visual fuerte
+   (mismo nivel que la activación de un poder)
+========================================== */
+
+.bonificacion-combo {
+    position: fixed;
+    left: 50%;
+    top: 42%;
+    transform: translate(-50%, -50%);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+
+    padding: 14px 32px;
+    background: rgba(10, 10, 10, .9);
+    border: 2px solid #ffd700;
+    border-radius: 14px;
+    box-shadow:
+        0 0 20px rgba(255, 215, 0, 0.6),
+        0 0 45px rgba(255, 215, 0, 0.35),
+        inset 0 0 15px rgba(255, 215, 0, 0.15);
+
+    z-index: 9999;
+    pointer-events: none;
+
+    font-family: 'Permanent Marker', cursive;
+
+    animation: bonificacionComboPunch 1.4s cubic-bezier(.22,1.4,.36,1) forwards;
+}
+
+.bonificacion-combo strong {
+    font-size: 2.6rem;
+    letter-spacing: 1px;
+    color: #ffd700;
+
+    text-shadow:
+        0 0 8px #000,
+        0 0 18px rgba(255, 215, 0, 0.95),
+        0 0 34px rgba(255, 215, 0, 0.6);
+}
+
+.bonificacion-combo span {
+    font-size: 1.5rem;
+    color: #64d8ff;
+
+    text-shadow:
+        0 0 6px #000,
+        0 0 16px rgba(100, 216, 255, 0.9);
+}
+
+@keyframes bonificacionComboPunch {
+
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -35%) scale(0.3) rotate(-4deg);
+    }
+
+    18% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.25) rotate(2deg);
+    }
+
+    30% {
+        transform: translate(-50%, -50%) scale(1) rotate(0deg);
+    }
+
+    75% {
+        opacity: 1;
+        transform: translate(-50%, -55%) scale(1);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -75%) scale(0.9);
+    }
+
+}
+
+/* Destello rápido en toda la pantalla, para que el ojo lo capte
+   incluso si estabas mirando otra parte del tablero */
+.combo-flash-overlay {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle, rgba(255,215,0,0.25), transparent 65%);
+    z-index: 9998;
+    pointer-events: none;
+    animation: comboFlashFade 0.5s ease-out forwards;
+}
+
+@keyframes comboFlashFade {
+    0%   { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* ==========================================
+   ROBO DE CHAKRA — animación (NUEVO)
+========================================== */
+
+/* La barra del que pierde chakra tiembla y se oscurece un instante */
+.robo-origen-efecto {
+    animation: roboOrigenTiembla 0.7s ease-in-out;
+}
+
+@keyframes roboOrigenTiembla {
+    0%, 100% { filter: brightness(1); transform: translateX(0); }
+    20%      { filter: brightness(0.4); transform: translateX(-3px); }
+    40%      { filter: brightness(0.4); transform: translateX(3px); }
+    60%      { filter: brightness(0.6); transform: translateX(-2px); }
+    80%      { filter: brightness(0.8); transform: translateX(2px); }
+}
+
+/* La barra del que gana chakra brilla con fuerza */
+.robo-destino-efecto {
+    animation: roboDestinoBrilla 0.7s ease-out;
+}
+
+@keyframes roboDestinoBrilla {
+    0%   { box-shadow: 0 0 0px rgba(46, 166, 255, 0); }
+    40%  { box-shadow: 0 0 22px rgba(46, 166, 255, 1); }
+    100% { box-shadow: 0 0 0px rgba(46, 166, 255, 0); }
+}
+
+/* Rayo de energía que viaja de una barra a la otra */
+.robo-rayo {
+    position: fixed;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #ffffff, #4db8ff 55%, transparent 75%);
+    box-shadow: 0 0 12px 4px rgba(77, 184, 255, 0.9);
+    z-index: 998;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    animation: roboRayoViaja 0.7s ease-in-out forwards;
+}
+
+@keyframes roboRayoViaja {
+    0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) translate(0, 0) scale(0.6);
+    }
+    100% {
+        opacity: 0.3;
+        transform: translate(-50%, -50%) translate(var(--dx), var(--dy)) scale(1.4);
+    }
+}
+
+/* Símbolo central grande, mismo estilo que Byakugan/Sustitución */
+.robo-simbolo-central {
+    position: fixed;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.5);
+    font-family: 'Permanent Marker', cursive;
+    font-size: 1.7rem;
+    color: #4db8ff;
+    text-shadow: 0 0 12px rgba(46, 166, 255, 0.9), 0 0 24px rgba(46, 166, 255, 0.6);
+    z-index: 999;
+    pointer-events: none;
+    animation: roboSimboloAparece 0.9s ease-out forwards;
+}
+
+@keyframes roboSimboloAparece {
+    0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
+    30%  { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+    70%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+}
+
+/* ==========================================
+   GENJUTSU — ilusión visual del tablero (NUEVO)
+   Solo efecto visual: nunca toca datos reales
+   de las cartas ni sus posiciones en el DOM.
+   Se ve como un temblor de pantalla + las cartas
+   "ruedan" y saltan a la posición de otra carta un
+   momento, y al cortar el efecto todo vuelve
+   exactamente a como estaba antes.
+========================================== */
+
+.genjutsu-ilusion {
+    animation: genjutsuTemblorPantalla 0.28s ease-in-out infinite;
+}
+
+.genjutsu-ilusion .card {
+    animation: genjutsuCartaRueda 0.65s linear infinite;
+    /* NUEVO: valores por defecto — si no se setean por JS, la carta
+       no se mueve y solo rota, como antes. */
+    --genjutsu-dx: 0px;
+    --genjutsu-dy: 0px;
+    transition: transform 0.4s ease-out;
+}
+
+.genjutsu-ilusion .card:nth-child(2n) {
+    animation-duration: 0.55s;
+    animation-direction: reverse;
+}
+
+.genjutsu-ilusion .card:nth-child(3n) {
+    animation-duration: 0.75s;
+    animation-delay: 0.1s;
+}
+
+.genjutsu-ilusion .card:nth-child(5n) {
+    animation-duration: 0.6s;
+    animation-delay: 0.2s;
+    animation-direction: reverse;
+}
+
+@keyframes genjutsuTemblorPantalla {
+    0%   { transform: translate(0, 0) rotate(0deg); }
+    20%  { transform: translate(-6px, 3px) rotate(-0.6deg); }
+    40%  { transform: translate(5px, -4px) rotate(0.5deg); }
+    60%  { transform: translate(-4px, -3px) rotate(-0.4deg); }
+    80%  { transform: translate(6px, 4px) rotate(0.6deg); }
+    100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+/* CAMBIO: se agrega translate(var(--genjutsu-dx), var(--genjutsu-dy))
+   al inicio de cada paso, para que la carta rote en el mismo lugar en el
+   que "saltó" visualmente, en vez de rotar solo en su posición original. */
+@keyframes genjutsuCartaRueda {
+    from { transform: translate(var(--genjutsu-dx, 0px), var(--genjutsu-dy, 0px)) rotateY(0deg) rotateX(0deg); }
+    to   { transform: translate(var(--genjutsu-dx, 0px), var(--genjutsu-dy, 0px)) rotateY(360deg) rotateX(15deg); }
+}
+
+.genjutsu-simbolo-central {
+    position: fixed;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.5);
+    font-family: 'Permanent Marker', cursive;
+    font-size: 2.6rem;
+    color: #c66bff;
+    text-shadow:
+        0 0 8px #000,
+        0 0 16px rgba(198, 107, 255, 0.95),
+        0 0 36px rgba(198, 107, 255, 0.7);
+    z-index: 999;
+    pointer-events: none;
+    animation: genjutsuSimboloAparece 0.9s ease-out forwards;
+}
+
+@keyframes genjutsuSimboloAparece {
+    0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
+    30%  { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
+    70%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+}
+
+/* Velo púrpura pulsante que cubre toda la pantalla mientras
+   dura el efecto (a diferencia del combo, que es un destello
+   corto, este se queda prendido los 5 segundos completos) */
+.genjutsu-pantalla-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 900;
+    pointer-events: none;
+    background: radial-gradient(circle at 50% 45%, rgba(160, 60, 220, 0.22), transparent 70%);
+    mix-blend-mode: screen;
+    animation: genjutsuOverlayPulso 1.1s ease-in-out infinite;
+}
+
+@keyframes genjutsuOverlayPulso {
+    0%, 100% { opacity: 0.55; }
+    50%      { opacity: 1; }
+}
+
+/* Resplandor del marco del tablero, pulsando junto con el temblor */
+#boardFrame.genjutsu-ilusion {
+    animation:
+        genjutsuTemblorPantalla 0.28s ease-in-out infinite,
+        genjutsuBordePulso 1.1s ease-in-out infinite;
+}
+
+@keyframes genjutsuBordePulso {
+    0%, 100% { box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 18px rgba(198, 107, 255, 0.5); }
+    50%      { box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 40px rgba(198, 107, 255, 0.95); }
+}
+
+/* ==========================================
+   SELLO DE BLOQUEO — carta encadenada (NUEVO)
+   Efecto visual fuerte: rejas diagonales sobre la
+   carta, candado grande latiendo encima, destello
+   naranja de pantalla y símbolo central al activar.
+   Nunca toca dataset.valor ni el DOM real de la carta.
+========================================== */
+
+/* Rejas/cadenas diagonales oscuras cruzando la carta bloqueada */
+.card.carta-sellada {
+    animation: selloPulsoBorde 1s ease-in-out infinite;
+    cursor: not-allowed;
+    z-index: 15;
+}
+
+.card.carta-sellada::before,
+.card.carta-sellada::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 12;
+    border-radius: 8px;
+    background: repeating-linear-gradient(
+        45deg,
+        rgba(35, 18, 5, 0.85) 0px,
+        rgba(35, 18, 5, 0.85) 6px,
+        transparent 6px,
+        transparent 16px
+    );
+    mix-blend-mode: multiply;
+}
+
+.card.carta-sellada::after {
+    background: repeating-linear-gradient(
+        -45deg,
+        rgba(35, 18, 5, 0.65) 0px,
+        rgba(35, 18, 5, 0.65) 6px,
+        transparent 6px,
+        transparent 16px
+    );
+}
+
+@keyframes selloPulsoBorde {
+    0%, 100% {
+        box-shadow: 0 0 12px rgba(255, 100, 20, 0.55), inset 0 0 14px rgba(0, 0, 0, 0.6);
+        filter: brightness(0.8) saturate(1.15);
+    }
+    50% {
+        box-shadow: 0 0 28px rgba(255, 150, 20, 0.95), 0 0 44px rgba(255, 60, 0, 0.55), inset 0 0 14px rgba(0, 0, 0, 0.6);
+        filter: brightness(1.05) saturate(1.35);
+    }
+}
+
+/* Candado grande latiendo y sacudiéndose encima de la carta */
+.sello-icono-carta {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2.2rem;
+    z-index: 16;
+    pointer-events: none;
+    filter:
+        drop-shadow(0 0 6px #000)
+        drop-shadow(0 0 14px rgba(255, 140, 20, 0.95));
+    animation: selloIconoLatido 0.85s ease-in-out infinite;
+}
+
+@keyframes selloIconoLatido {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    25%      { transform: scale(1.18) rotate(-8deg); }
+    75%      { transform: scale(1.18) rotate(8deg); }
+}
+
+/* Destello naranja de pantalla al activar el poder */
+.sello-flash-overlay {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle, rgba(255, 130, 20, 0.3), transparent 65%);
+    z-index: 9998;
+    pointer-events: none;
+    animation: comboFlashFade 0.5s ease-out forwards;
+}
+
+/* Símbolo central grande al activar, mismo nivel de impacto
+   que Byakugan/Sustitución/Robo/Genjutsu */
+.sello-simbolo-central {
+    position: fixed;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.5);
+    font-family: 'Permanent Marker', cursive;
+    font-size: 2.3rem;
+    color: #ff9a3d;
+    text-shadow:
+        0 0 8px #000,
+        0 0 16px rgba(255, 140, 20, 0.95),
+        0 0 36px rgba(255, 90, 0, 0.7);
+    z-index: 999;
+    pointer-events: none;
+    animation: selloSimboloAparece 0.9s ease-out forwards;
+}
+
+@keyframes selloSimboloAparece {
+    0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
+    30%  { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
+    70%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+}

@@ -60,6 +60,21 @@ export const BoardManager = {
         // Tomamos solamente 2
         return mezcladas.slice(0, 2);
     },
+
+    // NUEVO: para el Sello de Bloqueo — elige UNA carta oculta random
+    // que todavía no esté sellada, para bloquearla 5 segundos.
+    obtenerCartaParaSello() {
+
+        const cartas = obtenerCartasOcultas()
+            .filter(carta => !carta.classList.contains("carta-sellada"));
+
+        if (cartas.length === 0) {
+            return null;
+        }
+
+        const indice = Math.floor(Math.random() * cartas.length);
+        return cartas[indice];
+    },
     
     renderBoard(callbackResultado, callbackFinal, callbackEsMiTurno) {
         onResultado = callbackResultado || null;
@@ -99,6 +114,10 @@ export const BoardManager = {
         // sigue en null), esta línea no hace nada y el juego se
         // comporta exactamente igual que antes.
         if (onEsMiTurno && !onEsMiTurno()) return;
+
+        // NUEVO: si la carta está sellada por el poder de Sello de
+        // Bloqueo, no se puede voltear hasta que se cumpla el tiempo.
+        if (carta.classList.contains('carta-sellada')) return;
 
         if (carta.classList.contains('volteada') || cartasVolteadas.length === 2) return;
 

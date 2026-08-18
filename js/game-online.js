@@ -3,10 +3,17 @@ import { UIManager } from './ui-manager.js';
 import { BoardManager } from './board-manager.js';
 
 window.onload = () => {
-    const data = MockServer.getData();
-    UIManager.renderPlayers(data.players);
 
+    // CAMBIO: BoardManager.renderBoard() va primero y solo, así el
+    // tablero se dibuja sí o sí, aunque MockServer/UIManager fallen.
     BoardManager.renderBoard(procesarResultado, mostrarModalFinal, esMiTurno);
+
+    try {
+        const data = MockServer.getData();
+        UIManager.renderPlayers(data.players);
+    } catch (error) {
+        console.warn("No se pudieron cargar los datos de MockServer (no afecta al tablero):", error);
+    }
 
     iniciarTemporizadores();
     actualizarIndicadorTurno();
@@ -389,6 +396,8 @@ function cambiarTurno(){
     actualizarIndicadorTurno();
     actualizarUsosByakugan();
     actualizarUsosSustitucion();
+    actualizarUsosRobo();
+    actualizarUsosSello();
 
 }
 
@@ -579,20 +588,41 @@ function mostrarComboRoto(esSasuke){
 ==================================================*/
 
 const CHAKRA_POR_ACIERTO = 5;
-const CHAKRA_POR_NIVEL_COMBO = 3;
+const CHAKRA_BASE_COMBO = 3;
 
 function ganarChakraPorCombo(esSasuke){
 
-    const bono = CHAKRA_POR_NIVEL_COMBO;
+    const jugadorActual = esSasuke ? jugador : rival;
+    const bono = CHAKRA_BASE_COMBO * jugadorActual.combo;
 
-    if(esSasuke){
-        jugador.chakra = Math.min(CHAKRA_MAXIMO, jugador.chakra + bono);
-    } else {
-        rival.chakra = Math.min(CHAKRA_MAXIMO, rival.chakra + bono);
-    }
+    jugadorActual.chakra = Math.min(CHAKRA_MAXIMO, jugadorActual.chakra + bono);
 
     actualizarChakra();
     mostrarBonoChakraVisual(esSasuke, bono);
+    mostrarBonificacionCombo(esSasuke, jugadorActual.combo, bono);
+
+}
+
+function mostrarBonificacionCombo(esSasuke, combo, chakra) {
+
+    // Destello rápido en toda la pantalla, para que se note
+    // incluso si no estabas mirando el panel de chakra.
+    const flash = document.createElement("div");
+    flash.className = "combo-flash-overlay";
+    document.body.appendChild(flash);
+    setTimeout(() => { flash.remove(); }, 500);
+
+    const mensaje = document.createElement("div");
+    mensaje.className = "bonificacion-combo";
+    mensaje.innerHTML = `
+        <strong>COMBO x${combo}</strong>
+        <span>+${chakra} CHAKRA</span>
+    `;
+    document.body.appendChild(mensaje);
+
+    setTimeout(() => {
+        mensaje.remove();
+    }, 1400);
 
 }
 
@@ -601,17 +631,21 @@ function mostrarBonoChakraVisual(esSasuke, cantidad){
     const barraChakra = esSasuke ? chakraBarraSasuke : chakraBarraNaruto;
     if(!barraChakra) return;
 
-    const contenedor = barraChakra.closest(".chakra-barra");
-    if(!contenedor) return;
+    // CAMBIO: antes se insertaba dentro de .chakra-barra, pero esa caja
+    // tiene overflow:hidden y recortaba el texto antes de que se viera.
+    // Ahora se inserta en .personaje-chakra (el panel completo), que no
+    // recorta nada, así se ve grande y claro.
+    const panel = barraChakra.closest(".personaje-chakra");
+    if(!panel) return;
 
     const aviso = document.createElement("div");
     aviso.className = "chakra-bono-flotante";
     aviso.textContent = "+" + cantidad + " 🔵 COMBO";
-    contenedor.appendChild(aviso);
+    panel.appendChild(aviso);
 
     setTimeout(() => {
         aviso.remove();
-    }, 900);
+    }, 1000);
 
 }
 
@@ -730,7 +764,6 @@ function usarByakugan() {
         return;
     }
 
-    
     byakuganActivo = true;
 
     p.chakra -= COSTO_BYAKUGAN;
@@ -741,6 +774,12 @@ function usarByakugan() {
 
     activarAnimacionByakugan(esSasuke);
     revelarCartasByakugan(cartas);
+
+    // NUEVO: contraataque contra Genjutsu. Si la ilusión está activa
+    // cuando usás Byakugan, la detecta y la cancela de inmediato.
+    if (genjutsuActivo) {
+        cancelarGenjutsu(true);
+    }
 
 }
 
@@ -955,6 +994,470 @@ if (botonSustitucion) {
 
 function mostrarMensajeSustitucion(mensaje) {
     console.log("SUSTITUCIÓN:", mensaje);
+    mostrarAvisoRapido(mensaje);
+}
+
+/*==================================================
+                ROBO DE CHAKRA
+==================================================*/
+
+const COSTO_ROBO = 30;
+const CANTIDAD_ROBADA = 20;
+const USOS_INICIALES_ROBO = 2;
+
+let usosRoboSasuke = USOS_INICIALES_ROBO;
+let usosRoboNaruto = USOS_INICIALES_ROBO;
+
+const botonRobo = document.getElementById("btnRobo");
+const contadorUsosRobo = document.getElementById("usosRobo");
+
+function usarRobo() {
+
+    if (!esMiTurno()) {
+        mostrarMensajeRobo("NO ES TU TURNO");
+        return;
+    }
+
+    const esSasuke = turnoJugador;
+    const atacante = jugadorActivo();
+    const defensor = esSasuke ? rival : jugador;
+    const usos = esSasuke ? usosRoboSasuke : usosRoboNaruto;
+
+    if (usos <= 0) {
+        mostrarMensajeRobo("SIN USOS");
+        return;
+    }
+
+    if (atacante.chakra < COSTO_ROBO) {
+        mostrarMensajeRobo("CHAKRA INSUFICIENTE");
+        return;
+    }
+
+    // Se paga el costo de activar el poder
+    atacante.chakra -= COSTO_ROBO;
+
+    // Se roba del defensor lo que realmente tenga disponible
+    // (no se puede robar de más ni dejarlo en negativo)
+    const robado = Math.min(CANTIDAD_ROBADA, defensor.chakra);
+    defensor.chakra -= robado;
+    atacante.chakra = Math.min(CHAKRA_MAXIMO, atacante.chakra + robado);
+
+    actualizarChakra();
+
+    if (esSasuke) { usosRoboSasuke--; } else { usosRoboNaruto--; }
+    actualizarUsosRobo();
+
+    activarAnimacionRobo(esSasuke, robado);
+
+}
+
+function activarAnimacionRobo(esSasuke, robado) {
+
+    const origenSelector = esSasuke
+        ? ".panel-naruto-lateral .chakra-barra"
+        : ".panel-personaje-lateral .chakra-barra";
+
+    const destinoSelector = esSasuke
+        ? ".panel-personaje-lateral .chakra-barra"
+        : ".panel-naruto-lateral .chakra-barra";
+
+    const origen = document.querySelector(origenSelector);
+    const destino = document.querySelector(destinoSelector);
+
+    // Efecto de "succión": la barra de chakra del que pierde tiembla y se oscurece
+    if (origen) {
+        origen.classList.add("robo-origen-efecto");
+        setTimeout(() => origen.classList.remove("robo-origen-efecto"), 700);
+    }
+
+    // Efecto de "carga": la barra de chakra del que gana brilla
+    if (destino) {
+        destino.classList.add("robo-destino-efecto");
+        setTimeout(() => destino.classList.remove("robo-destino-efecto"), 700);
+    }
+
+    // Rayo de energía viajando de una barra a la otra
+    if (origen && destino) {
+
+        const rectOrigen = origen.getBoundingClientRect();
+        const rectDestino = destino.getBoundingClientRect();
+
+        const rayo = document.createElement("div");
+        rayo.className = "robo-rayo";
+        rayo.style.left = (rectOrigen.left + rectOrigen.width / 2) + "px";
+        rayo.style.top = (rectOrigen.top + rectOrigen.height / 2) + "px";
+        rayo.style.setProperty("--dx", (rectDestino.left - rectOrigen.left) + "px");
+        rayo.style.setProperty("--dy", (rectDestino.top - rectOrigen.top) + "px");
+        document.body.appendChild(rayo);
+
+        setTimeout(() => rayo.remove(), 700);
+
+    }
+
+    const simbolo = document.createElement("div");
+    simbolo.className = "robo-simbolo-central";
+    simbolo.textContent = "🔵 ROBO DE CHAKRA (-" + robado + ")";
+    document.body.appendChild(simbolo);
+
+    setTimeout(() => simbolo.remove(), 900);
+
+}
+
+function actualizarUsosRobo() {
+
+    const usos = turnoJugador ? usosRoboSasuke : usosRoboNaruto;
+
+    if (contadorUsosRobo) {
+        contadorUsosRobo.textContent = usos;
+    }
+
+    if (botonRobo) {
+        botonRobo.classList.toggle("poder-agotado", usos <= 0);
+    }
+
+}
+
+if (botonRobo) {
+    botonRobo.addEventListener("click", usarRobo);
+}
+
+function mostrarMensajeRobo(mensaje) {
+    console.log("ROBO:", mensaje);
+    mostrarAvisoRapido(mensaje);
+}
+
+/*==================================================
+                GENJUTSU
+==================================================*/
+
+const COSTO_GENJUTSU = 35;
+const DURACION_GENJUTSU = 5000;
+const USOS_INICIALES_GENJUTSU = 2;
+
+let usosGenjutsuSasuke = USOS_INICIALES_GENJUTSU;
+let usosGenjutsuNaruto = USOS_INICIALES_GENJUTSU;
+let genjutsuActivo = false;
+let timeoutGenjutsu = null;
+
+const botonGenjutsu = document.getElementById("btnGenjutsu");
+const contadorUsosGenjutsu = document.getElementById("usosGenjutsu");
+
+function usarGenjutsu() {
+
+    if (genjutsuActivo) return;
+
+    if (!esMiTurno()) {
+        mostrarMensajeGenjutsu("NO ES TU TURNO");
+        return;
+    }
+
+    const esSasuke = turnoJugador;
+    const p = jugadorActivo();
+    const usos = esSasuke ? usosGenjutsuSasuke : usosGenjutsuNaruto;
+
+    if (usos <= 0) {
+        mostrarMensajeGenjutsu("SIN USOS");
+        return;
+    }
+
+    if (p.chakra < COSTO_GENJUTSU) {
+        mostrarMensajeGenjutsu("CHAKRA INSUFICIENTE");
+        return;
+    }
+
+    p.chakra -= COSTO_GENJUTSU;
+    actualizarChakra();
+
+    if (esSasuke) { usosGenjutsuSasuke--; } else { usosGenjutsuNaruto--; }
+    actualizarUsosGenjutsu();
+
+    activarAnimacionGenjutsu();
+    activarIlusionTablero();
+
+    genjutsuActivo = true;
+
+    timeoutGenjutsu = setTimeout(() => {
+        cancelarGenjutsu();
+    }, DURACION_GENJUTSU);
+
+}
+
+function activarAnimacionGenjutsu() {
+
+    const simbolo = document.createElement("div");
+    simbolo.className = "genjutsu-simbolo-central";
+    simbolo.textContent = "🌀 GENJUTSU";
+    document.body.appendChild(simbolo);
+
+    setTimeout(() => simbolo.remove(), 900);
+
+}
+
+let genjutsuOverlayEl = null;
+
+function activarIlusionTablero(){
+
+    const tableroFrame = document.getElementById("boardFrame");
+    if (tableroFrame) {
+        tableroFrame.classList.add("genjutsu-ilusion");
+    }
+
+    // NUEVO: velo púrpura pulsante en toda la pantalla, dura
+    // todo el efecto (no un destello corto como el del combo).
+    if (!genjutsuOverlayEl) {
+        genjutsuOverlayEl = document.createElement("div");
+        genjutsuOverlayEl.className = "genjutsu-pantalla-overlay";
+        document.body.appendChild(genjutsuOverlayEl);
+    }
+
+    // NUEVO: cada carta salta visualmente a la posición de otra
+    // carta del tablero (además de rodar, ahora también "se mezclan").
+    aplicarDesplazamientoVisualGenjutsu();
+
+}
+
+function quitarIlusionTablero(){
+
+    const tableroFrame = document.getElementById("boardFrame");
+    if (tableroFrame) {
+        tableroFrame.classList.remove("genjutsu-ilusion");
+    }
+
+    if (genjutsuOverlayEl) {
+        genjutsuOverlayEl.remove();
+        genjutsuOverlayEl = null;
+    }
+
+    // NUEVO: las cartas vuelven solas a su posición real
+    quitarDesplazamientoVisualGenjutsu();
+
+}
+
+// NUEVO: calcula, para cada carta, la posición de otra carta random
+// del tablero y guarda esa diferencia como variables CSS (--genjutsu-dx/dy).
+// Esto es puramente visual (un transform): nunca se mueve la carta en
+// el DOM ni se toca su dataset.valor, así que la pareja real nunca cambia.
+function aplicarDesplazamientoVisualGenjutsu(){
+
+    const cartas = [...document.querySelectorAll("#board .card")];
+    if (cartas.length < 2) return;
+
+    const posiciones = cartas.map(c => c.getBoundingClientRect());
+
+    // Barajamos un array de índices para saber a qué posición
+    // "salta" visualmente cada carta.
+    const indices = cartas.map((_, i) => i);
+    for (let i = indices.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [indices[i], indices[j]] = [indices[j], indices[i]];
+    }
+
+    cartas.forEach((carta, i) => {
+        const origen = posiciones[i];
+        const destino = posiciones[indices[i]];
+        const dx = destino.left - origen.left;
+        const dy = destino.top - origen.top;
+        carta.style.setProperty("--genjutsu-dx", dx + "px");
+        carta.style.setProperty("--genjutsu-dy", dy + "px");
+    });
+
+}
+
+// NUEVO: saca el desplazamiento visual — como nunca se tocó la
+// posición real, la carta simplemente vuelve a donde ya estaba.
+function quitarDesplazamientoVisualGenjutsu(){
+
+    document.querySelectorAll("#board .card").forEach(carta => {
+        carta.style.removeProperty("--genjutsu-dx");
+        carta.style.removeProperty("--genjutsu-dy");
+    });
+
+}
+
+// Se llama sola cuando pasan los 5 segundos, o antes si el rival
+// usa Byakugan para detectar la ilusión (ver usarByakugan()).
+function cancelarGenjutsu(detectadoPorByakugan){
+
+    genjutsuActivo = false;
+
+    if (timeoutGenjutsu) {
+        clearTimeout(timeoutGenjutsu);
+        timeoutGenjutsu = null;
+    }
+
+    quitarIlusionTablero();
+
+    if (detectadoPorByakugan) {
+        mostrarAvisoRapido("¡GENJUTSU DETECTADO!");
+    }
+
+}
+
+function actualizarUsosGenjutsu() {
+
+    const usos = turnoJugador ? usosGenjutsuSasuke : usosGenjutsuNaruto;
+
+    if (contadorUsosGenjutsu) {
+        contadorUsosGenjutsu.textContent = usos;
+    }
+
+    if (botonGenjutsu) {
+        botonGenjutsu.classList.toggle("poder-agotado", usos <= 0);
+    }
+
+}
+
+if (botonGenjutsu) {
+    botonGenjutsu.addEventListener("click", usarGenjutsu);
+}
+
+function mostrarMensajeGenjutsu(mensaje) {
+    console.log("GENJUTSU:", mensaje);
+    mostrarAvisoRapido(mensaje);
+}
+
+/*==================================================
+                SELLO DE BLOQUEO
+==================================================*/
+
+const COSTO_SELLO = 30;
+const DURACION_SELLO = 5000;
+const USOS_INICIALES_SELLO = 2;
+
+let usosSelloSasuke = USOS_INICIALES_SELLO;
+let usosSelloNaruto = USOS_INICIALES_SELLO;
+
+// Solo puede haber UNA carta sellada activa a la vez en el tablero.
+let cartaSelladaActual = null;
+let timeoutSello = null;
+
+const botonSello = document.getElementById("btnSello");
+const contadorUsosSello = document.getElementById("usosSello");
+
+function usarSello() {
+
+    if (cartaSelladaActual) {
+        mostrarMensajeSello("YA HAY UN SELLO ACTIVO");
+        return;
+    }
+
+    if (!esMiTurno()) {
+        mostrarMensajeSello("NO ES TU TURNO");
+        return;
+    }
+
+    const esSasuke = turnoJugador;
+    const p = jugadorActivo();
+    const usos = esSasuke ? usosSelloSasuke : usosSelloNaruto;
+
+    if (usos <= 0) {
+        mostrarMensajeSello("SIN USOS");
+        return;
+    }
+
+    if (p.chakra < COSTO_SELLO) {
+        mostrarMensajeSello("CHAKRA INSUFICIENTE");
+        return;
+    }
+
+    const carta = BoardManager.obtenerCartaParaSello();
+
+    if (!carta) {
+        mostrarMensajeSello("NO HAY CARTAS DISPONIBLES");
+        return;
+    }
+
+    p.chakra -= COSTO_SELLO;
+    actualizarChakra();
+
+    if (esSasuke) { usosSelloSasuke--; } else { usosSelloNaruto--; }
+    actualizarUsosSello();
+
+    activarAnimacionSello();
+    sellarCarta(carta);
+
+}
+
+function activarAnimacionSello() {
+
+    // Destello naranja en toda la pantalla, mismo golpe visual
+    // que un poder importante (igual que el combo).
+    const flash = document.createElement("div");
+    flash.className = "sello-flash-overlay";
+    document.body.appendChild(flash);
+    setTimeout(() => { flash.remove(); }, 500);
+
+    const simbolo = document.createElement("div");
+    simbolo.className = "sello-simbolo-central";
+    simbolo.textContent = "🔒 SELLO DE BLOQUEO";
+    document.body.appendChild(simbolo);
+
+    setTimeout(() => {
+        simbolo.remove();
+    }, 900);
+
+}
+
+function sellarCarta(carta) {
+
+    cartaSelladaActual = carta;
+    carta.classList.add("carta-sellada");
+
+    // Candado grande que late encima de la carta bloqueada
+    const icono = document.createElement("div");
+    icono.className = "sello-icono-carta";
+    icono.textContent = "🔒";
+    carta.appendChild(icono);
+
+    timeoutSello = setTimeout(() => {
+        quitarSello();
+    }, DURACION_SELLO);
+
+}
+
+// Se llama sola cuando pasan los 5 segundos. La carta nunca se tocó
+// en el DOM ni perdió su dataset.valor: solo se le sacan la clase
+// y el ícono, así que vuelve a jugarse con total normalidad.
+function quitarSello() {
+
+    if (cartaSelladaActual) {
+
+        cartaSelladaActual.classList.remove("carta-sellada");
+
+        const icono = cartaSelladaActual.querySelector(".sello-icono-carta");
+        if (icono) icono.remove();
+
+        cartaSelladaActual = null;
+
+    }
+
+    if (timeoutSello) {
+        clearTimeout(timeoutSello);
+        timeoutSello = null;
+    }
+
+}
+
+function actualizarUsosSello() {
+
+    const usos = turnoJugador ? usosSelloSasuke : usosSelloNaruto;
+
+    if (contadorUsosSello) {
+        contadorUsosSello.textContent = usos;
+    }
+
+    if (botonSello) {
+        botonSello.classList.toggle("poder-agotado", usos <= 0);
+    }
+
+}
+
+if (botonSello) {
+    botonSello.addEventListener("click", usarSello);
+}
+
+function mostrarMensajeSello(mensaje) {
+    console.log("SELLO:", mensaje);
     mostrarAvisoRapido(mensaje);
 }
 
