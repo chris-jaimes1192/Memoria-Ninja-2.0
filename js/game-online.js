@@ -398,6 +398,7 @@ function cambiarTurno(){
     actualizarUsosSustitucion();
     actualizarUsosRobo();
     actualizarUsosSello();
+    actualizarUsosBomba();
 
 }
 
@@ -1210,10 +1211,6 @@ function activarIlusionTablero(){
         document.body.appendChild(genjutsuOverlayEl);
     }
 
-    // NUEVO: cada carta salta visualmente a la posición de otra
-    // carta del tablero (además de rodar, ahora también "se mezclan").
-    aplicarDesplazamientoVisualGenjutsu();
-
 }
 
 function quitarIlusionTablero(){
@@ -1227,50 +1224,6 @@ function quitarIlusionTablero(){
         genjutsuOverlayEl.remove();
         genjutsuOverlayEl = null;
     }
-
-    // NUEVO: las cartas vuelven solas a su posición real
-    quitarDesplazamientoVisualGenjutsu();
-
-}
-
-// NUEVO: calcula, para cada carta, la posición de otra carta random
-// del tablero y guarda esa diferencia como variables CSS (--genjutsu-dx/dy).
-// Esto es puramente visual (un transform): nunca se mueve la carta en
-// el DOM ni se toca su dataset.valor, así que la pareja real nunca cambia.
-function aplicarDesplazamientoVisualGenjutsu(){
-
-    const cartas = [...document.querySelectorAll("#board .card")];
-    if (cartas.length < 2) return;
-
-    const posiciones = cartas.map(c => c.getBoundingClientRect());
-
-    // Barajamos un array de índices para saber a qué posición
-    // "salta" visualmente cada carta.
-    const indices = cartas.map((_, i) => i);
-    for (let i = indices.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [indices[i], indices[j]] = [indices[j], indices[i]];
-    }
-
-    cartas.forEach((carta, i) => {
-        const origen = posiciones[i];
-        const destino = posiciones[indices[i]];
-        const dx = destino.left - origen.left;
-        const dy = destino.top - origen.top;
-        carta.style.setProperty("--genjutsu-dx", dx + "px");
-        carta.style.setProperty("--genjutsu-dy", dy + "px");
-    });
-
-}
-
-// NUEVO: saca el desplazamiento visual — como nunca se tocó la
-// posición real, la carta simplemente vuelve a donde ya estaba.
-function quitarDesplazamientoVisualGenjutsu(){
-
-    document.querySelectorAll("#board .card").forEach(carta => {
-        carta.style.removeProperty("--genjutsu-dx");
-        carta.style.removeProperty("--genjutsu-dy");
-    });
 
 }
 
@@ -1380,8 +1333,6 @@ function usarSello() {
 
 function activarAnimacionSello() {
 
-    // Destello naranja en toda la pantalla, mismo golpe visual
-    // que un poder importante (igual que el combo).
     const flash = document.createElement("div");
     flash.className = "sello-flash-overlay";
     document.body.appendChild(flash);
@@ -1403,7 +1354,6 @@ function sellarCarta(carta) {
     cartaSelladaActual = carta;
     carta.classList.add("carta-sellada");
 
-    // Candado grande que late encima de la carta bloqueada
     const icono = document.createElement("div");
     icono.className = "sello-icono-carta";
     icono.textContent = "🔒";
@@ -1458,6 +1408,146 @@ if (botonSello) {
 
 function mostrarMensajeSello(mensaje) {
     console.log("SELLO:", mensaje);
+    mostrarAvisoRapido(mensaje);
+}
+
+/*==================================================
+                BOMBA EXPLOSIVA
+==================================================*/
+
+const COSTO_BOMBA = 50;
+const DANO_BOMBA = 20;
+const DANO_BOMBA_MITIGADO = 10;
+const USOS_INICIALES_BOMBA = 2;
+
+let usosBombaSasuke = USOS_INICIALES_BOMBA;
+let usosBombaNaruto = USOS_INICIALES_BOMBA;
+
+const botonBomba = document.getElementById("btnBomba");
+const contadorUsosBomba = document.getElementById("usosBomba");
+
+function usarBomba() {
+
+    if (!esMiTurno()) {
+        mostrarMensajeBomba("NO ES TU TURNO");
+        return;
+    }
+
+    const esSasuke = turnoJugador;
+    const atacante = jugadorActivo();
+    const usos = esSasuke ? usosBombaSasuke : usosBombaNaruto;
+
+    if (usos <= 0) {
+        mostrarMensajeBomba("SIN USOS");
+        return;
+    }
+
+    if (atacante.chakra < COSTO_BOMBA) {
+        mostrarMensajeBomba("CHAKRA INSUFICIENTE");
+        return;
+    }
+
+    atacante.chakra -= COSTO_BOMBA;
+    actualizarChakra();
+
+    if (esSasuke) { usosBombaSasuke--; } else { usosBombaNaruto--; }
+    actualizarUsosBomba();
+
+    // El defensor es el otro jugador. Si tiene Sustitución armada,
+    // el daño se REDUCE A LA MITAD (no se anula como con los errores
+    // normales) y se consume la Sustitución en el proceso.
+    const defensorEsSasuke = !esSasuke;
+    const defensorTieneSustitucion = defensorEsSasuke ? sustitucionArmadaSasuke : sustitucionArmadaNaruto;
+
+    let dano = DANO_BOMBA;
+    let mitigado = false;
+
+    if (defensorTieneSustitucion) {
+        dano = DANO_BOMBA_MITIGADO;
+        mitigado = true;
+        desarmarSustitucion(defensorEsSasuke);
+    }
+
+    perderVida(defensorEsSasuke, dano);
+
+    activarAnimacionBomba(defensorEsSasuke, dano, mitigado);
+
+}
+
+function activarAnimacionBomba(defensorEsSasuke, dano, mitigado) {
+
+    // 1. Temblor de TODA la pantalla, más fuerte que el de Genjutsu
+    document.body.classList.add("bomba-temblor-pantalla");
+    setTimeout(() => document.body.classList.remove("bomba-temblor-pantalla"), 600);
+
+    // 2. Destello rojo/naranja cubriendo toda la pantalla
+    const flash = document.createElement("div");
+    flash.className = "bomba-flash-overlay";
+    document.body.appendChild(flash);
+    setTimeout(() => flash.remove(), 650);
+
+    // 3. Onda de choque expandiéndose desde el centro
+    const onda = document.createElement("div");
+    onda.className = "bomba-onda-choque";
+    document.body.appendChild(onda);
+    setTimeout(() => onda.remove(), 800);
+
+    // 4. El avatar de quien recibe el golpe se sacude y se pone rojo
+    const selectorAvatar = defensorEsSasuke
+        ? ".panel-personaje-lateral .personaje-imagen"
+        : ".panel-naruto-lateral .personaje-imagen";
+
+    const avatar = document.querySelector(selectorAvatar);
+    if (avatar) {
+        avatar.classList.add("bomba-golpe-avatar");
+        setTimeout(() => avatar.classList.remove("bomba-golpe-avatar"), 700);
+    }
+
+    // 5. Número de daño gigante saliendo disparado desde el avatar golpeado
+    if (avatar) {
+        const rect = avatar.getBoundingClientRect();
+        const numeroDano = document.createElement("div");
+        numeroDano.className = "bomba-numero-dano";
+        numeroDano.textContent = "-" + dano + " ❤️";
+        numeroDano.style.left = (rect.left + rect.width / 2) + "px";
+        numeroDano.style.top = (rect.top + rect.height / 2) + "px";
+        document.body.appendChild(numeroDano);
+        setTimeout(() => numeroDano.remove(), 1000);
+    }
+
+    // 6. Símbolo central, más grande que el resto de los poderes
+    const simbolo = document.createElement("div");
+    simbolo.className = "bomba-simbolo-central";
+    simbolo.textContent = mitigado ? "💣 BOMBA (MITIGADA)" : "💣 BOMBA EXPLOSIVA";
+    document.body.appendChild(simbolo);
+    setTimeout(() => simbolo.remove(), 1000);
+
+    if (mitigado) {
+        mostrarAvisoRapido("🔄 SUSTITUCIÓN REDUJO EL DAÑO A LA MITAD");
+    }
+
+}
+
+function actualizarUsosBomba() {
+
+    const usos = turnoJugador ? usosBombaSasuke : usosBombaNaruto;
+
+    if (contadorUsosBomba) {
+        contadorUsosBomba.textContent = usos;
+    }
+
+    if (botonBomba) {
+        botonBomba.classList.toggle("poder-agotado", usos <= 0);
+    }
+
+}
+
+if (botonBomba) {
+    botonBomba.addEventListener("click", usarBomba);
+}
+
+function mostrarMensajeBomba(mensaje) {
+    console.log("BOMBA:", mensaje);
     mostrarAvisoRapido(mensaje);
 }
 

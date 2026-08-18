@@ -1586,9 +1586,8 @@ video {
    Solo efecto visual: nunca toca datos reales
    de las cartas ni sus posiciones en el DOM.
    Se ve como un temblor de pantalla + las cartas
-   "ruedan" y saltan a la posición de otra carta un
-   momento, y al cortar el efecto todo vuelve
-   exactamente a como estaba antes.
+   "ruedan" un momento, y al cortar el efecto todo
+   vuelve exactamente a como estaba antes.
 ========================================== */
 
 .genjutsu-ilusion {
@@ -1597,11 +1596,6 @@ video {
 
 .genjutsu-ilusion .card {
     animation: genjutsuCartaRueda 0.65s linear infinite;
-    /* NUEVO: valores por defecto — si no se setean por JS, la carta
-       no se mueve y solo rota, como antes. */
-    --genjutsu-dx: 0px;
-    --genjutsu-dy: 0px;
-    transition: transform 0.4s ease-out;
 }
 
 .genjutsu-ilusion .card:nth-child(2n) {
@@ -1629,12 +1623,9 @@ video {
     100% { transform: translate(0, 0) rotate(0deg); }
 }
 
-/* CAMBIO: se agrega translate(var(--genjutsu-dx), var(--genjutsu-dy))
-   al inicio de cada paso, para que la carta rote en el mismo lugar en el
-   que "saltó" visualmente, en vez de rotar solo en su posición original. */
 @keyframes genjutsuCartaRueda {
-    from { transform: translate(var(--genjutsu-dx, 0px), var(--genjutsu-dy, 0px)) rotateY(0deg) rotateX(0deg); }
-    to   { transform: translate(var(--genjutsu-dx, 0px), var(--genjutsu-dy, 0px)) rotateY(360deg) rotateX(15deg); }
+    from { transform: rotateY(0deg) rotateX(0deg); }
+    to   { transform: rotateY(360deg) rotateX(15deg); }
 }
 
 .genjutsu-simbolo-central {
@@ -1693,13 +1684,8 @@ video {
 
 /* ==========================================
    SELLO DE BLOQUEO — carta encadenada (NUEVO)
-   Efecto visual fuerte: rejas diagonales sobre la
-   carta, candado grande latiendo encima, destello
-   naranja de pantalla y símbolo central al activar.
-   Nunca toca dataset.valor ni el DOM real de la carta.
 ========================================== */
 
-/* Rejas/cadenas diagonales oscuras cruzando la carta bloqueada */
 .card.carta-sellada {
     animation: selloPulsoBorde 1s ease-in-out infinite;
     cursor: not-allowed;
@@ -1745,7 +1731,6 @@ video {
     }
 }
 
-/* Candado grande latiendo y sacudiéndose encima de la carta */
 .sello-icono-carta {
     position: absolute;
     inset: 0;
@@ -1767,7 +1752,6 @@ video {
     75%      { transform: scale(1.18) rotate(8deg); }
 }
 
-/* Destello naranja de pantalla al activar el poder */
 .sello-flash-overlay {
     position: fixed;
     inset: 0;
@@ -1777,8 +1761,6 @@ video {
     animation: comboFlashFade 0.5s ease-out forwards;
 }
 
-/* Símbolo central grande al activar, mismo nivel de impacto
-   que Byakugan/Sustitución/Robo/Genjutsu */
 .sello-simbolo-central {
     position: fixed;
     top: 40%;
@@ -1800,5 +1782,125 @@ video {
     0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
     30%  { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
     70%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+}
+
+/* ==========================================
+   BOMBA EXPLOSIVA — el poder más grande (NUEVO)
+   Temblor de TODA la pantalla, destello,
+   onda de choque, número de daño disparado
+   y símbolo central, todo junto.
+========================================== */
+
+.bomba-temblor-pantalla {
+    animation: bombaTemblorFuerte 0.5s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes bombaTemblorFuerte {
+    0%, 100% { transform: translate(0, 0); }
+    10%      { transform: translate(-10px, 6px); }
+    20%      { transform: translate(9px, -7px); }
+    30%      { transform: translate(-8px, 8px); }
+    40%      { transform: translate(10px, 5px); }
+    50%      { transform: translate(-9px, -6px); }
+    60%      { transform: translate(7px, 7px); }
+    70%      { transform: translate(-6px, -8px); }
+    80%      { transform: translate(5px, 6px); }
+    90%      { transform: translate(-4px, -3px); }
+}
+
+.bomba-flash-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    background: radial-gradient(circle, rgba(255, 220, 150, 0.95), rgba(255, 80, 0, 0.55) 45%, transparent 75%);
+    animation: bombaFlashFade 0.65s ease-out forwards;
+}
+
+@keyframes bombaFlashFade {
+    0%   { opacity: 1; }
+    30%  { opacity: 0.85; }
+    100% { opacity: 0; }
+}
+
+.bomba-onda-choque {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 40px;
+    height: 40px;
+    margin: -20px 0 0 -20px;
+    border-radius: 50%;
+    border: 6px solid rgba(255, 150, 40, 0.9);
+    box-shadow: 0 0 30px rgba(255, 100, 0, 0.7);
+    z-index: 9997;
+    pointer-events: none;
+    animation: bombaOndaExpande 0.8s ease-out forwards;
+}
+
+@keyframes bombaOndaExpande {
+    0%   { width: 40px; height: 40px; margin: -20px 0 0 -20px; opacity: 1; border-width: 8px; }
+    100% { width: 1400px; height: 1400px; margin: -700px 0 0 -700px; opacity: 0; border-width: 1px; }
+}
+
+.bomba-golpe-avatar {
+    animation: bombaGolpeAvatar 0.7s ease-in-out;
+}
+
+@keyframes bombaGolpeAvatar {
+    0%   { transform: translate(0,0) rotate(0deg); filter: brightness(1) drop-shadow(0 0 0 rgba(255,60,0,0)); }
+    15%  { transform: translate(-6px, 3px) rotate(-3deg); filter: brightness(1.6) drop-shadow(0 0 20px rgba(255,60,0,0.9)); }
+    30%  { transform: translate(6px, -3px) rotate(3deg); filter: brightness(1.6) drop-shadow(0 0 20px rgba(255,60,0,0.9)); }
+    45%  { transform: translate(-4px, 2px) rotate(-2deg); }
+    60%  { transform: translate(4px, -2px) rotate(2deg); }
+    75%  { transform: translate(-2px, 1px) rotate(-1deg); }
+    100% { transform: translate(0,0) rotate(0deg); filter: brightness(1) drop-shadow(0 0 0 rgba(255,60,0,0)); }
+}
+
+.bomba-numero-dano {
+    position: fixed;
+    transform: translate(-50%, -50%);
+    font-family: 'Permanent Marker', cursive;
+    font-size: 2.4rem;
+    color: #ff3b3b;
+    text-shadow:
+        0 0 6px #000,
+        0 0 16px rgba(255, 59, 59, 0.95),
+        0 0 30px rgba(255, 100, 0, 0.7);
+    z-index: 9999;
+    pointer-events: none;
+    animation: bombaNumeroDispara 1s cubic-bezier(.2,.8,.3,1) forwards;
+}
+
+@keyframes bombaNumeroDispara {
+    0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
+    15%  { opacity: 1; transform: translate(-50%, -50%) scale(1.4); }
+    35%  { transform: translate(-50%, -80%) scale(1.1); }
+    100% { opacity: 0; transform: translate(-50%, -160%) scale(1); }
+}
+
+.bomba-simbolo-central {
+    position: fixed;
+    top: 42%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.5);
+    font-family: 'Permanent Marker', cursive;
+    font-size: 2.8rem;
+    color: #ffb020;
+    text-shadow:
+        0 0 10px #000,
+        0 0 20px rgba(255, 176, 32, 0.95),
+        0 0 44px rgba(255, 60, 0, 0.75);
+    z-index: 9999;
+    pointer-events: none;
+    animation: bombaSimboloAparece 1s cubic-bezier(.22,1.4,.36,1) forwards;
+}
+
+@keyframes bombaSimboloAparece {
+    0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.2) rotate(-6deg); }
+    20%  { opacity: 1; transform: translate(-50%, -50%) scale(1.3) rotate(3deg); }
+    35%  { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+    80%  { opacity: 1; }
     100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
 }
