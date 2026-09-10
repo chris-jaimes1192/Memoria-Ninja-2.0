@@ -1,0 +1,14 @@
+{
+  "name": "memorice-duel-backend",
+  "version": "1.0.0",
+  "description": "Backend del sistema de poderes de Memorice Duel - POO + SOLID",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "cors": "^2.8.5"
+  }
+}

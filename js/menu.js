@@ -298,7 +298,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Redirección para el modo ENCONTRAR PARES (va a pre-partida.html)
 document.getElementById('btnEncontrarPares').addEventListener('click', function() {
-    window.location.href = 'pre-partida.html';
+    window.location.href = 'niveles.html';
 });
 
 // Redirección para el modo MEMORIA (va a pares.html)
