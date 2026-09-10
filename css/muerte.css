@@ -1,7 +1,6 @@
-/* game.css - simple y legible */
 body { 
-  font-family: Arial, sans-serif;
-  background-color: rgb(52, 33, 65); 
+  font-family: 'Fredoka', Arial, sans-serif;
+  background-color: rgb(51, 30, 65); 
    background-image: url(../assets/img/sasuke.png), url(../assets/img/naruto.png) ;
     background-size: 45%;
     background-repeat: no-repeat;
@@ -24,22 +23,21 @@ body {
   margin: 24px auto;
   padding: 18px;
   width: max-content;
-  background: linear-gradient(180deg,#3b2f20,#2d2418);
+  background: linear-gradient(180deg,#1f1f1f,#0e0d0d);
   border-radius: 14px;
-  border: 8px solid #b8843b;
-  box-shadow: 0 18px 60px rgba(0,0,0,0.6);
+  border: 8px solid #640101;
+  box-shadow: 0 18px 60px rgba(255, 0, 0, 0.6);
 }
 
 /* Tablero */
 #board {
   display: grid;
   grid-template-columns: repeat(4, 100px);
-  gap: 12px;
-  padding: 10px;
-  background: #2a2a2a;
-  border-radius: 8px;
+  gap: 30px;
+  padding: 30px;
+  background: #1b1b1b;
+  border-radius: 10px;
 }
-
 /* Carta */
 .card {
   width: 100px;
@@ -56,14 +54,22 @@ body {
   transform: rotateY(180deg);
  }
 
+
 .card img {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  left: 0; top: 0;
-  backface-visibility: hidden;
-  border-radius: 8px;
-  object-fit: cover;
+    width: 100%;
+    height: 100%;
+
+    position: absolute;
+    left: 0;
+    top: 0;
+
+    border-radius: 8px;
+
+    backface-visibility: hidden;
+
+    object-fit: fill;
+
+    image-rendering: auto;
 }
 
 .front { 
@@ -71,20 +77,93 @@ body {
  }
 
 .card.matched {
-   box-shadow: 0 6px 20px rgba(0,0,0,0.6) inset;
+   box-shadow: 0 6px 20px rgba(17, 15, 15, 0.6) inset;
     opacity: 0.9;
      transform: scale(0.98);
       pointer-events:none; 
     }
 
+
+
+    
+/* ===== MODAL DE PARTIDA TERMINADA ===== */
 #modal { 
-  position: fixed;
-   inset: 0; 
-   background: rgba(0,0,0,0.5);
-    display:flex; 
-    justify-content:center; 
-    align-items:center;
-   }
+    position: fixed;
+    inset: 0;
+
+    background: rgba(0, 0, 0, 0.75);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    z-index: 10000;
+}
+
+#modal .panel {
+    background: #2b1818;
+    color: white;
+
+    padding: 25px;
+    border-radius: 15px;
+
+    width: 320px;
+    max-width: 90%;
+
+    text-align: center;
+
+    border: 3px solid #fa5858;
+
+    box-shadow:
+        0 0 20px rgba(250, 26, 26, 0.8),
+        0 0 50px rgba(0, 0, 0, 0.8);
+
+    animation: aparecerModal 0.3s ease;
+}
+
+#modal .panel h2 {
+    color: #ff4d5e;
+    font-size: 25px;
+    margin-top: 0;
+}
+
+#modal .panel p {
+    color: #ddd;
+    font-size: 16px;
+}
+
+#modal button {
+    margin: 6px;
+    padding: 10px 18px;
+
+    border: none;
+    border-radius: 8px;
+
+    background: #f81515;
+    color: white;
+
+    font-weight: bold;
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+#modal button:hover {
+    transform: scale(1.05);
+    background: #f51f1f;
+}
+
+@keyframes aparecerModal {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
 
 .panel {
    background: white;
@@ -134,11 +213,11 @@ body::before{
     background: radial-gradient(
         circle,
         transparent 45%,
-        rgba(255, 0, 0, 0.15) 70%,
-        rgba(120, 0, 0, 0.75) 100%
+        rgba(77, 1, 1, 0.767) 78%,
+        rgba(207, 1, 1, 0.849) 100%
     );
 
-    animation: efectoRojo 2s ease-in-out infinite;
+    animation: efectoRojo 3s ease-in-out infinite;
 }
 
 @keyframes efectoRojo{
@@ -166,7 +245,7 @@ video {
 .boton{
     display: inline-block;
     padding: 12px 25px;
-    background-color: #7300f7;
+    background-color: #f00000;
     color: white;
     text-decoration: none; /* Quita el subrayado */
     border-radius: 10px;
@@ -176,6 +255,361 @@ video {
 }
 
 .boton:hover{
-    background-color: #7300f7;
+    background-color: #9b0101;
     transform: scale(1.05);
+}
+
+/* =========================
+   TITULO DEL JUEGO
+========================= */
+
+.titulo-juego {
+    text-align: center;
+    margin-bottom: 15px;
+    position: relative;
+    z-index: 10;
+}
+
+.titulo-juego h1 {
+    margin: 0;
+    font-size: 30px;
+    color: #f4c542;
+    text-shadow:
+        0 0 5px #000,
+        0 0 10px #8b5cf6;
+    letter-spacing: 3px;
+}
+
+.titulo-juego p {
+    margin: 5px 0 0;
+    color: rgb(250, 250, 250);
+    font-size: 15px;
+    opacity: 0.85;
+}
+
+/* ========================
+   TABLERO MÁS DESTACADO
+========================= */
+
+#board {
+    position: relative;
+    z-index: 5;
+    box-shadow:
+        0 0 10px rgb(128, 0, 0),
+        0 0 30px rgb(255, 1, 1);
+}
+
+
+
+
+
+/* =========================================
+   RECUADRO DE ESTADÍSTICAS
+========================================= */
+
+.stats {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 35px;
+
+    width: fit-content;
+    margin: 20px auto;
+
+    padding: 15px 30px;
+
+    background: rgba(20, 5, 5, 0.90);
+
+    border: 3px solid #a80000;
+    border-radius: 15px;
+
+    box-shadow:
+        0 0 15px rgba(255, 0, 0, 0.6),
+        inset 0 0 15px rgba(255, 0, 0, 0.2);
+
+    position: relative;
+    z-index: 100;
+}
+
+
+/* Cada estadística */
+
+.stats > span {
+    color: white;
+    font-size: 17px;
+    font-weight: bold;
+
+    padding: 8px 15px;
+
+    border-right: 2px solid rgba(255, 0, 0, 0.5);
+}
+
+
+/* Quitar la línea del último elemento */
+
+.stats > span:last-child {
+    border-right: none;
+}
+
+
+/* Valores: tiempo, movimientos y puntaje */
+
+.stats > span span {
+    color: #ffd700;
+
+    font-size: 20px;
+
+    margin-left: 5px;
+
+    text-shadow:
+        0 0 5px red,
+        0 0 10px red;
+}
+
+
+/* Efecto al pasar el mouse */
+
+.stats:hover {
+    border-color: #ff0000;
+
+    box-shadow:
+        0 0 25px rgba(255, 0, 0, 0.8),
+        inset 0 0 20px rgba(255, 0, 0, 0.3);
+}
+
+
+/* =========================================
+   CELULAR
+========================================= */
+
+@media (max-width: 600px) {
+
+    .stats {
+        flex-direction: column;
+        gap: 5px;
+
+        width: 80%;
+
+        padding: 15px;
+    }
+
+    .stats > span {
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 0, 0, 0.4);
+
+        width: 100%;
+    }
+
+    .stats > span:last-child {
+        border-bottom: none;
+    }
+}
+
+
+/* =========================================
+   MODAL DE VICTORIA
+========================================= */
+
+#victoryModal {
+    position: fixed;
+    inset: 0;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background: rgba(0, 0, 0, 0.80);
+
+    z-index: 15000;
+}
+
+#victoryModal.hidden {
+    display: none !important;
+}
+
+
+/* PANEL DE VICTORIA */
+
+.victory-panel {
+    width: 420px;
+    max-width: 90%;
+
+    padding: 30px;
+
+    text-align: center;
+
+    background: linear-gradient(
+        145deg,
+        #160404,
+        #4b0707,
+        #180202
+    );
+
+    border: 3px solid #ffd700;
+
+    border-radius: 18px;
+
+    box-shadow:
+        0 0 20px rgba(255, 215, 0, 0.8),
+        0 0 50px rgba(255, 0, 0, 0.5);
+
+    animation: victoriaAparecer 0.4s ease;
+}
+
+
+/* ICONO */
+
+.victory-icon {
+    font-size: 65px;
+
+    margin-bottom: 5px;
+
+    animation: trofeo 1s ease-in-out infinite alternate;
+}
+
+
+/* TÍTULO */
+
+.victory-panel h2 {
+    margin: 5px 0;
+
+    color: #ffd700;
+
+    font-size: 34px;
+
+    text-shadow:
+        0 0 5px #ff0000,
+        0 0 15px #ff0000;
+}
+
+
+/* LÍNEA */
+
+.victory-line {
+    width: 80%;
+
+    height: 3px;
+
+    margin: 15px auto;
+
+    background: #ffd700;
+
+    box-shadow: 0 0 10px #ffd700;
+}
+
+
+/* MENSAJE */
+
+.victory-message {
+    color: white;
+
+    font-size: 16px;
+
+    margin: 8px 0;
+}
+
+
+/* ESTADÍSTICAS */
+
+.victory-stats {
+    margin: 20px 0;
+
+    padding: 12px;
+
+    background: rgba(0, 0, 0, 0.4);
+
+    border-radius: 10px;
+
+    color: #ffd700;
+
+    font-size: 17px;
+
+    font-weight: bold;
+}
+
+
+/* BOTONES */
+
+.victory-buttons {
+    display: flex;
+
+    justify-content: center;
+
+    gap: 12px;
+
+    margin-top: 20px;
+}
+
+.victory-buttons button {
+    padding: 12px 18px;
+
+    border: none;
+
+    border-radius: 9px;
+
+    background: #e00000;
+
+    color: white;
+
+    font-size: 15px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+.victory-buttons button:hover {
+    background: #ff1a1a;
+
+    transform: scale(1.05);
+
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.7);
+}
+
+
+/* ANIMACIÓN */
+
+@keyframes victoriaAparecer {
+
+    from {
+        opacity: 0;
+        transform: scale(0.7);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+}
+
+
+@keyframes trofeo {
+
+    from {
+        transform: translateY(0);
+    }
+
+    to {
+        transform: translateY(-8px);
+    }
+
+}
+
+
+/* CELULAR */
+
+@media (max-width: 600px) {
+
+    .victory-buttons {
+        flex-direction: column;
+    }
+
+    .victory-panel {
+        width: 85%;
+        padding: 25px 15px;
+    }
+
 }

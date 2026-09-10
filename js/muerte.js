@@ -6,8 +6,13 @@ const mostrarPuntaje = document.getElementById('score');
 const turnoInfo = document.getElementById('turnInfo');
 const modal = document.getElementById('modal');
 const estadisticasFinales = document.getElementById('finalStats');
-const botonGuardar = document.getElementById('saveRecord');
+const botonGuardar = document.getElementById('restartGame');
 const botonCerrar = document.getElementById('closeModal');
+
+const victoryModal = document.getElementById('victoryModal');
+const victoryRestart = document.getElementById('victoryRestart');
+const victoryClose = document.getElementById('victoryClose');
+const victoryStats = document.getElementById('victoryStats');
 
 // === VARIABLES ===
 let cartasVolteadas = [];
@@ -16,32 +21,39 @@ let segundos = 60; // 1 minuto
 let temporizador;
 
 // === RUTAS DE IMÁGENES ===
-const RUTA_BACK = "assets/img/back.png";
+const RUTA_BACK = "assets/img/respaldomuerte.png";
 const RUTA_ALDEAS = "assets/img/cards/aldeas/";
 
 // === ALDEAS ===
 const aldeas = {
-  konoha: ["1","2","3","4","5","6","7","8"],
-  arena:  ["1","2","3","4","5","6","7","8"],
-  roca:   ["1","2","3","4","5","6","7","8"],
-  niebla: ["1","2","3","4","5","6","7","8"],
-  nube:   ["1","2","3","4","5","6","7","8"]
+    konoha: {
+        uzumaki: ["1","2","3","4","5","6","7","8"],
+        hyuga: ["1","2","3","4","5","6"],
+        uchiha: ["1","2","3","4","5","6","7","8"],
+        sarutobi: ["1","2","3","4","5","6"]
+    },
+
+    arena: ["1","2","3","4","5","6","7","8"],
+    roca: ["1","2","3","4","5","6","7","8"],
+    niebla: ["1","2","3","4","5","6","7","8"],
+    nube: ["1","2","3","4","5","6","7","8"],
+    akatsuki: ["1","2","3","4","5","6","7"]
 };
 
 // === NIVELES PROGRESIVOS ===
 const niveles = [
   {
-    cartas: ["1","2","3","4","5","6"],
+    cartas: ["1","2","3","4","5","6","7","8"],
     aldea: "konoha",
     clan: "uzumaki"
   },
   {
-    cartas: ["1","2","3","4","5","6"],
+    cartas: ["1","2","3","4","5","6","7","8"],
     aldea: "konoha",
     clan: "hyuga"
   },
   {
-    cartas: ["1","2","3","4","5","6"],
+    cartas: ["1","2","3","4","5","6","7"],
     aldea: "konoha",
     clan: "uchiha"
   },
@@ -63,8 +75,12 @@ const niveles = [
     aldea: "niebla"
   },
   {
-    cartas: ["1","2","3","4","5","6","7","8"],
+    cartas: ["1","2","3","4","5","6","7"],
     aldea: "nube"
+  },
+  {
+    cartas: ["1","2","3","4","5","6","7"],
+    aldea: "akatsuki"
   }
 ];
 
@@ -157,84 +173,211 @@ function actualizarTurno() {
 
 // === GENERAR TABLERO ===
 function generarTablero() {
-  tablero.innerHTML = '';
 
-  const nivel = niveles[nivelActual - 1];
-  const valores = [...nivel.cartas, ...nivel.cartas];
-  valores.sort(() => Math.random() - 0.5);
+    tablero.innerHTML = "";
 
-  valores.forEach(valor => {
+    const nivel = niveles[nivelActual - 1];
 
-    const carta = document.createElement('div');
-    carta.className = 'card';
-    carta.dataset.valor = valor;
-
-    let aldeaCarta = nivel.aldea;
-
-    if (nivel.aldea === 'mixto') {
-
-      if (aldeas.konoha.includes(valor)) aldeaCarta = 'konoha';
-      else if (aldeas.arena.includes(valor)) aldeaCarta = 'arena';
-      else if (aldeas.roca.includes(valor)) aldeaCarta = 'roca';
-      else if (aldeas.niebla.includes(valor)) aldeaCarta = 'niebla';
-      else if (aldeas.nube.includes(valor)) aldeaCarta = 'nube';
-
+    // Comprobar que el nivel exista
+    if (!nivel) {
+        console.error("No existe el nivel:", nivelActual);
+        return;
     }
 
-    carta.dataset.aldea = aldeaCarta;
+    // Cantidad de parejas del nivel
+    const cantidadParejas = nivel.cartas.length;
 
-    if (nivel.clan) {
-      carta.dataset.clan = nivel.clan;
-    }
+    // ========================================
+    // TODAS LAS CARTAS DISPONIBLES
+    // ========================================
 
-    const img = document.createElement('img');
-    img.src = RUTA_BACK;
-    img.className = 'img-card';
+    const cartasDisponibles = [
 
-    carta.appendChild(img);
+        // KONOHA - UZUMAKI
+        ...["1","2","3","4","5","6","7","8"].map(numero => ({
+            aldea: "konoha",
+            clan: "uzumaki",
+            valor: numero
+        })),
 
-    carta.addEventListener('click', () => {
-      voltearCarta(carta);
+        // KONOHA - HYUGA
+        ...["1","2","3","4","5","6","7","8"].map(numero => ({
+            aldea: "konoha",
+            clan: "hyuga",
+            valor: numero
+        })),
+
+        // KONOHA - UCHIHA
+        ...["1","2","3","4","5","6","7"].map(numero => ({
+            aldea: "konoha",
+            clan: "uchiha",
+            valor: numero
+        })),
+
+        // KONOHA - SARUTOBI
+        ...["1","2","3","4","5","6"].map(numero => ({
+            aldea: "konoha",
+            clan: "sarutobi",
+            valor: numero
+        })),
+
+        // ARENA
+        ...["1","2","3","4","5","6","7","8"].map(numero => ({
+            aldea: "arena",
+            valor: numero
+        })),
+
+        // ROCA
+        ...["1","2","3","4","5","6","7","8"].map(numero => ({
+            aldea: "roca",
+            valor: numero
+        })),
+
+        // NIEBLA
+        ...["1","2","3","4","5","6","7","8"].map(numero => ({
+            aldea: "niebla",
+            valor: numero
+        })),
+
+        // NUBE
+        ...["1","2","3","4","5","6","7","8"].map(numero => ({
+            aldea: "nube",
+            valor: numero
+        })),
+
+        // AKATSUKI
+        ...["1","2","3","4","5","6","7"].map(numero => ({
+            aldea: "akatsuki",
+            valor: numero
+        }))
+    ];
+
+    // ========================================
+    // MEZCLAR
+    // ========================================
+
+    cartasDisponibles.sort(() => Math.random() - 0.5);
+
+    // ========================================
+    // SELECCIONAR PAREJAS
+    // ========================================
+
+    const seleccionadas = cartasDisponibles.slice(0, cantidadParejas);
+
+    // ========================================
+    // CREAR PAREJAS
+    // ========================================
+
+    const cartasJuego = [];
+
+    seleccionadas.forEach((carta, indice) => {
+
+        cartasJuego.push({
+            ...carta,
+            idPareja: indice
+        });
+
+        cartasJuego.push({
+            ...carta,
+            idPareja: indice
+        });
+
     });
 
-    tablero.appendChild(carta);
+    // ========================================
+    // MEZCLAR TABLERO
+    // ========================================
 
-  });
+    cartasJuego.sort(() => Math.random() - 0.5);
 
-  tablero.style.gridTemplateColumns =
-    `repeat(${Math.min(nivel.cartas.length,4)},80px)`;
+    // ========================================
+    // CREAR LAS CARTAS
+    // ========================================
+
+    cartasJuego.forEach(cartaDatos => {
+
+        const carta = document.createElement("div");
+
+        carta.className = "card";
+
+        carta.dataset.pareja = cartaDatos.idPareja;
+        carta.dataset.valor = cartaDatos.valor;
+        carta.dataset.aldea = cartaDatos.aldea;
+
+        if (cartaDatos.clan) {
+            carta.dataset.clan = cartaDatos.clan;
+        }
+
+        // IMAGEN DE RESPALDO
+        const back = document.createElement("img");
+
+        back.src = RUTA_BACK;
+        back.className = "back";
+
+        // IMAGEN FRONTAL
+        const front = document.createElement("img");
+
+        if (cartaDatos.aldea === "konoha") {
+
+            front.src =
+                `${RUTA_ALDEAS}konoha/${cartaDatos.clan}/${cartaDatos.valor}.png`;
+
+        } else {
+
+            front.src =
+                `${RUTA_ALDEAS}${cartaDatos.aldea}/${cartaDatos.valor}.png`;
+
+        }
+
+        front.className = "front";
+
+        carta.appendChild(back);
+        carta.appendChild(front);
+
+        // CLICK
+        carta.addEventListener("click", function () {
+            voltearCarta(carta);
+        });
+
+        tablero.appendChild(carta);
+
+    });
+
+    // ========================================
+    // COLUMNAS
+    // ========================================
+
+    tablero.style.gridTemplateColumns =
+        `repeat(${Math.min(cantidadParejas, 4)}, 100px)`;
+
+    console.log("Tablero creado:", cartasJuego);
 }
+
+
+
+
 
 // === VOLTEAR CARTA ===
 function voltearCarta(carta) {
 
-  if (
-    carta.classList.contains('volteada') ||
-    carta.classList.contains('emparejada') ||
-    cartasVolteadas.length === 2
-  ) return;
+    if (
+        carta.classList.contains('flip') ||
+        carta.classList.contains('emparejada') ||
+        cartasVolteadas.length === 2
+    ) return;
 
-  carta.classList.add('volteada');
+    carta.classList.add('flip');
 
-  let rutaImagen;
+    cartasVolteadas.push(carta);
 
-  if (carta.dataset.clan) {
-    rutaImagen =
-      `${RUTA_ALDEAS}${carta.dataset.aldea}/${carta.dataset.clan}/${carta.dataset.valor}.png`;
-  } else {
-    rutaImagen =
-      `${RUTA_ALDEAS}${carta.dataset.aldea}/${carta.dataset.valor}.png`;
-  }
+    if (cartasVolteadas.length === 2) {
 
-  carta.querySelector('img').src = rutaImagen;
+        movimientos++;
 
-  cartasVolteadas.push(carta);
+        actualizarEstadisticas();
 
-  if (cartasVolteadas.length === 2) {
-    movimientos++;
-    actualizarEstadisticas();
-    verificarCoincidencia();
-  }
+        verificarCoincidencia();
+    }
 }
 
 // === VERIFICAR COINCIDENCIA ===
@@ -242,7 +385,7 @@ function verificarCoincidencia() {
 
   const [c1, c2] = cartasVolteadas;
 
-  if (c1.dataset.valor === c2.dataset.valor) {
+  if (c1.dataset.pareja === c2.dataset.pareja) {
 
     if (modo2Jugadores) {
       if (jugadorActual === 1) {
@@ -264,11 +407,11 @@ function verificarCoincidencia() {
     // ¿Ganó?
     if (document.querySelectorAll('.card:not(.emparejada)').length === 0) {
 
-      clearInterval(temporizador);
+    clearInterval(temporizador);
 
-      mostrarModal();
+    mostrarVictoria();
 
-    }
+}
 
   } else {
 
@@ -279,15 +422,12 @@ function verificarCoincidencia() {
 
     setTimeout(() => {
 
-      c1.classList.remove('volteada');
-      c2.classList.remove('volteada');
+    c1.classList.remove('flip');
+    c2.classList.remove('flip');
 
-      c1.querySelector('img').src = RUTA_BACK;
-      c2.querySelector('img').src = RUTA_BACK;
+    cartasVolteadas = [];
 
-      cartasVolteadas = [];
-
-    }, 800);
+}, 800);
 
   }
 
@@ -378,4 +518,56 @@ window.addEventListener("load", function () {
 
   }
 
+});
+
+
+// ========================================
+// BOTÓN REINICIAR
+// ========================================
+
+document.getElementById('restartGame').addEventListener('click', function () {
+    location.reload();
+});
+
+
+// ========================================
+// BOTÓN VOLVER AL MENÚ
+// ========================================
+
+document.getElementById('closeModal').addEventListener('click', function () {
+    window.location.href = 'menu.html';
+});
+
+// ========================================
+// MODAL DE VICTORIA
+// ========================================
+
+function mostrarVictoria() {
+
+    victoryStats.innerHTML = modo2Jugadores
+        ? `
+            Tiempo: ${mostrarTiempo.textContent}<br>
+            Movimientos: ${movimientos}<br><br>
+            ${nombreJugador1}: ${puntajeJugador1} pts<br>
+            ${nombreJugador2}: ${puntajeJugador2} pts
+          `
+        : `
+            Tiempo: ${mostrarTiempo.textContent}<br>
+            Movimientos: ${movimientos}<br>
+            Puntaje: ${puntajeJugador1} pts
+          `;
+
+    victoryModal.classList.remove('hidden');
+}
+
+
+// REINICIAR
+document.getElementById('victoryRestart').addEventListener('click', function () {
+    location.reload();
+});
+
+
+// VOLVER AL MENÚ
+document.getElementById('victoryClose').addEventListener('click', function () {
+    window.location.href = 'muerte.html';
 });
