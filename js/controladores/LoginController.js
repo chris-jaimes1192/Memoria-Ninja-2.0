@@ -1,0 +1,54 @@
+/*=========================================================
+  MEMORIA NINJA
+  CAPA: CONTROLADORES (presentación)
+  ARCHIVO: controladores/LoginController.js
+
+  HERENCIA: extiende FormularioControllerBase (ES-UN
+  formulario controller).
+
+  POLIMORFISMO / LSP: manejarEnvio(datos) recibe SIEMPRE un
+  único objeto — misma firma que el resto de controladores
+  (RegistroController, VerificacionController,
+  RecuperacionController), aunque cada uno haga algo distinto
+  con su contenido. Así cualquiera de los 4 es sustituible
+  donde se espere un FormularioControllerBase.
+
+  DIP: recibe AutenticacionService, SesionService y un
+  INotificador ya construidos (inyección por constructor).
+=========================================================*/
+
+import { FormularioControllerBase } from "./FormularioControllerBase.js";
+
+export class LoginController extends FormularioControllerBase {
+  constructor(autenticacionService, sesionService, notificador) {
+    super(notificador);
+    this.autenticacionService = autenticacionService;
+    this.sesionService = sesionService;
+  }
+
+  /**
+   * @param {{ usuario: string, password: string, recordar: boolean }} datos
+   */
+  manejarEnvio(datos) {
+    const { usuario, password, recordar } = datos;
+
+    try {
+      const usuarioValido = this.autenticacionService.iniciarSesion(
+        usuario,
+        password
+      );
+
+      this.notificador.mostrar("Acceso concedido ⚡", "exito");
+
+      if (recordar) {
+        this.sesionService.guardarSesion(usuarioValido);
+      }
+
+      setTimeout(() => {
+        window.location.href = "menu.html";
+      }, 800);
+    } catch (error) {
+      this.notificador.mostrar(error.message, "error");
+    }
+  }
+}

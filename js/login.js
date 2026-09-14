@@ -1,75 +1,44 @@
+/*=========================================================
+  MEMORIA NINJA
+  COMPOSITION ROOT: login.js
+
+  IMPORTANTE: el <script> que carga este archivo en login.html
+  debe tener type="module".
+=========================================================*/
+
+import { LocalStorageUsuarioRepositorio } from "./infraestructura/repositorios/LocalStorageUsuarioRepositorio.js";
+import { LocalStorageSesionRepositorio } from "./infraestructura/repositorios/LocalStorageSesionRepositorio.js";
+import { MensajeDomNotificador } from "./infraestructura/notificadores/MensajeDomNotificador.js";
+import { AutenticacionService } from "./servicios/AutenticacionService.js";
+import { SesionService } from "./servicios/SesionService.js";
+import { LoginController } from "./controladores/LoginController.js";
+import { alternarVisibilidadPassword } from "./utils/TogglePasswordHelper.js";
+
+// --- Composición (Dependency Injection manual) ---
+const repositorioUsuarios = new LocalStorageUsuarioRepositorio();
+const sesionRepositorio = new LocalStorageSesionRepositorio();
+const notificador = new MensajeDomNotificador("msg");
+const autenticacionService = new AutenticacionService(repositorioUsuarios);
+const sesionService = new SesionService(sesionRepositorio);
+const loginController = new LoginController(
+  autenticacionService,
+  sesionService,
+  notificador
+);
+
+// --- Conexión con el DOM (se mantienen los mismos nombres de función
+// en window para no romper los onclick="..." ya existentes en login.html) ---
 function login() {
-  const usuarioIngresado = document.getElementById("user").value.trim();
-  const passwordIngresada = document.getElementById("pass").value.trim();
-  const mensaje = document.getElementById("msg");
+  const usuario = document.getElementById("user").value.trim();
+  const password = document.getElementById("pass").value.trim();
+  const recordar = document.getElementById("recordarme").checked;
 
-  // Obtener usuarios registrados
-  const usuariosRegistrados = JSON.parse(
-    localStorage.getItem("usuariosRegistrados")
-  ) || [];
-
-  // Buscar usuario válido
-  const usuarioValido = usuariosRegistrados.find(
-    usuario =>
-      usuario.usuario === usuarioIngresado &&
-      usuario.pass === passwordIngresada
-  );
-
-  if (usuarioValido) {
-    mensaje.textContent = "Acceso concedido ⚡";
-    mensaje.style.color = "lightgreen";
-
-    // Guardar sesión activa
-    // Revisar si el usuario quiere recordar la sesión
-const recordar = document.getElementById("recordarme").checked;
-
-if (recordar) {
-
-    localStorage.setItem("usuarioActivo", JSON.stringify(usuarioValido));
-
-}
-    setTimeout(() => {
-      window.location.href = "menu.html";
-    }, 800);
-
-  } else {
-    mensaje.textContent = "Datos incorrectos";
-    mensaje.style.color = "red";
-  }
-
-
-
+  loginController.manejarEnvio({ usuario, password, recordar });
 }
 
 function togglePassword(idInput, icono) {
-    const input = document.getElementById(idInput);
-
-    if (input.type === "password") {
-        input.type = "text";
-        icono.classList.add("activo");
-    } else {
-        input.type = "password";
-        icono.classList.remove("activo");
-    }
+  alternarVisibilidadPassword(idInput, icono);
 }
 
-
-/*=========================================================
-    MEMORIA NINJA
-    RECORDAR SESIÓN
-
-    Si existe un usuario con la sesión iniciada,
-    automáticamente se envía al menú principal.
-
-document.addEventListener("DOMContentLoaded", () => {
-
-    const usuarioActivo = localStorage.getItem("usuarioActivo");
-
-    if (usuarioActivo) {
-
-        window.location.href = "menu.html";
-
-    }
-
-});
-*/
+window.login = login;
+window.togglePassword = togglePassword;
