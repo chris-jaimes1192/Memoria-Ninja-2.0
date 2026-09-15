@@ -1,236 +1,21 @@
 
-body { 
-  font-family: Arial, sans-serif;
-  background-color: rgb(52, 33, 65); 
-   background-image:   url(assets\fondo.mp4) ;
-    background-size: 100%;
-    background-repeat: no-repeat;
-    background-position: left top, right top;
-   color: #f0f6ff;
-    text-align:center; 
-    padding:20px; 
-    margin:0;
-   }
-
-.game-header { display:flex; justify-content:space-between; align-items:center; gap:12px; max-width:980px; margin:0 auto 10px; }
-.player-info { text-align:left; }
-.turn-info { font-weight:700; color:#ffd166; }
-.stats span { margin-left:12px; color:#bcd3ff; }
-
-/* Marco alrededor del tablero */
-#boardFrame {
-  display: flex;
-  justify-content: center;
-  margin: 24px auto;
-  padding: 18px;
-  width: max-content;
-  background: linear-gradient(180deg,#3b2f20,#2d2418);
-  border-radius: 14px;
-  border: 8px solid #b8843b;
-  box-shadow: 0 18px 60px rgba(0,0,0,0.6);
-}
-
-/* Tablero */
-#board {
-  display: grid;
-  grid-template-columns: repeat(4, 100px);
-  gap: 30px;
-  padding: 30px;
-  background: #1b1b1b;
-  border-radius: 10px;
-}
-
-/* Carta */
-.card {
-  width: 100px;
-  height: 140px;
-  position: relative;
-  transform-style: preserve-3d;
-  transition: transform .45s;
-  cursor: pointer;
-  border-radius: 8px;
-  perspective: 900px;
-}
-
-.card.flip { 
-  transform: rotateY(180deg);
- }
-
-
-.card img {
-    width: 100%;
-    height: 100%;
-
-    position: absolute;
-    left: 0;
-    top: 0;
-
-    border-radius: 8px;
-
-    backface-visibility: hidden;
-
-    object-fit: fill;
-
-    image-rendering: auto;
-}
-
-.front { 
-  transform: rotateY(180deg);
- }
-
-.card.matched {
-   box-shadow: 0 6px 20px rgba(0,0,0,0.6) inset;
-    opacity: 0.9;
-     transform: scale(0.98);
-      pointer-events:none; 
-    }
-
-#modal { 
-  position: fixed;
-   inset: 0; 
-   background: rgba(0,0,0,0.5);
-    display:flex; 
-    justify-content:center; 
-    align-items:center;
-   }
-
-.panel {
-   background: white;
-    color: #111; padding: 20px; 
-    border-radius: 10px;
-     width: 320px;
-      text-align:center;
-     }
-.hidden {
-   display: none !important;
- }
-
-.history {
-   max-width:980px; 
-   margin: 10px auto;
-    color:#cfe4ff; 
-    text-align:left;
-   }
-
-#recordsList p{ 
-  background: rgba(255,255,255,0.03); 
-  padding:8px; 
-  border-radius:8px; 
-  margin:6px 0; 
-}
-
-/* responsive */
-@media (max-width:520px) {
-  #board { grid-template-columns: repeat(2, 120px); }
-  .card { width: 120px; height: 160px; }
-}
 /* =====================================================
-   🖤 CANDELA NEGRA 3D — QUEMA Y DESAPARECE CARTA PAR
-   SOLO CSS — NO TOCA JS NI HTML
-   ===================================================== */
+   FONDO
+===================================================== */
 
-.card.emparejada {
-  position: relative;
-  overflow: hidden;
-  transform-style: preserve-3d;
-  perspective: 800px;
-
-  animation: carta-fade-3d 2s ease-in forwards;
-}
-
-/* Oscurece la carta mientras se quema */
-.card.emparejada img {
-  filter: brightness(0.2) contrast(1.5);
-}
-
-/* 🔥 Capa base de candela negra (3D) */
-.card.emparejada::before {
-  content: "";
-  position: absolute;
-  inset: -45%;
-  pointer-events: none;
-  z-index: 6;
-
-  background:
-    radial-gradient(circle at 50% 100%, rgba(0,0,0,1), transparent 60%),
-    radial-gradient(circle at 30% 90%, rgba(30,30,30,0.9), transparent 55%),
-    radial-gradient(circle at 70% 85%, rgba(50,50,50,0.8), transparent 60%);
-
-  transform-origin: bottom center;
-  transform: rotateX(55deg) translateZ(30px);
-  animation: fuego-3d-base 0.9s infinite ease-in-out;
-  filter: blur(1px);
-}
-
-/* 🔥 Volumen superior (más profundidad) */
-.card.emparejada::after {
-  content: "";
-  position: absolute;
-  inset: -55%;
-  pointer-events: none;
-  z-index: 7;
-
-  background:
-    radial-gradient(circle at 50% 100%, rgba(20,20,20,0.9), transparent 55%),
-    radial-gradient(circle at 40% 95%, rgba(60,60,60,0.7), transparent 50%),
-    radial-gradient(circle at 60% 90%, rgba(90,90,90,0.6), transparent 55%);
-
-  transform-origin: bottom center;
-  transform: rotateX(65deg) translateZ(55px);
-  animation: fuego-3d-volumen 1.1s infinite ease-in-out;
-  filter: blur(2px);
-}
-
-/* 🔥 Movimiento de la candela */
-@keyframes fuego-3d-base {
-  0% {
-    transform: rotateX(55deg) translateZ(25px) scaleY(0.9);
-    opacity: 0.6;
-  }
-  50% {
-    transform: rotateX(60deg) translateZ(35px) scaleY(1.3);
-    opacity: 1;
-  }
-  100% {
-    transform: rotateX(55deg) translateZ(25px) scaleY(0.9);
-    opacity: 0.6;
-  }
-}
-
-@keyframes fuego-3d-volumen {
-  0% {
-    transform: rotateX(65deg) translateZ(45px) scaleY(0.8);
-    opacity: 0.5;
-  }
-  50% {
-    transform: rotateX(70deg) translateZ(65px) scaleY(1.4);
-    opacity: 1;
-  }
-  100% {
-    transform: rotateX(65deg) translateZ(45px) scaleY(0.8);
-    opacity: 0.5;
-  }
-}
-
-/* 🕳️ Desaparición progresiva de la carta */
-@keyframes carta-fade-3d {
-  0% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  60% {
-    opacity: 0.5;
-    transform: scale(0.9);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(0.6);
-  }
+body {
+  font-family: Arial, sans-serif;
+  background-color: rgb(52, 33, 65);
+  color: #f0f6ff;
+  text-align: center;
+  padding: 20px;
+  margin: 0;
 }
 
 
-
-
+/* =====================================================
+   FONDO DE VIDEO
+===================================================== */
 
 video {
   position: fixed;
@@ -243,177 +28,450 @@ video {
 }
 
 
+/* =====================================================
+   ENCABEZADO
+===================================================== */
 
-
-
-.boton{
-    display: inline-block;
-    padding: 12px 25px;
-    background-color: #7300f7;
-    color: white;
-    text-decoration: none; /* Quita el subrayado */
-    border-radius: 10px;
-    font-size: 18px;
-    font-weight: bold;
-    transition: 0.3s;
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  max-width: 980px;
+  margin: 0 auto 10px;
 }
 
-.boton:hover{
-    background-color: #7300f7;
-    transform: scale(1.05);
+.player-info {
+  text-align: left;
+}
+
+.turn-info {
+  font-weight: 700;
+  color: #ffd166;
+}
+
+.stats span {
+  margin-left: 12px;
+  color: #bcd3ff;
+}
+
+
+/* =====================================================
+   MARCO DEL TABLERO
+===================================================== */
+
+#boardFrame {
+  display: flex;
+  justify-content: center;
+
+  margin: 24px auto;
+  padding: 18px;
+
+  width: max-content;
+
+  background: linear-gradient(
+    180deg,
+    #3b2f20,
+    #2d2418
+  );
+
+  border-radius: 14px;
+
+  border: 8px solid #b8843b;
+
+  box-shadow:
+    0 18px 60px rgba(0, 0, 0, 0.6);
+}
+
+
+/* =====================================================
+   TABLERO
+===================================================== */
+
+#board {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, 100px);
+
+  gap: 30px;
+
+  padding: 30px;
+
+  background: #1b1b1b;
+
+  border-radius: 10px;
+}
+
+
+/* =====================================================
+   CARTA 3D
+===================================================== */
+
+.card {
+  width: 100px;
+  height: 140px;
+
+  position: relative;
+
+  transform-style: preserve-3d;
+
+  transition:
+    transform 0.45s ease;
+
+  cursor: pointer;
+
+  border-radius: 8px;
+
+  perspective: 900px;
+}
+
+
+/* =====================================================
+   CARTA VOLTEADA
+===================================================== */
+
+.card.flipped {
+  transform: rotateY(180deg);
+}
+
+
+/* =====================================================
+   IMÁGENES DE LAS CARTAS
+===================================================== */
+
+.card img {
+  width: 100%;
+  height: 100%;
+
+  position: absolute;
+
+  left: 0;
+  top: 0;
+
+  border-radius: 8px;
+
+  object-fit: fill;
+
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+
+/* =====================================================
+   PARTE TRASERA
+===================================================== */
+
+.back {
+  transform: rotateY(0deg);
+}
+
+
+/* =====================================================
+   PARTE FRONTAL
+===================================================== */
+
+.front {
+  transform: rotateY(180deg);
+}
+
+
+/* =====================================================
+   CARTA ENCONTRADA
+===================================================== */
+
+.card.found {
+  pointer-events: none;
+
+  animation: desaparecerCarta 0.7s ease forwards;
+}
+
+
+/* =====================================================
+   MODAL DE DERROTA
+===================================================== */
+
+#modal {
+  position: fixed;
+
+  inset: 0;
+
+  background:
+    rgba(0, 0, 0, 0.5);
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+}
+
+
+/* =====================================================
+   PANEL DE DERROTA
+===================================================== */
+
+.panel {
+  background: white;
+
+  color: #111;
+
+  padding: 20px;
+
+  border-radius: 10px;
+
+  width: 320px;
+
+  text-align: center;
+}
+
+
+/* =====================================================
+   OCULTAR
+===================================================== */
+
+.hidden {
+  display: none !important;
+}
+
+
+/* =====================================================
+   HISTORIAL
+===================================================== */
+
+.history {
+  max-width: 980px;
+
+  margin: 10px auto;
+
+  color: #cfe4ff;
+
+  text-align: left;
+}
+
+#recordsList p {
+  background:
+    rgba(255, 255, 255, 0.03);
+
+  padding: 8px;
+
+  border-radius: 8px;
+
+  margin: 6px 0;
+}
+
+
+/* =====================================================
+   🖤 CANDELA NEGRA
+   CARTA ENCONTRADA
+===================================================== */
+
+.card.emparejada {
+  position: relative;
+
+  overflow: hidden;
+
+  transform-style: preserve-3d;
+
+  perspective: 800px;
+
+  animation:
+    carta-fade-3d
+    2s
+    ease-in
+    forwards;
 }
 
 /* =====================================================
-   🏜️ MODAL DE VICTORIA — ALDEA DE LA ARENA
+   BOTÓN VOLVER
+===================================================== */
+
+.boton {
+  display: inline-block;
+
+  padding: 12px 25px;
+
+  background-color: #7300f7;
+
+  color: white;
+
+  text-decoration: none;
+
+  border-radius: 10px;
+
+  font-size: 18px;
+
+  font-weight: bold;
+
+  transition: 0.3s;
+}
+
+.boton:hover {
+  background-color: #7300f7;
+
+  transform:
+    scale(1.05);
+}
+
+
+/* =====================================================
+   🏜️ MODAL DE VICTORIA
 ===================================================== */
 
 #victoryModal {
-    position: fixed;
-    inset: 0;
+  position: fixed;
 
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  inset: 0;
 
-    background:
-        radial-gradient(
-            circle at center,
-            rgba(238, 172, 76, 0.20),
-            rgba(35, 18, 7, 0.92)
-        );
+  display: flex;
 
-    z-index: 15000;
+  justify-content: center;
+
+  align-items: center;
+
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(238, 172, 76, 0.20),
+      rgba(35, 18, 7, 0.92)
+    );
+
+  z-index: 15000;
 }
 
 
 /* =====================================================
-   OCULTAR MODAL
+   OCULTAR MODAL DE VICTORIA
 ===================================================== */
 
 #victoryModal.hidden {
-    display: none !important;
+  display: none !important;
 }
 
 
 /* =====================================================
-   PANEL — ESTILO SUNAGAKURE
+   PANEL DE VICTORIA
 ===================================================== */
 
 .victory-panel {
 
-    width: 420px;
-    max-width: 90%;
+  width: 420px;
 
-    padding: 30px;
+  max-width: 90%;
 
-    text-align: center;
+  padding: 30px;
 
-    background:
-        linear-gradient(
-            145deg,
-            #2b1609,
-            #704019,
-            #351b0b
-        );
+  text-align: center;
 
-    border: 3px solid #e6b85c;
+  background:
+    linear-gradient(
+      145deg,
+      #2b1609,
+      #704019,
+      #351b0b
+    );
 
-    border-radius: 18px;
+  border:
+    3px solid #e6b85c;
 
-    box-shadow:
+  border-radius: 18px;
 
-        0 0 15px rgba(230, 184, 92, 0.85),
+  box-shadow:
 
-        0 0 40px rgba(198, 108, 32, 0.6),
+    0 0 15px
+    rgba(230, 184, 92, 0.85),
 
-        inset 0 0 25px
-        rgba(255, 210, 120, 0.10);
+    0 0 40px
+    rgba(198, 108, 32, 0.6),
 
-    animation:
-        victoriaArenaAparecer
-        0.5s
-        ease;
+    inset 0 0 25px
+    rgba(255, 210, 120, 0.10);
+
+  animation:
+    victoriaArenaAparecer
+    0.5s
+    ease;
 }
 
 
 /* =====================================================
-   🏜️ ICONO
+   ICONO DE VICTORIA
 ===================================================== */
 
 .victory-icon {
 
-    font-size: 65px;
+  font-size: 65px;
 
-    margin-bottom: 5px;
+  margin-bottom: 5px;
 
-    text-shadow:
+  text-shadow:
 
-        0 0 5px #fff2c9,
+    0 0 5px #fff2c9,
 
-        0 0 15px #e6b85c,
+    0 0 15px #e6b85c,
 
-        0 0 30px #d47728;
+    0 0 30px #d47728;
 
-    animation:
-        arenaMovimiento
-        2s
-        ease-in-out
-        infinite
-        alternate;
+  animation:
+    arenaMovimiento
+    2s
+    ease-in-out
+    infinite
+    alternate;
 }
 
 
 /* =====================================================
-   TITULO
+   TITULO DE VICTORIA
 ===================================================== */
 
 .victory-panel h2 {
 
-    margin: 5px 0;
+  margin: 5px 0;
 
-    color: #fff0c2;
+  color: #fff0c2;
 
-    font-size: 34px;
+  font-size: 34px;
 
-    text-shadow:
+  text-shadow:
 
-        0 0 5px #fff5d6,
+    0 0 5px #fff5d6,
 
-        0 0 12px #e6b85c,
+    0 0 12px #e6b85c,
 
-        0 0 25px #d47728;
+    0 0 25px #d47728;
 }
 
 
 /* =====================================================
-   LINEA — ARENA
+   LINEA
 ===================================================== */
 
 .victory-line {
 
-    width: 80%;
+  width: 80%;
 
-    height: 4px;
+  height: 4px;
 
-    margin: 15px auto;
+  margin: 15px auto;
 
-    background:
-        linear-gradient(
-            90deg,
-            transparent,
-            #b86b24,
-            #e6b85c,
-            #fff0bd,
-            #e6b85c,
-            #b86b24,
-            transparent
-        );
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      #b86b24,
+      #e6b85c,
+      #fff0bd,
+      #e6b85c,
+      #b86b24,
+      transparent
+    );
 
-    box-shadow:
+  box-shadow:
 
-        0 0 8px #e6b85c,
+    0 0 8px #e6b85c,
 
-        0 0 18px #c87529;
+    0 0 18px #c87529;
 }
 
 
@@ -423,214 +481,295 @@ video {
 
 .victory-message {
 
-    color: #f8e5c4;
+  color: #f8e5c4;
 
-    font-size: 16px;
+  font-size: 16px;
 
-    margin: 8px 0;
+  margin: 8px 0;
 
-    text-shadow:
-        0 0 5px rgba(230, 184, 92, 0.35);
+  text-shadow:
+    0 0 5px
+    rgba(230, 184, 92, 0.35);
 }
 
 
 /* =====================================================
-   ESTADISTICAS
+   ESTADÍSTICAS VICTORIA
 ===================================================== */
 
 .victory-stats {
 
-    margin: 20px 0;
+  margin: 20px 0;
 
-    padding: 12px;
+  padding: 12px;
 
-    background:
-        rgba(25, 12, 5, 0.65);
+  background:
+    rgba(25, 12, 5, 0.65);
 
-    border:
+  border:
+    1px solid
+    rgba(230, 184, 92, 0.55);
 
-        1px solid
-        rgba(230, 184, 92, 0.55);
+  border-radius: 10px;
 
-    border-radius: 10px;
+  color: #f0c978;
 
-    color: #f0c978;
+  font-size: 17px;
 
-    font-size: 17px;
+  font-weight: bold;
 
-    font-weight: bold;
+  line-height: 1.7;
 
-    line-height: 1.7;
+  box-shadow:
 
-    box-shadow:
+    inset 0 0 15px
+    rgba(230, 184, 92, 0.10),
 
-        inset 0 0 15px
-        rgba(230, 184, 92, 0.10),
-
-        0 0 10px
-        rgba(198, 108, 32, 0.3);
+    0 0 10px
+    rgba(198, 108, 32, 0.3);
 }
 
 
 /* =====================================================
-   BOTONES
+   BOTONES VICTORIA
 ===================================================== */
 
 .victory-buttons {
 
-    display: flex;
+  display: flex;
 
-    justify-content: center;
+  justify-content: center;
 
-    gap: 12px;
+  gap: 12px;
 
-    margin-top: 20px;
+  margin-top: 20px;
 }
 
 
 .victory-buttons button {
 
-    padding: 12px 18px;
+  padding: 12px 18px;
 
-    border:
+  border:
+    2px solid
+    #e6b85c;
 
-        2px solid
-        #e6b85c;
+  border-radius: 9px;
 
-    border-radius: 9px;
+  background:
+    linear-gradient(
+      135deg,
+      #874318,
+      #c87529
+    );
 
-    background:
+  color: #fff3d5;
 
-        linear-gradient(
-            135deg,
-            #874318,
-            #c87529
-        );
+  font-size: 15px;
 
-    color: #fff3d5;
+  font-weight: bold;
 
-    font-size: 15px;
+  cursor: pointer;
 
-    font-weight: bold;
+  transition: 0.25s;
 
-    cursor: pointer;
-
-    transition: 0.25s;
-
-    box-shadow:
-
-        0 0 8px
-        rgba(230, 184, 92, 0.45);
+  box-shadow:
+    0 0 8px
+    rgba(230, 184, 92, 0.45);
 }
 
 
 .victory-buttons button:hover {
 
-    background:
+  background:
+    linear-gradient(
+      135deg,
+      #e6b85c,
+      #fff0bd
+    );
 
-        linear-gradient(
-            135deg,
-            #e6b85c,
-            #fff0bd
-        );
+  color: #351b0b;
 
-    color: #351b0b;
+  transform:
+    scale(1.05);
 
-    transform: scale(1.05);
+  box-shadow:
 
-    box-shadow:
+    0 0 12px #e6b85c,
 
-        0 0 12px #e6b85c,
-
-        0 0 25px #d47728;
+    0 0 25px #d47728;
 }
 
 
 /* =====================================================
-   🏜️ APARICIÓN DEL MODAL
+   ANIMACIÓN MODAL VICTORIA
 ===================================================== */
 
 @keyframes victoriaArenaAparecer {
 
-    from {
+  from {
 
-        opacity: 0;
+    opacity: 0;
 
-        transform:
-            scale(0.7)
-            translateY(30px);
+    transform:
+      scale(0.7)
+      translateY(30px);
 
-        filter:
-            blur(6px);
-    }
+    filter:
+      blur(6px);
+  }
 
-    to {
+  to {
 
-        opacity: 1;
+    opacity: 1;
 
-        transform:
-            scale(1)
-            translateY(0);
+    transform:
+      scale(1)
+      translateY(0);
 
-        filter:
-            blur(0);
-    }
+    filter:
+      blur(0);
+  }
 }
 
 
 /* =====================================================
-   🏜️ MOVIMIENTO DE ARENA
+   MOVIMIENTO ICONO
 ===================================================== */
 
 @keyframes arenaMovimiento {
 
-    0% {
+  0% {
 
-        transform:
-            translateY(0)
-            rotate(-2deg);
+    transform:
+      translateY(0)
+      rotate(-2deg);
 
-        filter:
-            brightness(1);
-    }
+    filter:
+      brightness(1);
+  }
 
-    50% {
+  50% {
 
-        transform:
-            translateY(-5px)
-            rotate(2deg);
+    transform:
+      translateY(-5px)
+      rotate(2deg);
 
-        filter:
-            brightness(1.25);
-    }
+    filter:
+      brightness(1.25);
+  }
 
-    100% {
+  100% {
 
-        transform:
-            translateY(-10px)
-            rotate(-2deg);
+    transform:
+      translateY(-10px)
+      rotate(-2deg);
 
-        filter:
-            brightness(1.5);
-    }
+    filter:
+      brightness(1.5);
+  }
 }
 
 
 /* =====================================================
-   📱 CELULAR
+   RESPONSIVE
 ===================================================== */
 
 @media (max-width: 600px) {
 
-    .victory-buttons {
+  #board {
+    grid-template-columns:
+      repeat(2, 120px);
 
-        flex-direction: column;
-    }
+    gap: 20px;
+  }
 
-    .victory-panel {
+  .card {
+    width: 120px;
+    height: 160px;
+  }
 
-        width: 85%;
+  .victory-buttons {
+    flex-direction: column;
+  }
 
-        padding: 25px 15px;
-    }
+  .victory-panel {
+    width: 85%;
+
+    padding:
+      25px 15px;
+  }
 }
+
+
+/* =====================================================
+   RESPONSIVE PEQUEÑO
+===================================================== */
+
+@media (max-width: 520px) {
+
+  #board {
+    grid-template-columns:
+      repeat(2, 120px);
+  }
+
+  .card {
+    width: 120px;
+    height: 160px;
+  }
+}
+
+
+@keyframes desaparecerCarta {
+
+  0% {
+    opacity: 1;
+    transform: rotateY(180deg) scale(1);
+  }
+
+  40% {
+    opacity: 1;
+    transform: rotateY(180deg) scale(1.08);
+  }
+
+  100% {
+    opacity: 0;
+    transform: rotateY(180deg) scale(0.4);
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
