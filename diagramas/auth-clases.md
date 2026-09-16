@@ -99,14 +99,14 @@ flowchart TD
     RecuperacionC -->|DIP| IEnvio
     VerificacionC -->|DIP| IEnvio
 
-    ILector <|.. RepoUsu
-    IEscritor <|.. RepoUsu
-    ISesion <|.. RepoSes
-    INotif <|.. NotifDom
-    INotif <|.. NotifAlert
-    IGen <|.. CodNum
-    IGen <|.. CodAlf
-    IEnvio <|.. EnvioPru
+    ILector -.->|implementa| RepoUsu
+    IEscritor -.->|implementa| RepoUsu
+    ISesion -.->|implementa| RepoSes
+    INotif -.->|implementa| NotifDom
+    INotif -.->|implementa| NotifAlert
+    IGen -.->|implementa| CodNum
+    IGen -.->|implementa| CodAlf
+    IEnvio -.->|implementa| EnvioPru
     EnvioPru -->|usa para mostrar| INotif
 ```
 
@@ -252,17 +252,17 @@ Diagrama de clases (UML). Leyenda de relaciones:
 classDiagram
 
     class Usuario {
-        -#string usuario
-        -#string nacimiento
-        -#string correo
-        -#string passwordHash
-        +get usuario() string
-        +get nacimiento() string
-        +get correo() string
+        -string usuario
+        -string nacimiento
+        -string correo
+        -string passwordHash
+        +obtenerUsuario() string
+        +obtenerNacimiento() string
+        +obtenerCorreo() string
         +verificarPassword(passwordIngresada) boolean
         +actualizarPassword(nuevaPassword) void
         +toJSON() object
-        +desdeJSON$(objetoPlano) Usuario
+        +desdeJSON(objetoPlano) Usuario
     }
 
     class IUsuarioLector {
@@ -303,7 +303,7 @@ classDiagram
     class FormularioControllerBase {
         <<abstract>>
         +INotificador notificador
-        +camposVacios(...valores) boolean
+        +camposVacios(valores) boolean
         +manejarEnvio() void
     }
 
@@ -323,9 +323,9 @@ classDiagram
         +IEnviadorCodigo enviadorCodigo
         +marcarPaso(numeroActual) void
         +manejarEnvio(datos) boolean
-        -#manejarPasoCorreo(correo) boolean
-        -#manejarPasoCodigo(codigo) boolean
-        -#manejarPasoPassword(nuevaPassword, confirmarPassword) boolean
+        -manejarPasoCorreo(correo) boolean
+        -manejarPasoCodigo(codigo) boolean
+        -manejarPasoPassword(nuevaPassword, confirmarPassword) boolean
     }
 
     class VerificacionController {
@@ -335,8 +335,8 @@ classDiagram
         +enmascararCorreo(correo) string
         +enviarCodigo(correo) void
         +manejarEnvio(datos) void
-        -#iniciarTemporizador() void
-        -#actualizarTemporizadorTexto() void
+        -iniciarTemporizador() void
+        -actualizarTemporizadorTexto() void
     }
 
     class AutenticacionService {
@@ -350,8 +350,8 @@ classDiagram
     }
 
     class RecuperacionService {
-        -#string codigoActual
-        -#string correoActual
+        -string codigoActual
+        -string correoActual
         +IUsuarioLector repositorioUsuarios
         +ICodigoGenerador generadorCodigo
         +solicitarRecuperacion(correo) string
@@ -367,17 +367,17 @@ classDiagram
     }
 
     class VerificacionService {
-        -#string codigoActual
-        -#string correoActual
+        -string codigoActual
+        -string correoActual
         +ICodigoGenerador generadorCodigo
         +generarNuevoCodigo(correo) string
         +validarCodigo(codigoIngresado) boolean
         +expirarCodigo() void
-        +get correoActual() string
+        +obtenerCorreoActual() string
     }
 
     class LocalStorageUsuarioRepositorio {
-        -#guardarTodos(usuarios) void
+        -guardarTodos(usuarios) void
         +obtenerTodos() array
         +buscarPorCorreo(correo) Usuario
         +buscarPorCredenciales(usuario, password) Usuario
@@ -392,7 +392,7 @@ classDiagram
     }
 
     class MensajeDomNotificador {
-        -#string idElemento
+        -string idElemento
         +mostrar(mensaje, tipo) void
     }
 
@@ -405,8 +405,8 @@ classDiagram
     }
 
     class CodigoAlfanumericoGenerador {
-        -#string caracteres
-        -#number longitud
+        -string caracteres
+        -number longitud
         +generar() string
     }
 
@@ -417,14 +417,14 @@ classDiagram
 
     class ModalHelper {
         <<util>>
-        +abrirModal$(id) void
-        +cerrarModal$(id) void
-        +inicializarCierreClicFuera$(ids) void
+        +abrirModal(id) void
+        +cerrarModal(id) void
+        +inicializarCierreClicFuera(ids) void
     }
 
     class TogglePasswordHelper {
         <<util>>
-        +alternarVisibilidadPassword$(idInput, icono) void
+        +alternarVisibilidadPassword(idInput, icono) void
     }
 
     FormularioControllerBase <|-- LoginController : Herencia
@@ -478,4 +478,4 @@ classDiagram
 - `SesionService` solo persiste la sesión si el usuario marcó "Recordarme" en `login.html`.
 - Diagramas de flujo de ejecución por proceso: `auth-login-flujo.mermaid`, `auth-registro-flujo.mermaid`, `auth-verificacion-flujo.mermaid`, `auth-recuperacion-flujo.mermaid`.
 
-Memoria Ninja · Taller ADSO 3172526 · Módulo de autenticación refactorizado con SOLID + POO
+Memoria Ninja · Taller ADSO 3172526 ·
