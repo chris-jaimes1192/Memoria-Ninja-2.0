@@ -1,48 +1,58 @@
 import { LocalStorageRepository } from './infrastructure/LocalStorageRepository.js';
 import { ProfileService } from './services/ProfileService.js';
 import { ProfileModal } from './ui/ProfileModal.js';
+import { GameModeModal } from './ui/GameModeModal.js';
+import { RankingModal } from './ui/RankingModal.js';
+import { HistoryModal } from './ui/HistoryModal.js';
+import { TwoPlayersModal } from './ui/TwoPlayersModal.js';
 import { BaseModal } from './ui/BaseModal.js';
 import { MenuController } from './ui/MenuController.js';
 
+/*
+ * app.js es el composition root (SRP): no contiene lógica de negocio,
+ * únicamente ensambla e inyecta dependencias entre las capas.
+ */
+
 document.addEventListener('DOMContentLoaded', () => {
-  // 1. Repositorio de datos y servicio
+  // DIP: el repositorio (infraestructura) se inyecta al servicio por constructor,
+  // nunca se instancia dentro de él.
   const storageRepository = new LocalStorageRepository();
   const profileService = new ProfileService(storageRepository);
 
-  // 2. Instancia segura de modales (Valida que el ID exista)
-  const profileModal = document.getElementById('perfilModal') 
-    ? new ProfileModal('perfilModal', profileService) 
-    : null;
+  // OCP/DRY: agregar un modal = agregar una entrada al mapa.
+  // La fábrica decide si el contenedor existe en el DOM antes de instanciarlo (SRP).
+  const crearModalSiExiste = (modalId, factoria) =>
+    document.getElementById(modalId) ? factoria() : null;
 
-  const gameModeModal = document.getElementById('modalModoJuego') 
-    ? new BaseModal('modalModoJuego') 
-    : null;
+  // LSP: el controlador solo conoce objetos que responden a abrir()/cerrar().
+  // Cada subclase concreta añade su comportamiento específico sin romper el contrato.
+  const modales = {
+    profileModal: crearModalSiExiste('profileModal', () =>
+      new ProfileModal('profileModal', profileService)
+    ),
+    gameModeModal: crearModalSiExiste('gameModeModal', () =>
+      new GameModeModal('gameModeModal')
+    ),
+    dosJugadoresModal: crearModalSiExiste('twoPlayersModal', () =>
+      new TwoPlayersModal('twoPlayersModal')
+    ),
+    multijugadorModal: crearModalSiExiste('multiplayerModal', () =>
+      new BaseModal('multiplayerModal')
+    ),
+    rankingModal: crearModalSiExiste('rankingModal', () =>
+      new RankingModal('rankingModal')
+    ),
+    historyModal: crearModalSiExiste('modalHistorial', () =>
+      new HistoryModal('modalHistorial')
+    ),
+    puntajeModal: crearModalSiExiste('puntajeInfoModal', () =>
+      new BaseModal('puntajeInfoModal')
+    )
+  };
 
-  const rankingModal = document.getElementById('modalRanking') 
-    ? new BaseModal('modalRanking') 
-    : null;
+  // El modal de modos de juego inicializa sus tarjetas de opción (composición)
+  modales.gameModeModal?.inicializarOpciones();
 
-  const dosJugadoresModal = document.getElementById('modalDosJugadores') 
-    ? new BaseModal('modalDosJugadores') 
-    : null;
-
-  const multijugadorModal = document.getElementById('modalMultijugador') 
-    ? new BaseModal('modalMultijugador') 
-    : null;
-
-  const historyModal = (document.getElementById('modalHistorial') || document.querySelector('.modal-historial'))
-    ? new BaseModal(document.getElementById('modalHistorial') ? 'modalHistorial' : document.querySelector('.modal-historial').id || 'modalHistorial')
-    : null;
-
-  // 3. Inicializar el Controlador Principal
-  const menuController = new MenuController({
-    profileModal,
-    gameModeModal,
-    rankingModal,
-    historyModal,
-    dosJugadoresModal,
-    multijugadorModal
-  });
-
+  const menuController = new MenuController(modales);
   menuController.inicializarEventos();
 });
