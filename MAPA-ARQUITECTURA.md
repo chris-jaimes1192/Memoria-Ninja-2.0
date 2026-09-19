@@ -54,8 +54,12 @@ Reglas **puras**, sin HTTP, sin HTML, sin SQL:
 | Contrato de repositorio (interfaz) | `backend-poderes/src/repositories/PartidaRepository.js` |
 | Implementación en memoria | `backend-poderes/src/repositories/PartidaRepositoryMemoria.js` |
 | Implementación en archivos (JSON en disco) | `backend-poderes/src/repositories/PartidaRepositoryArchivo.js` → snapshots en `backend-poderes/data/*.json` (gitignored) |
+| **Implementación real (SQLite + JSON) — producción** | `backend-poderes/src/repositories/PartidaRepositorySQL.js` → estado completo de la partida serializado en la columna `estado_json` de `data/memorice.sqlite` |
+| Usuarios + historial en SQL | `backend-poderes/src/repositories/{UsuarioRepositorySQL,HistorialPartidaRepositorySQL}.js` |
 | Persistencia frontend (localStorage) | `js/infraestructura/repositorios/LocalStorageUsuarioRepositorio.js`, `LocalStorageSesionRepositorio.js`, `js/infrastructure/LocalStorageRepository.js`, y los repositorios de clanes avanzados (`js/{hyuga,muerte,orden,sarutobi,uchiha,uzumaki}/repositories/`) |
-| Datos simulados (en lugar de backend real) | `js/mock-server.js` (sala `NINJA-99`, jugadores Naruto/Sasuke) |
+| Repositorios HTTP del frontend (JSON por fetch) | `js/infraestructura/repositorios/{HttpUsuarioRepositorio,HttpHistorialRepositorio,RepositorioUsuariosConRespaldo}.js` |
+| Datos simulados (RESPALDO offline del backend real) | `js/mock-server.js` (sala `NINJA-99`, jugadores Naruto/Sasuke). Se usa solo si el backend no responde |
+| Mapa detallado SQL+JSON archivo por archivo | `SQL-JSON-IMPLEMENTACION.md` (raíz) |
 
 ---
 
@@ -96,7 +100,7 @@ La validación ocurre en el **Servicio** (lógica pura), nunca en el controller 
 | `Jugador.gastarChakra()` / `recibirDanio()` / `estaDerrotado()` | `backend-poderes/src/entities/Jugador.js` | campos `#privados`, mutación solo vía métodos validados; cero imports de Express |
 | `Poder.activar()` con esqueleto fijo (bloqueo → turno → usos → chakra → efecto) | `js/nucleo-GAME ONLI/poderes/Poder.js` | Template Method: los 6 poderes hijos solo implementan el efecto |
 | `GestorTurno` (quién tiene el turno) | `js/nucleo-GAME ONLI/GestorTurno.js` | estado `#esTurnoDeSasuke` + observer `alCambiarTurno` |
-| `ProveedorDatos` (DIP) | `js/nucleo-GAME ONLI/datos/ProveedorDatos.js` | la vista no conoce de dónde vienen los datos; `ProveedorDatosSimulado` envuelve `MockServer` |
+| `ProveedorDatos` (DIP) | `js/nucleo-GAME ONLI/datos/ProveedorDatos.js` | la vista no conoce de dónde vienen los datos; `ProveedorDatosSimulado` envuelve `MockServer` (fallback) y `ProveedorDatosServidor` crea la partida real por `POST /api/partida` |
 
 **Ninguna de las entidades/servicios importa HTML, Express ni SQL.** El DOM solo aparece en la capa `vista/` y en los controllers.
 
@@ -110,7 +114,7 @@ La validación ocurre en el **Servicio** (lógica pura), nunca en el controller 
 |---|---|---|
 | **S** (responsabilidad única) | Cada clase hace una cosa: `PoderController` traduce HTTP, `PoderService` orquesta, `Jugador` encapsula. El motor online pasó de 1 archivo de 1560 líneas a 15 clases. | `backend-poderes/src/controllers/PoderController.js`, `js/nucleo-GAME ONLI/*` |
 | **O** (abierto/cerrado) | `PoderFactory.registrar()` agrega poderes sin tocar Service/Controller | `backend-poderes/src/factories/PoderFactory.js:43-45` |
-| **L** (sustitución) | Una sola batería de contrato corre contra repo de memoria Y repo de archivo | `backend-poderes/tests/contratoPartidaRepository.js` + `partidaRepositoryMemoria.test.js` + `partidaRepositoryArchivo.test.js` |
+| **L** (sustitución) | Una sola batería de contrato corre contra repos de memoria, archivo **y SQLite** — sin tocar el Service | `backend-poderes/tests/contratoPartidaRepository.js` + `partidaRepositoryMemoria.test.js` + `partidaRepositoryArchivo.test.js` + `partidaRepositorySQL.test.js` |
 | **I** (segregación) | `AutenticacionService` solo depende de `IUsuarioLector`; los repos definen solo `obtener(id)`/`guardar(id, partida)` | `js/core/interfaces/`, `backend-poderes/src/repositories/PartidaRepository.js` |
 | **D** (inversión) | Dependencias inyectadas por constructor; clases dependen de interfaces | `backend-poderes/server.js:21-24` (composition root), `js/login.js`, `js/app.js`, `js/{clan}/{Clan}.js` |
 
@@ -118,7 +122,7 @@ La validación ocurre en el **Servicio** (lógica pura), nunca en el controller 
 
 | Patrón | Dónde | Archivos |
 |---|---|---|
-| **Repository** | Contrato + 2 implementaciones intercambiables (memoria/archivo) y localStorage frontend | `backend-poderes/src/repositories/`, `js/infraestructura/repositorios/`, `js/infrastructure/LocalStorageRepository.js` |
+| **Repository** | Contrato + 3 implementaciones intercambiables (memoria/archivo/**SQLite**) en backend; HTTP y localStorage en frontend | `backend-poderes/src/repositories/`, `js/infraestructura/repositorios/`, `js/infrastructure/LocalStorageRepository.js` |
 | **Factory** | Crea instancias nuevas de poderes por id; permite registrar nuevos en caliente | `backend-poderes/src/factories/PoderFactory.js`, `js/nucleo-GAME ONLI/poderes/GestorPoderes.js` |
 | **Strategy** | Jerarquía `Poder` + 6 hijos; `PoderService.activar` llama polimórficamente a `poder.activar()` | `backend-poderes/src/entities/poderes/Poder.js` |
 | **Template Method** | `Poder.activar()` define el orden fijo de validaciones; hijos solo dan el efecto | `js/nucleo-GAME ONLI/poderes/Poder.js` |
@@ -152,10 +156,10 @@ Existen **dos jerarquías de poderes independientes** que practican el mismo pat
 | Patrón de poderes | Strategy + hook `puedeSerContrarrestadoPor` | Template Method `activar()` |
 | Factory | `PoderFactory` | `GestorPoderes` |
 | Composition root | `server.js` | `GestorPartida` |
-| Persistencia | Repos memoria/archivo con contrato test | `localStorage` / `MockServer` |
-| Conectado al juego | NO (módulo aislado) | SÍ (`game-online.html` → `game-online.js` → `GestorPartida`) |
+| Persistencia | 3 repos bajo contrato test (memoria/archivo/**SQLite**), usuarios propios | **`ProveedorDatosServidor` → `POST /api/partida` (SQLite)**; respaldo `MockServer` + localStorage |
+| Conectado al juego | SÍ (lo alimenta) | SÍ (lo alimenta) |
 
-> ⚠️ **AGENTS.md está desactualizado aquí**: dice que `game-online.js` (~1562 líneas) sigue siendo el motor vivo y que `js/nucleo-GAME ONLI` "no está conectado al juego". **Ambas afirmaciones son falsas hoy** — el refactor SÍ corre en `game-online.html` (línea 253: `<script type="module" src="js/game-online.js">`).
+> ✅ **AGENTS.md ya no contiene esas afirmaciones falsas**: dice que `game-online.js` es un bootstrap de 19 líneas y que el motor vivo es `js/nucleo-GAME ONLI/`. El refactor SÍ corre en `game-online.html` (línea 253: `<script type="module" src="js/game-online.js">`) y su motor se conecta al backend real por HTTP (ver `SQL-JSON-IMPLEMENTACION.md`).
 
 ---
 
@@ -207,7 +211,7 @@ Consultar también: `js/COMO-INTEGRAR-NAVEGACION.md` (refactor de `niveles.js`/`
 3. **`usosPermitidos` definido y nunca aplicado.** `Poder.js` lo guarda, pero ningún service lo cuenta ni limita.
 4. **Repositorios de clanes avanzados = scaffold muerto.** Ningún controller importa sus `repositories/`; solo `muerte` y `orden` tienen `JugadorRepository.js` con contenido.
 5. **Mezcla de idiomas:** capa de cuentas y clanes en español; `js/domain|services|ui|infrastructure` del menú en inglés. `verifivacion.html` es un nombre real (con errata).
-6. **El backend no está conectado al frontend** (el juego usa `mock-server.js`); conectarlo vía `fetch` + salas WebSocket es el trabajo futuro citado en `backend-poderes/README.md`.
+6. **~~El backend no está conectado al frontend~~ → RESUELTO.** Antes el juego usaba `mock-server.js` como motor; hoy `POST /api/partida` crea la partida en SQLite y `POST /api/poder/activar` registra el poder cuando el backend responde. El frontend cae a `MockServer`+localStorage solo si el backend no responde (best-effort). Queda como trabajo futuro (no deuda): las salas **WebSocket** en tiempo real real, citadas en `backend-poderes/README.md`.
 
 ---
 
@@ -219,7 +223,7 @@ Consultar también: `js/COMO-INTEGRAR-NAVEGACION.md` (refactor de `niveles.js`/`
 | Reglas puras aisladas de HTTP/DOM | `backend-poderes/src/services/PoderService.js`, `js/nucleo-GAME ONLI/poderes/Poder.js` |
 | El ejemplo "saldo/chakra insuficiente" | `backend-poderes/src/services/PoderService.js:38-41` |
 | Composition root | `backend-poderes/server.js`, `js/nucleo-GAME ONLI/GestorPartida.js`, `js/login.js`, `js/app.js` |
-| Prueba de LSP (contrato único, 2 implementaciones) | `backend-poderes/tests/` → `npm test` desde `backend-poderes/` (35 tests / 10 suites) |
+| Prueba de LSP (contrato único, **3 implementaciones**: memoria/archivo/SQLite) | `backend-poderes/tests/` → `npm test` desde `backend-poderes/` (**55 tests / 14 suites**, todos verdes) |
 | Abstracciones/interfaces | `backend-poderes/src/repositories/PartidaRepository.js`, `js/core/interfaces/`, `js/domain/` |
 | UI / filas "js.ui" | `js/ui/`, `js/utils/ModalHelper.js`, `js/utils/TogglePasswordHelper.js`, `js/controladores/` |
 | Cómo el motor viejo se reorganizó en clases | `js/nucleo-GAME ONLI/COMO-QUEDO-ORGANIZADO.md` |
