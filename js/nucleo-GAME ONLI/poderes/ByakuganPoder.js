@@ -1,7 +1,9 @@
 import { Poder } from "./Poder.js";
 
-const RUTA_ALDEAS = "../assets/aldeas/";
-const RUTA_BACK = "../assets/cartas/back.png";
+// MISMAS rutas que BoardManager (board-manager.js): las carpetas reales
+// están en assets/img/cards/aldeas/ y el dorso en assets/img/back.png.
+const RUTA_ALDEAS = "assets/img/cards/aldeas/";
+const RUTA_BACK = "assets/img/back.png";
 const DURACION_BYAKUGAN = 3000;
 
 export class ByakuganPoder extends Poder {

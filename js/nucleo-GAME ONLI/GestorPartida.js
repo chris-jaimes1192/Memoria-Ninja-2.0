@@ -4,6 +4,7 @@ import { GestorTiempo } from "./GestorTiempo.js";
 import { VistaPartida } from "./vista/VistaPartida.js";
 import { GestorPoderes } from "./poderes/GestorPoderes.js";
 import { ProveedorDatosSimulado } from "./datos/ProveedorDatosSimulado.js";
+import { ProveedorDatosServidor } from "./datos/ProveedorDatosServidor.js";
 import { UIManager } from "../ui-manager.js";
 import { BoardManager } from "../board-manager.js";
 
@@ -41,7 +42,15 @@ export class GestorPartida {
 
         this.gestorTiempo = new GestorTiempo(TIEMPO_INICIAL);
         this.vista = new VistaPartida();
-        this.proveedorDatos = new ProveedorDatosSimulado();
+
+        // >>> LSP en vivo <<< El proveedor de datos real crea y persiste
+        // la partida en el backend (SQLite). Si el servidor no responde,
+        // ProveedorDatosServidor cae solo al simulado: el juego no se rompe.
+        this.proveedorDatos = new ProveedorDatosServidor({
+            jugador: this.jugador,
+            rival: this.rival,
+            respaldo: new ProveedorDatosSimulado(),
+        });
 
         this.puntajeActual = 0;
         this.partidaFinalizada = false;
@@ -59,6 +68,10 @@ export class GestorPartida {
             },
             mostrarAvisoRapido: (mensaje) => this.vista.mostrarAvisoRapido(mensaje),
             BoardManager,
+            // Hook OPCIONAL que avisa al backend cada vez que un poder se
+            // activa. Con proveedores simulados no hace nada.
+            notificarPoderAlServidor: (idPoder, esSasuke) =>
+                this.proveedorDatos.notificarPoder(idPoder, esSasuke),
         };
 
         this.gestorPoderes = new GestorPoderes(contexto);
@@ -70,7 +83,7 @@ export class GestorPartida {
     }
 
     /** Reemplaza a los dos "window.onload" separados que había antes — ahora es uno solo. */
-    iniciar() {
+    async iniciar() {
         BoardManager.renderBoard(
             (esAcierto, puntajeTotal) => this.procesarResultado(esAcierto, puntajeTotal),
             (movimientos, puntaje) => this.mostrarModalFinal(movimientos, puntaje),
@@ -78,7 +91,7 @@ export class GestorPartida {
         );
 
         try {
-            const data = this.proveedorDatos.obtenerDatos();
+            const data = await this.proveedorDatos.obtenerDatos();
             UIManager.renderPlayers(data.players);
         } catch (error) {
             console.warn("No se pudieron cargar los datos del proveedor (no afecta al tablero):", error);

@@ -16,11 +16,11 @@ No build system, no bundler, no linter, no CI — vanilla HTML/CSS/JS frontend, 
 ## Frontend (root)
 
 - Entry flow: `login.html` → `menu.html` → `game-online.html`
-- State is stored in `localStorage` (user session, player names, game history, difficulty level)
-- `js/mock-server.js` provides fake game data for the frontend; the real backend is not yet wired in
+- State is stored in `localStorage` (user session, player names, game history, difficulty level), with best-effort sync to the backend over HTTP
+- `js/mock-server.js` provides fake game data; `js/nucleo-GAME ONLI/datos/ProveedorDatosServidor.js` is the REAL provider (POST `/api/partida`, SQLite) that falls back to the mock when the server is unreachable
 - Card images are in `assets/img/cards/aldeas/{village}/` — village names: arena, konoha (hyuga, sarutobi, uchiha, uzumaki), niebla, nube, roca, otros
 - `js/board-manager.js` has the core board rendering logic; `ALDEA` variable at top controls which village's cards are shown
-- `js/game-online.js` is ~1560 lines and still the live game engine (largest file in the project)
+- `js/game-online.js` is a small ES-module bootstrap (`new GestorPartida().iniciar()`). The real live engine lives in `js/nucleo-GAME ONLI/` (see below)
 
 ### `js/` layered modules (auth + account flows)
 
@@ -36,9 +36,9 @@ These are ES modules on some files (`import`/`export`), CommonJS-style `require`
 
 ### Duplicate powers system (`js/nucleo-GAME ONLI/`)
 
-- Folder name **contains spaces**: `js/nucleo-GAME ONLI/` — use quotes or `-LiteralPath` in shell commands, and be careful in import paths.
-- Contains a SECOND, full powers implementation (Template Method): `poderes/Poder.js`, the 6 power classes, `GestorPoderes.js`, plus `GestorPartida.js` (composition root), `GestorTurno.js`, `GestorTiempo.js`, `entidades/Personaje.js`, `datos/ProveedorDatos*.js`, `vista/VistaPartida.js`
-- This is a proposed refactor of `game-online.js` — **NOT wired into the running game**. `game-online.js` (still 1562 lines) remains the live engine. Don't confuse the two or edit them interchangeably.
+- Folder name **contains spaces**: `js/nucleo-GAME ONLI/` — use quotes or `-LiteralPath` in shell commands. Import paths use the space too (works in browser module resolution, but bash globs will need quotes).
+- **This IS the live engine.** `game-online.js` is a thin bootstrap; `muelle-nucleo` no, el real: `GestorPartida.js` (composition root), `GestorTurno.js`, `GestorTiempo.js`, `entidades/Personaje.js`, `poderes/Poder.js` (Template Method) + the 6 power classes + `GestorPoderes.js`, `datos/ProveedorDatos*.js`, `vista/VistaPartida.js`
+- Data + persistence wiring: `ProveedorDatosServidor` creates the match on the backend (`POST /api/partida` → SQLite) and `Poder.activar()` notifies `POST /api/poder/activar` best-effort; both fall back silently to local simulado logic when the server is unreachable, so the game works offline too.
 - `COMO-QUEDO-ORGANIZADO.md` inside the folder maps old `game-online.js` code to the new classes.
 - There's a 0-byte junk file `{entidades,poderes,datos,vista}` in the folder (broken brace-expansion), safe to ignore.
 
@@ -48,13 +48,13 @@ These are ES modules on some files (`import`/`export`), CommonJS-style `require`
 cd backend-poderes
 npm install
 npm start          # runs on http://localhost:3000
-npm test           # Node built-in test runner (--test): 35 tests, 10 suites, all green
+npm test           # Node built-in test runner (--test): 55 tests, 14 suites, all green
 ```
 
 - Architecture: layered (entities → factories → repositories → services → controllers → routes)
 - `server.js` is the **composition root** — only place where concrete implementations are instantiated with `new`
-- 6 powers: byakugan, sustitucion, robo, genjutsu, sello, bomba
-- Two repository implementations: `PartidaRepositoryMemoria` (in-memory) and `PartidaRepositoryArchivo` (file-based) — both pass the same contract tests (LSP proof)
+- 6 powers: byakugan, sustitucion, robo, genjutsu, sello, bomba. Endpoints: `POST /api/poder/activar`, `POST /api/partida` (create+persist a match, SQLite), `POST /api/partida/prueba` (legacy demo), and the user/history endpoints under `/api/usuarios` (register/login/list/search/history)
+- Three repository implementations: `PartidaRepositoryMemoria` (in-memory), `PartidaRepositoryArchivo` (file-based) and `PartidaRepositorySQL` (SQLite, production default) — all pass the same contract tests (LSP proof)
 - Tests are contract-based: same test battery runs against multiple implementations
 - `PartidaRepositoryArchivo` writes a JSON snapshot per partida to `backend-poderes/data/` (gitignored via `data/*.json`), but **reads come from an in-memory cache**, not from disk — saved partidas return `null` after a server restart
 - Known dead-code bug: `BombaPoder.activar()` checks `rival.tieneSustitucionActiva === true`, but `Jugador` never sets that property — the "−10 if Sustitución active" branch never runs
@@ -64,7 +64,7 @@ npm test           # Node built-in test runner (--test): 35 tests, 10 suites, al
 
 - **Backend only** — there are no frontend tests
 - Run from `backend-poderes/` directory: `npm test`
-- Test files: `contratoPartidaRepository.js`, `contratoPoder.test.js`, `poderService.test.js`, plus one per repository implementation
+- Test files: `contratoPartidaRepository.js`, `contratoPoder.test.js`, `poderService.test.js`, `partidaService.test.js`, `partidaRepositorySQL.test.js`, `usuarioService.test.js`, plus one per repository implementation
 - Running tests creates real fixture data under `backend-poderes/data/` only when the file repository is exercised by tests
 
 ## Installed Skills (Autoskills)
@@ -90,6 +90,6 @@ Four specialized skills are installed and should be loaded via the `skill` tool 
 - No `package.json` at root — root `package-lock.json` is empty (`"packages": {}`)
 - Frontend has no dev server — open HTML files directly or use a static file server
 - Some JS files use ES modules, some don't — check each file's module style before adding code
-- The backend is not connected to the frontend yet (TODO noted in backend README)
+- The backend is connected to the frontend for auth, match creation and history (best-effort HTTP with local fallback); the per-zone game pages (`pares.js`, `uzumaki.js`, `muerte.js`, `arena.js`, etc.) still keep their match state in `localStorage`
 - Variable/function names mix Spanish and English; `verifivacion.html` is a real (misspelled) filename
 - `js/nucleo-GAME ONLI/` folder has a space in its name — quotes/`-LiteralPath` required in shell commands

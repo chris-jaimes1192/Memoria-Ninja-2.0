@@ -85,6 +85,16 @@ export class Poder {
         this._actualizarUsosUI(esSasuke);
 
         this.efecto(contexto, esSasuke, jugador);
+
+        // Sincronización BEST-EFFORT con el backend: se avisa al servidor
+        // para que registre el poder en la partida de SQLite (chakra,
+        // eventos). Hook OPCIONAL (ISP) — si el contexto no lo expone o el
+        // servidor no está, aquí simplemente no pasa nada. Nunca bloquea el juego.
+        const notificar = contexto.notificarPoderAlServidor;
+        if (typeof notificar === "function") {
+            const promesa = notificar(this.id, esSasuke);
+            if (promesa && typeof promesa.catch === "function") promesa.catch(() => {});
+        }
     }
 
     /** Hook OPCIONAL (ISP: el poder que no lo necesita, no lo toca). */

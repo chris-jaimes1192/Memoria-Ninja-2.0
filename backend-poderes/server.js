@@ -16,6 +16,9 @@ const HistorialPartidaRepositorySQL = require("./src/repositories/HistorialParti
 const UsuarioService = require("./src/services/UsuarioService");
 const UsuarioController = require("./src/controllers/UsuarioController");
 const crearRutasUsuarios = require("./src/routes/usuarioRoutes");
+const PartidaService = require("./src/services/PartidaService");
+const PartidaController = require("./src/controllers/PartidaController");
+const crearRutasPartidas = require("./src/routes/partidaRoutes");
 
 /**
  * RAÍZ DE COMPOSICIÓN (Composition Root)
@@ -46,11 +49,15 @@ const historialRepository = new HistorialPartidaRepositorySQL(database);
 const usuarioService = new UsuarioService(usuarioRepository, historialRepository, passwordHasher);
 const usuarioController = new UsuarioController(usuarioService);
 
+const partidaService = new PartidaService(partidaRepository);
+const partidaController = new PartidaController(partidaService);
+
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use("/api", crearRutasPoderes(poderController));
 app.use("/api", crearRutasUsuarios(usuarioController));
+app.use("/api", crearRutasPartidas(partidaController));
 
 // Ruta de prueba: crea una partida de ejemplo con 2 jugadores y 50 de chakra
 // cada uno, para poder probar /api/poder/activar sin armar todo el flujo
