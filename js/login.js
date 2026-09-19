@@ -6,7 +6,7 @@
   debe tener type="module".
 =========================================================*/
 
-import { LocalStorageUsuarioRepositorio } from "./infraestructura/repositorios/LocalStorageUsuarioRepositorio.js";
+import { HttpUsuarioRepositorio } from "./infraestructura/repositorios/HttpUsuarioRepositorio.js";
 import { LocalStorageSesionRepositorio } from "./infraestructura/repositorios/LocalStorageSesionRepositorio.js";
 import { MensajeDomNotificador } from "./infraestructura/notificadores/MensajeDomNotificador.js";
 import { AutenticacionService } from "./servicios/AutenticacionService.js";
@@ -15,7 +15,10 @@ import { LoginController } from "./controladores/LoginController.js";
 import { alternarVisibilidadPassword } from "./utils/TogglePasswordHelper.js";
 
 // --- Composición (Dependency Injection manual) ---
-const repositorioUsuarios = new LocalStorageUsuarioRepositorio();
+// Los usuarios viven en SQLite (backend); este repositorio es un cliente
+// HTTP. Si el backend no está arriba, el login te avisa con un mensaje
+// amigable en vez de guardar datos falsos en el navegador.
+const repositorioUsuarios = new HttpUsuarioRepositorio();
 const sesionRepositorio = new LocalStorageSesionRepositorio();
 const notificador = new MensajeDomNotificador("msg");
 const autenticacionService = new AutenticacionService(repositorioUsuarios);
@@ -28,12 +31,12 @@ const loginController = new LoginController(
 
 // --- Conexión con el DOM (se mantienen los mismos nombres de función
 // en window para no romper los onclick="..." ya existentes en login.html) ---
-function login() {
+async function login() {
   const usuario = document.getElementById("user").value.trim();
   const password = document.getElementById("pass").value.trim();
   const recordar = document.getElementById("recordarme").checked;
 
-  loginController.manejarEnvio({ usuario, password, recordar });
+  await loginController.manejarEnvio({ usuario, password, recordar });
 }
 
 function togglePassword(idInput, icono) {

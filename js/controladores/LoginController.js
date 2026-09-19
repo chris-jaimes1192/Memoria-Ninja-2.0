@@ -29,11 +29,11 @@ export class LoginController extends FormularioControllerBase {
   /**
    * @param {{ usuario: string, password: string, recordar: boolean }} datos
    */
-  manejarEnvio(datos) {
+  async manejarEnvio(datos) {
     const { usuario, password, recordar } = datos;
 
     try {
-      const usuarioValido = this.autenticacionService.iniciarSesion(
+      const usuarioValido = await this.autenticacionService.iniciarSesion(
         usuario,
         password
       );

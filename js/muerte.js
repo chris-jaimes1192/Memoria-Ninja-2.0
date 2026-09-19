@@ -485,6 +485,26 @@ botonGuardar.addEventListener('click', () => {
     JSON.stringify(historial)
   );
 
+  // Envío BEST-EFFORT al backend (SQLite): el registro local ya quedó.
+  (async () => {
+    try {
+      const { historialApi } = await import(
+        "./js/infraestructura/repositorios/HttpHistorialRepositorio.js"
+      );
+      await historialApi.guardar({
+        zona: "muerte",
+        puntaje: registro.puntajeJugador1 !== undefined
+          ? registro.puntajeJugador1
+          : registro.puntaje,
+        modo: registro.puntajeJugador1 !== undefined ? "2" : "1",
+        ganador: registro.nombre,
+        idPartida: `muerte-${Date.now()}`
+      });
+    } catch {
+      // Backend no disponible: sin problema, sigue el juego.
+    }
+  })();
+
   modal.classList.add('hidden');
 
 });

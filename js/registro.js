@@ -5,7 +5,7 @@
   IMPORTANTE: type="module" en el <script> de registro.html.
 =========================================================*/
 
-import { LocalStorageUsuarioRepositorio } from "./infraestructura/repositorios/LocalStorageUsuarioRepositorio.js";
+import { HttpUsuarioRepositorio } from "./infraestructura/repositorios/HttpUsuarioRepositorio.js";
 import { MensajeDomNotificador } from "./infraestructura/notificadores/MensajeDomNotificador.js";
 import { RegistroService } from "./servicios/RegistroService.js";
 import { RegistroController } from "./controladores/RegistroController.js";
@@ -17,13 +17,15 @@ import {
 } from "./utils/ModalHelper.js";
 
 // --- Composición ---
-const repositorioUsuarios = new LocalStorageUsuarioRepositorio();
+// El registro ahora va contra SQLite (backend HTTP). El backend hashea
+// la contraseña con scrypt y devuelve 400 si el usuario/correo ya existe.
+const repositorioUsuarios = new HttpUsuarioRepositorio();
 const notificador = new MensajeDomNotificador("msg");
 const registroService = new RegistroService(repositorioUsuarios);
 const registroController = new RegistroController(registroService, notificador);
 
 // --- Conexión con el DOM ---
-function registrar() {
+async function registrar() {
   const datosFormulario = {
     usuario: document.getElementById("usuario").value.trim(),
     nacimiento: document.getElementById("nacimiento").value.trim(),
@@ -35,7 +37,7 @@ function registrar() {
   const aceptaTerminos = document.getElementById("aceptaTerminos").checked;
   const aceptaPolitica = document.getElementById("aceptaPolitica").checked;
 
-  const exito = registroController.manejarEnvio({
+  const exito = await registroController.manejarEnvio({
     datosFormulario,
     aceptaTerminos,
     aceptaPolitica

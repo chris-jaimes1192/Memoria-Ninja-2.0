@@ -25,11 +25,11 @@ export class AutenticacionService {
   }
 
   /**
-   * @returns {import("../core/entities/Usuario.js").Usuario}
+   * @returns {Promise<import("../core/entities/Usuario.js").Usuario>}
    * @throws {Error} si las credenciales no son válidas
    */
-  iniciarSesion(usuario, password) {
-    const usuarioValido = this.repositorioUsuarios.buscarPorCredenciales(
+  async iniciarSesion(usuario, password) {
+    const usuarioValido = await this.repositorioUsuarios.buscarPorCredenciales(
       usuario,
       password
     );

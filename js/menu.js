@@ -8,21 +8,49 @@ const listaRegistros = document.getElementById('recordsList');
 const botonNivel = document.getElementById('levelBtn');
 
 // === HISTORIAL (lista lateral) ===
-function actualizarHistorial() {
+// Primero intenta leer del backend (SQLite). Si no hay sesión activa o
+// el servidor no responde, cae al historial local de localStorage.
+async function actualizarHistorial() {
   if (!listaRegistros) return; // Evita errores si no existe en el DOM actual
-  const historial = JSON.parse(localStorage.getItem('registros')) || [];
 
-  if (historial.length === 0) {
-    listaRegistros.textContent = 'No hay partidas guardadas.';
-  } else {
-    listaRegistros.innerHTML = historial.map(r => {
-      if (r.puntajeJugador1 !== undefined) {
-        return `<p>${r.nombre} — ${r.tiempo} — ${r.puntajeJugador1} | ${r.puntajeJugador2}</p>`;
-      } else {
-        return `<p>${r.nombre} — ${r.tiempo} — ${r.puntaje}</p>`;
+  const sesionActiva = JSON.parse(localStorage.getItem('usuarioActivo')) || null;
+
+  if (sesionActiva && sesionActiva.id) {
+    try {
+      const { historialApi } = await import('./infraestructura/repositorios/HttpHistorialRepositorio.js');
+      const historialServer = await historialApi.obtener(sesionActiva.id);
+      if (historialServer.length > 0) {
+        renderHistorial(historialServer.map(r => ({
+          nombre: r.ganador || r.zona || 'Partida',
+          tiempo: r.jugada_en || '',
+          puntaje: r.puntaje,
+          puntajeJugador1: r.modo === '2' ? r.puntaje : undefined,
+          puntajeJugador2: r.modo === '2' ? 0 : undefined,
+          modo: r.modo
+        })));
+        return;
       }
-    }).join('');
+    } catch {
+      // Backend caído -> caer al historial local.
+    }
   }
+
+  const historial = JSON.parse(localStorage.getItem('registros')) || [];
+  renderHistorial(historial.length === 0 ? null : historial);
+}
+
+function renderHistorial(historial) {
+  if (!listaRegistros) return;
+  if (!historial || historial.length === 0) {
+    listaRegistros.textContent = 'No hay partidas guardadas.';
+    return;
+  }
+  listaRegistros.innerHTML = historial.map(r => {
+    if (r.puntajeJugador1 !== undefined) {
+      return `<p>${r.nombre} — ${r.tiempo} — ${r.puntajeJugador1} | ${r.puntajeJugador2}</p>`;
+    }
+    return `<p>${r.nombre} — ${r.tiempo} — ${r.puntaje}</p>`;
+  }).join('');
 }
 
 // === INICIAR JUEGO ===

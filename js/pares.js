@@ -234,6 +234,25 @@
       victoria: victoria
     });
     localStorage.setItem("registros", JSON.stringify(registros));
+
+    // Envío BEST-EFFORT al backend (SQLite): si no hay sesión activa o
+    // el servidor no responde, el registro local ya quedó guardado.
+    (async () => {
+      try {
+        const { historialApi } = await import(
+          "./js/infraestructura/repositorios/HttpHistorialRepositorio.js"
+        );
+        await historialApi.guardar({
+          zona: "pares",
+          puntaje: puntaje,
+          modo: "1",
+          ganador: nombre,
+          idPartida: `pares-${Date.now()}`
+        });
+      } catch {
+        // Backend no disponible: sin problema, sigue el juego.
+      }
+    })();
   }
 
   // ================== MODALES ==================

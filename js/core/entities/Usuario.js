@@ -15,16 +15,27 @@
 =========================================================*/
 
 export class Usuario {
+  #id;
   #usuario;
   #nacimiento;
   #correo;
   #passwordHash;
 
-  constructor({ usuario, nacimiento, correo, pass }) {
+  constructor({ id, usuario, nacimiento, correo, pass }) {
+    this.#id = id ?? null;
     this.#usuario = usuario;
     this.#nacimiento = nacimiento;
     this.#correo = correo;
     this.#passwordHash = pass;
+  }
+
+  /**
+   * id que asigna el backend (SQLite). Solo existe cuando el usuario se
+   * registró/inició sesión a través de la API HTTP; los usuarios viejos
+   * guardados en localStorage traen null.
+   */
+  get id() {
+    return this.#id;
   }
 
   get usuario() {
@@ -61,6 +72,7 @@ export class Usuario {
    */
   toJSON() {
     return {
+      id: this.#id,
       usuario: this.#usuario,
       nacimiento: this.#nacimiento,
       correo: this.#correo,

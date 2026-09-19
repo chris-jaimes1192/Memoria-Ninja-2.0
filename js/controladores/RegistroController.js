@@ -18,9 +18,9 @@ export class RegistroController extends FormularioControllerBase {
 
   /**
    * @param {{ datosFormulario: object, aceptaTerminos: boolean, aceptaPolitica: boolean }} datos
-   * @returns {boolean}
+   * @returns {Promise<boolean>}
    */
-  manejarEnvio(datos) {
+  async manejarEnvio(datos) {
     const { datosFormulario, aceptaTerminos, aceptaPolitica } = datos;
 
     try {
@@ -31,7 +31,7 @@ export class RegistroController extends FormularioControllerBase {
         throw new Error("Debes aceptar la Política de Privacidad.");
       }
 
-      this.registroService.registrar(datosFormulario);
+      await this.registroService.registrar(datosFormulario);
       this.notificador.mostrar(
         "Registro exitoso. Ahora puedes iniciar sesión.",
         "exito"

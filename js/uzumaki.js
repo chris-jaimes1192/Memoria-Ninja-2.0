@@ -249,6 +249,24 @@ botonGuardar.addEventListener('click', () => {
   historial.push(registro);
   localStorage.setItem('registros', JSON.stringify(historial));
 
+  // Envío BEST-EFFORT al backend (SQLite): el registro local ya quedó.
+  (async () => {
+    try {
+      const { historialApi } = await import(
+        "./js/infraestructura/repositorios/HttpHistorialRepositorio.js"
+      );
+      await historialApi.guardar({
+        zona: "uzumaki",
+        puntaje: puntajeJugador1,
+        modo: modo2Jugadores ? "2" : "1",
+        ganador: registro.nombre,
+        idPartida: `uzumaki-${Date.now()}`
+      });
+    } catch {
+      // Backend no disponible: sin problema, sigue el juego.
+    }
+  })();
+
   modal.classList.add('hidden');
 });
 

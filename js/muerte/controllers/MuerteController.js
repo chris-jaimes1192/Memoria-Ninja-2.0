@@ -6,6 +6,8 @@ import { JuegoService } from "../services/JuegoService.js";
 import { PuntajeService } from "../services/PuntajeService.js";
 import { TiempoService } from "../services/TiempoService.js";
 
+import { historialApi } from "../../infraestructura/repositorios/HttpHistorialRepositorio.js";
+
 
 export class MuerteController {
 
@@ -963,6 +965,29 @@ export class MuerteController {
             )
 
         );
+
+
+        // Envío BEST-EFFORT al backend (SQLite): el registro local
+        // ya quedó; si no hay sesión o el servidor no responde,
+        // esto simplemente no se envía (historialApi captura errores).
+        historialApi.guardar({
+
+            zona: "muerte",
+
+            puntaje:
+                registro.puntajeJugador1 !== undefined
+                    ? registro.puntajeJugador1
+                    : registro.puntaje,
+
+            modo:
+                registro.puntajeJugador1 !== undefined
+                    ? "2"
+                    : "1",
+
+            ganador:
+                registro.nombre
+
+        });
 
     }
 

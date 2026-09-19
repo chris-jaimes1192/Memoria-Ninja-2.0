@@ -27,7 +27,7 @@ export class RegistroService {
     this.repositorioUsuarios = repositorioUsuarios;
   }
 
-  registrar({ usuario, nacimiento, correo, pass, confirmarPass }) {
+  async registrar({ usuario, nacimiento, correo, pass, confirmarPass }) {
     if (!usuario || !nacimiento || !correo || !pass || !confirmarPass) {
       throw new Error("Por favor, completa todos los campos.");
     }
@@ -36,12 +36,12 @@ export class RegistroService {
       throw new Error("Las contraseñas no coinciden.");
     }
 
-    if (this.repositorioUsuarios.buscarPorCorreo(correo)) {
+    if (await this.repositorioUsuarios.buscarPorCorreo(correo)) {
       throw new Error("Este correo ya está registrado.");
     }
 
     const nuevoUsuario = new Usuario({ usuario, nacimiento, correo, pass });
-    this.repositorioUsuarios.guardar(nuevoUsuario);
+    await this.repositorioUsuarios.guardar(nuevoUsuario);
     return nuevoUsuario;
   }
 }
