@@ -7,6 +7,8 @@
 =========================================================*/
 
 import { HttpUsuarioRepositorio } from "./infraestructura/repositorios/HttpUsuarioRepositorio.js";
+import { LocalStorageUsuarioRepositorio } from "./infraestructura/repositorios/LocalStorageUsuarioRepositorio.js";
+import { RepositorioUsuariosConRespaldo } from "./infraestructura/repositorios/RepositorioUsuariosConRespaldo.js";
 import { LocalStorageSesionRepositorio } from "./infraestructura/repositorios/LocalStorageSesionRepositorio.js";
 import { MensajeDomNotificador } from "./infraestructura/notificadores/MensajeDomNotificador.js";
 import { AutenticacionService } from "./servicios/AutenticacionService.js";
@@ -15,10 +17,14 @@ import { LoginController } from "./controladores/LoginController.js";
 import { alternarVisibilidadPassword } from "./utils/TogglePasswordHelper.js";
 
 // --- Composición (Dependency Injection manual) ---
-// Los usuarios viven en SQLite (backend); este repositorio es un cliente
-// HTTP. Si el backend no está arriba, el login te avisa con un mensaje
-// amigable en vez de guardar datos falsos en el navegador.
-const repositorioUsuarios = new HttpUsuarioRepositorio();
+// Los usuarios viven en SQLite (backend) y este repositorio intenta con
+// HTTP primero. Si el backend NO está arriba (ErrorDeConexion), cae solo
+// al respaldo local: el login sigue funcionando contra los usuarios que
+// se registraron alguna vez sin servidor.
+const repositorioUsuarios = new RepositorioUsuariosConRespaldo({
+  principal: new HttpUsuarioRepositorio(),
+  respaldo: new LocalStorageUsuarioRepositorio()
+});
 const sesionRepositorio = new LocalStorageSesionRepositorio();
 const notificador = new MensajeDomNotificador("msg");
 const autenticacionService = new AutenticacionService(repositorioUsuarios);

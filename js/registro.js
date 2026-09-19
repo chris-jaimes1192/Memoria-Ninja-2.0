@@ -6,6 +6,8 @@
 =========================================================*/
 
 import { HttpUsuarioRepositorio } from "./infraestructura/repositorios/HttpUsuarioRepositorio.js";
+import { LocalStorageUsuarioRepositorio } from "./infraestructura/repositorios/LocalStorageUsuarioRepositorio.js";
+import { RepositorioUsuariosConRespaldo } from "./infraestructura/repositorios/RepositorioUsuariosConRespaldo.js";
 import { MensajeDomNotificador } from "./infraestructura/notificadores/MensajeDomNotificador.js";
 import { RegistroService } from "./servicios/RegistroService.js";
 import { RegistroController } from "./controladores/RegistroController.js";
@@ -17,9 +19,15 @@ import {
 } from "./utils/ModalHelper.js";
 
 // --- Composición ---
-// El registro ahora va contra SQLite (backend HTTP). El backend hashea
-// la contraseña con scrypt y devuelve 400 si el usuario/correo ya existe.
-const repositorioUsuarios = new HttpUsuarioRepositorio();
+// El registro va contra SQLite (backend HTTP) cuando hay servidor: el
+// backend hashea la contraseña con scrypt y devuelve 400 si el
+// usuario/correo ya existe. Si el servidor no está arriba, el respaldo
+// local guarda el usuario en el navegador para que login/registro sigan
+// funcionando de punta a punta offline.
+const repositorioUsuarios = new RepositorioUsuariosConRespaldo({
+  principal: new HttpUsuarioRepositorio(),
+  respaldo: new LocalStorageUsuarioRepositorio()
+});
 const notificador = new MensajeDomNotificador("msg");
 const registroService = new RegistroService(repositorioUsuarios);
 const registroController = new RegistroController(registroService, notificador);

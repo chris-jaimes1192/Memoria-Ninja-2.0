@@ -26,12 +26,27 @@ import { Usuario } from "../../core/entities/Usuario.js";
 
 const URL_BASE = "http://localhost:3000/api";
 
+/**
+ * Error TIPADO para distinguir "el backend no está alcanzable" (caída de
+ * red / servidor apagado) de los errores de NEGOCIO que el servidor sí
+ * devolvió (usuario duplicado, contraseña incorrecta, etc.). Es lo que
+ * usa RepositorioUsuariosConRespaldo para decidir cuándo caer al
+ * localStorage sin falsear un error real del servidor.
+ */
+export class ErrorDeConexion extends Error {
+  constructor(mensaje) {
+    super(mensaje);
+    this.name = "ErrorDeConexion";
+  }
+}
+
 /** @implements {import("../../core/interfaces/IUsuarioEscritor.js").IUsuarioEscritor} */
 export class HttpUsuarioRepositorio extends IUsuarioLector {
   /**
    * Centraliza el fetch + manejo de errores.
    * @returns {Promise<object>} el body JSON de respuesta.
-   * @throws {Error} mensaje amigable cuando el backend no responde.
+   * @throws {ErrorDeConexion} cuando el backend no responde (no es un
+   *         error de negocio: el servidor simplemente no estaba arriba).
    */
   async #peticion(ruta, opciones = {}) {
     let respuesta;
@@ -41,7 +56,7 @@ export class HttpUsuarioRepositorio extends IUsuarioLector {
         ...opciones
       });
     } catch {
-      throw new Error(
+      throw new ErrorDeConexion(
         "No se pudo conectar con el servidor de datos. Verifica que el backend esté corriendo en localhost:3000."
       );
     }
