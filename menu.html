@@ -11,7 +11,7 @@
     <!-- FUENTE -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- CSS -->
     <link rel="stylesheet" href="css/menu.css">
@@ -530,20 +530,39 @@
     </div>
 </div>
 
-<!-- NUEVO MODAL: EXPLICACIÓN SISTEMA DE PUNTAJE (Basado en image_a9e286.png) -->
+<!-- NUEVO MODAL: EXPLICACIÓN SISTEMA DE PUNTAJE -->
 <div class="modal-overlay" id="puntajeInfoModal">
     <div class="modal-content-info-puntaje">
-        <h2 class="modal-info-titulo">SISTEMA DE PUNTAJE</h2>
-        <div class="modal-info-separador"></div>
         
-        <div class="modal-info-cuerpo">
-            <div class="modal-info-icono-cartas">🎴⭐</div>
-            <p class="modal-info-texto">
-                Cuando encuentras dos cartas se llama par, cada par que encuentres te dará un total de 100 puntos que se van acumulando al final de la partida.
-            </p>
+        <div class="puntaje-header-box">
+            <div class="puntaje-icon">🏆</div>
+            <div class="puntaje-titulo-texto">
+                <h2>SISTEMA DE PUNTAJE</h2>
+                <p class="sub-azul">GANAS PUNTOS CON CADA PAR</p>
+            </div>
         </div>
 
-        <button class="btn-volver-info" id="closePuntajeInfoBtn">Volver</button>
+        <div class="puntaje-separador"></div>
+
+        <div class="puntaje-cuerpo">
+            <div class="puntaje-regla-destacada">
+                <span class="puntaje-puntos">100</span>
+                <span class="puntaje-unidad">PTS</span>
+                <p>POR CADA PAR ENCONTRADO</p>
+            </div>
+
+            <div class="puntaje-detalle">
+                <div class="puntaje-detalle-icono">🎴⭐</div>
+                <p class="modal-info-texto">
+                    Cuando encuentras dos cartas iguales se llama <strong>par</strong>. Cada par que consigas te dará
+                    <strong>100 puntos</strong> que se van acumulando al final de la partida.
+                </p>
+            </div>
+        </div>
+
+        <p class="puntaje-nota">💡 La clave es memorizar rápido y fallar lo menos posible.</p>
+
+        <button class="btn-volver-info" id="closePuntajeInfoBtn">VOLVER</button>
     </div>
 </div>
 
@@ -556,7 +575,7 @@
         <div class="estado">
             <span>🟢 Conectado</span>
             <span>Servidor Online</span>
-            <span>Ping: 45ms</span>
+            <span>Ping: <span id="pingValor">45ms</span></span>
             <span>Versión 1.0</span>
         </div>
 
@@ -565,7 +584,66 @@
 
     
 
-    <!-- VENTANA MODAL DE PERFIL RPG -->
+    <!-- VENTANA MODAL: CONFIGURACIÓN -->
+    <div class="modal-overlay" id="configModal">
+        <div class="modal-content-config">
+            
+            <div class="config-header-box">
+                <div class="config-icon">⚙️</div>
+                <div class="config-titulo-texto">
+                    <h2>CONFIGURACIÓN</h2>
+                    <p class="sub-naranja">AJUSTA TU EXPERIENCIA DE JUEGO</p>
+                </div>
+            </div>
+
+            <div class="config-opciones">
+                <div class="config-fila">
+                    <div class="config-label">
+                        <span class="config-emoji">🎵</span>
+                        <div>
+                            <strong>MÚSICA</strong>
+                            <small>Sonido de fondo del juego</small>
+                        </div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="cfgMusica" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="config-fila">
+                    <div class="config-label">
+                        <span class="config-emoji">🔊</span>
+                        <div>
+                            <strong>EFECTOS DE SONIDO</strong>
+                            <small>Aciertos, errores y combates</small>
+                        </div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="cfgEfectos" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="config-fila">
+                    <div class="config-label">
+                        <span class="config-emoji">🔉</span>
+                        <div>
+                            <strong>VOLUMEN</strong>
+                            <small>Nivel general del sonido</small>
+                        </div>
+                    </div>
+                    <input type="range" id="cfgVolumen" min="0" max="100" value="80" class="config-slider" aria-label="Nivel de volumen">
+                    <span class="config-valor" id="cfgVolumenValor">80%</span>
+                </div>
+            </div>
+
+            <button class="btn-volver-modal color-naranja-btn" id="closeConfigBtn">GUARDAR Y VOLVER</button>
+        </div>
+    </div>
+ 
+
+        <!-- VENTANA MODAL DE PERFIL RPG -->
     <div class="modal-overlay" id="profileModal">
         <div class="modal-content-perfil">
             <span class="cerrar-modal" id="closeProfileBtn">&times;</span>
@@ -609,7 +687,7 @@
 
 <button onclick="cerrarSesion()">
     Cerrar sesión
-</button>
+</button> 
 
     <!-- JAVASCRIPT -->
     <script src="js/menu.js"></script>

@@ -1,518 +1,295 @@
-window.addEventListener("load", () => {
+/* =========================================================
+   JUEGO: ENCONTRAR PARES
+   (pares.html)
 
-    
-    // MÚSICA
-    
-const musica = document.getElementById("gameMusic");
+   Dinámica:
+   - Debe encontrar las 8 parejas de cartas ninja volteando
+     dos cartas por turno.
+   - Acierto: la pareja queda marcada (verde/apagada) y suma
+     100 puntos por cada par.
+   - Fallo: las cartas se ocultan de nuevo.
+   - Tienes 60 segundos. Sin pares restantes = victoria.
+   ========================================================= */
 
-if (musica) {
+(function () {
+  "use strict";
 
-    musica.volume = 0.5;
+  const TIEMPO_JUEGO = 60; // segundos
+  const PUNTOS_POR_PAR = 100;
 
-    if (sessionStorage.getItem("iniciarMusica") === "si") {
+  const IMAGENES = [
+    "assets/img/cards/aldeas/akatsuki/1.png",
+    "assets/img/cards/aldeas/akatsuki/2.png",
+    "assets/img/cards/aldeas/akatsuki/3.png",
+    "assets/img/cards/aldeas/akatsuki/4.png",
+    "assets/img/cards/aldeas/konoha/uchiha/1.png",
+    "assets/img/cards/aldeas/konoha/uchiha/2.png",
+    "assets/img/cards/aldeas/konoha/uchiha/3.png",
+    "assets/img/cards/aldeas/konoha/uchiha/4.png"
+  ];
 
-        musica.play().catch(() => {});
+  // ================== ELEMENTOS DEL DOM ==================
+  const tableroIzq = document.getElementById("tableroIzquierdo");
+  const tableroDer = document.getElementById("tableroDerecho");
+  const puntajeDOM = document.getElementById("puntaje");
+  const tiempoDOM = document.getElementById("tiempo");
+  const contadorDOM = document.getElementById("contador");
+  const victoriaTexto = document.getElementById("victoriaTexto");
+  const modalPerder = document.getElementById("modalPerder");
+  const modalGanar = document.getElementById("modalGanar");
+  const modalAjustes = document.getElementById("modalAjustes");
+  const btnAjustes = document.getElementById("btnAjustes");
+  const btnMusica = document.getElementById("btnMusica");
+  const btnPausa = document.getElementById("btnPausa");
+  const btnMenuAjustes = document.getElementById("btnMenuAjustes");
+  const btnCerrarAjustes = document.getElementById("btnCerrarAjustes");
+  const musica = document.getElementById("gameMusic");
 
-        sessionStorage.removeItem("iniciarMusica");
+  // ================== ESTADO ==================
+  let cartas = [];          // elementos .carta generados
+  let primera = null;       // primera carta descubierta
+  let segunda = null;       // segunda carta descubierta
+  let bloqueado = false;    // true mientras se comprueba un intento
+  let puntaje = 0;
+  let segundosRestantes = TIEMPO_JUEGO;
+  let temporizadorInterval = null;
+  let pausado = false;
+  let partidaTerminada = false;
+  let parejasRestantes = IMAGENES.length;
 
+  // ================== BARAJAR ==================
+  function barajar(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
+
+  // ================== TABLERO ==================
+  function construirTablero() {
+    const mezcla = barajar([...IMAGENES, ...IMAGENES]); // cada imagen x2 = 16 cartas
+
+    const mitades = [mezcla.slice(0, 8), mezcla.slice(8, 16)];
+    const contenedores = [tableroIzq, tableroDer];
+
+    contenedores.forEach((contenedor, mitad) => {
+      mitades[mitad].forEach((src, indice) => {
+        const carta = document.createElement("div");
+        carta.className = "carta";
+        carta.dataset.src = src;
+        carta.dataset.pareja = IMAGENES.indexOf(src);
+
+        const img = document.createElement("img");
+        img.src = src;
+        img.alt = "Carta ninja";
+        img.style.opacity = "0"; // boca abajo hasta voltear
+        img.draggable = false;
+
+        carta.appendChild(img);
+        carta.addEventListener("click", () => voltear(carta));
+        contenedor.appendChild(carta);
+        cartas.push(carta);
+      });
+    });
+  }
+
+  // ================== VOLTEAR ==================
+  function voltear(carta) {
+    if (bloqueado || pausado || partidaTerminada) return;
+    if (carta === primera) return;
+    if (carta.classList.contains("correcta")) return;
+
+    mostrar(carta);
+
+    if (!primera) {
+      primera = carta;
+      return;
     }
 
-}
-
-function iniciarMusica() {
-
-    if (musicaActiva) {
-
-        musica.play();
-
-    }
-
-}
-
-    
-    // ELEMENTOS
-   
-    const victoriaTexto = document.getElementById("victoriaTexto");
-
-    const contador = document.getElementById("contador");
-
-    const cartas = document.querySelectorAll(".carta");
-
-    const mensaje = document.getElementById("mensajeJuego");
-
-    const puntaje = document.getElementById("puntaje");
-
-    const tiempo = document.getElementById("tiempo");
-
-    const modalPerder = document.getElementById("modalPerder");
-
-    const modalGanar = document.getElementById("modalGanar");
-const btnAjustes = document.getElementById("btnAjustes");
-const modalAjustes = document.getElementById("modalAjustes");
-
-const btnCerrarAjustes = document.getElementById("btnCerrarAjustes");
-const btnMusica = document.getElementById("btnMusica");
-const btnPausa = document.getElementById("btnPausa");
-const btnMenuAjustes = document.getElementById("btnMenuAjustes");
-
-
-
-   
-    // VARIABLES
-   
-    
-
-    let juegoPausado = false;
-    let musicaActiva = true;
-
-    let secuencia = [];
-
-    let respuestaJugador = [];
-
-    let ronda = 4;
-
-    let bloqueado = true;
-
-    let puntos = 0;
-
-    let segundos = 0;
-
-    let minutos = 0;
-
-    
-    // GENERAR SECUENCIA
-   
-
-    function generarSecuencia() {
-
-        secuencia = [];
-
-        cartas.forEach(carta => {
-
-            secuencia.push(Number(carta.dataset.id));
-
-        });
-
-        for (let i = secuencia.length - 1; i > 0; i--) {
-
-            const j = Math.floor(Math.random() * (i + 1));
-
-            [secuencia[i], secuencia[j]] = [secuencia[j], secuencia[i]];
-
-        }
-
-    }
-
-    
-    // CRONÓMETRO
-    
-
-    setInterval(() => {
-
-        segundos++;
-
-        if (segundos === 60) {
-
-            segundos = 0;
-
-            minutos++;
-
-        }
-
-        if (tiempo) {
-
-            tiempo.textContent =
-                String(minutos).padStart(2, "0") +
-                ":" +
-                String(segundos).padStart(2, "0");
-
-        }
-
-    }, 1000);
-
-   
-    // ESPERAR
-    
-
-    function esperar(ms) {
-
-        return new Promise(resolve => setTimeout(resolve, ms));
-
-    }
-
-    
-    // REINICIAR CARTAS
-    
-
-    function limpiarCartas() {
-
-        cartas.forEach(carta => {
-
-            carta.classList.remove("activa");
-
-            carta.classList.remove("correcta");
-
-            carta.style.pointerEvents = "auto";
-
-        });
-
-    }
-
-
-    async function cuentaRegresiva(){
-
-    contador.style.display = "block";
-
-    contador.textContent = "3";
-
-    await esperar(1000);
-
-    contador.textContent = "2";
-
-    await esperar(1000);
-
-    contador.textContent = "1";
-
-    await esperar(1000);
-
-    contador.textContent = "¡Memoriza!";
-
-    await esperar(1000);
-
-    contador.style.display = "none";
-
-}
-   
-    // MOSTRAR SECUENCIA
-    
-    async function mostrarSecuencia() {
-
-        bloqueado = true;
-
-respuestaJugador = [];
-
-limpiarCartas();
-
-await cuentaRegresiva();
-
-if(mensaje){
-
-    mensaje.textContent = "Memoriza la secuencia";
-
-}
-
-        await esperar(1000);
-
-        for (let i = 0; i < ronda; i++) {
-
-            const id = secuencia[i];
-
-            const carta = document.querySelector(
-                `.carta[data-id="${id}"]`
-            );
-
-            carta.classList.add("activa");
-
-            await esperar(700);
-
-            carta.classList.remove("activa");
-
-            await esperar(250);
-
-        }
-
-        if (mensaje) {
-
-            mensaje.textContent = "¡Sigue el orden!";
-
-        }
-
-        bloqueado = false;
-
-    }
-
-    
-    // INICIAR
-    
-
-    generarSecuencia();
-
-    mostrarSecuencia();
-
-    
-    // CLIC EN LAS CARTAS
-   
-
-    cartas.forEach(carta => {
-
-        carta.addEventListener("click", async () => {
-
-            // Si el juego está mostrando la secuencia
-            if (bloqueado) return;
-
-            const idCarta = Number(carta.dataset.id);
-
-            // Evitar pulsar la misma carta dos veces
-            if (carta.classList.contains("correcta")) return;
-
-            // Guardar respuesta del jugador
-            respuestaJugador.push(idCarta);
-
-            // Posición actual
-            let posicion = respuestaJugador.length - 1;
-
-            
-            // ES CORRECTA
-            
-
-            if (idCarta === secuencia[posicion]) {
-
-                // La carta queda negra
-                carta.classList.add("correcta");
-
-                // Ya no puede volver a pulsarse
-                carta.style.pointerEvents = "none";
-
-                
-                // TERMINÓ LA RONDA
-                
-                if (respuestaJugador.length === ronda) {
-
-                    bloqueado = true;
-
-                    puntos += ronda * 10;
-
-                    if (puntaje) {
-                        puntaje.textContent = puntos;
-                    }
-
-                    if (mensaje) {
-                        mensaje.textContent = "¡Correcto!";
-                    }
-
-                    await esperar(1200);
-
-                    // ¿Ganó el juego?
-if (ronda === 16) {
-
+    segunda = carta;
     bloqueado = true;
+    comprobar();
+  }
 
-    await mostrarVictoria();
+  function mostrar(carta) {
+    carta.querySelector("img").style.opacity = "1";
+    carta.classList.add("activa");
+  }
 
-    return;
+  function ocultar(carta) {
+    carta.querySelector("img").style.opacity = "0";
+    carta.classList.remove("activa");
+  }
 
-}
+  // ================== COMPROBAR PAREJA ==================
+  function comprobar() {
+    const acierto = primera.dataset.pareja === segunda.dataset.pareja;
 
-// Siguiente ronda (+2 cartas)
-ronda += 2;
+    if (acierto) {
+      setTimeout(() => {
+        primera.classList.add("correcta");
+        primera.classList.remove("activa");
+        segunda.classList.add("correcta");
+        segunda.classList.remove("activa");
 
-await mostrarSecuencia();
+        puntaje += PUNTOS_POR_PAR;
+        puntajeDOM.textContent = puntaje;
 
-                }
+        parejasRestantes -= 1;
+        if (parejasRestantes === 0) {
+          terminarPartida(true);
+        }
 
-            } else {
+        limpiarIntento();
+      }, 250);
+    } else {
+      setTimeout(() => {
+        ocultar(primera);
+        ocultar(segunda);
+        limpiarIntento();
+      }, 900);
+    }
+  }
 
-              
-                // PERDIÓ
-              
+  function limpiarIntento() {
+    primera = null;
+    segunda = null;
+    bloqueado = false;
+  }
 
-                bloqueado = true;
-
-                if (mensaje) {
-                    mensaje.textContent = "¡Has perdido!";
-                }
-
-                await esperar(500);
-
-                if (modalPerder) {
-                    modalPerder.style.display = "flex";
-                }
-
-            }
-
-        });
-
-
-
-    }); 
-    //CONFETIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII 77
-    
-    function lanzarConfeti(){
-
-    const duracion = 3000;
-    const fin = Date.now() + duracion;
+  // ================== CONTADOR 3-2-1 ==================
+  function iniciarCuentaRegresiva() {
+    let numero = 3;
+    contadorDOM.style.display = "block";
+    contadorDOM.textContent = numero;
 
     const intervalo = setInterval(() => {
-
-        if(Date.now() > fin){
-
-            clearInterval(intervalo);
-            return;
-
-        }
-
-        confetti({
-            particleCount: 8,
-            angle: 60,
-            spread: 60,
-            origin: { x: 0 }
-        });
-
-        confetti({
-            particleCount: 8,
-            angle: 120,
-            spread: 60,
-            origin: { x: 1 }
-        });
-
-    }, 200);
-
-}
- //mensaje de que gano la partida//
-async function mostrarVictoria() {
-
-    lanzarConfeti();
-
-    modalGanar.style.display = "flex";
-
-    victoriaTexto.style.display = "block";
-
-    await esperar(1500);
-
-    victoriaTexto.style.display = "none";
-
-}
-
-    // ===========================
-    // BOTÓN REINICIAR (DERROTA)
-    // ===========================
-
-    const btnReiniciar = document.getElementById("reiniciar");
-
-    if (btnReiniciar) {
-
-        btnReiniciar.addEventListener("click", () => {
-
-            location.reload();
-
-        });
-
-    }
-
-    // ===========================
-    // BOTÓN MENÚ (DERROTA)
-    // ===========================
-
-    const btnMenu = document.getElementById("menu");
-
-    if (btnMenu) {
-
-        btnMenu.addEventListener("click", () => {
-
-            window.location.href = "menu.html";
-
-        });
-
-    }
-
-    //boton jugar otra vez (VICTORIA)
-
-    const btnVolverJugar = document.getElementById("volverJugar");
-
-    if (btnVolverJugar) {
-
-        btnVolverJugar.addEventListener("click", () => {
-
-            location.reload();
-
-        });
-
-    }
-
-    
-    // BOTÓN VOLVER AL MENÚ (VICTORIA)
-    
-
-    const btnVolverMenu = document.getElementById("volverMenu");
-
-    if (btnVolverMenu) {
-
-        btnVolverMenu.addEventListener("click", () => {
-
-            window.location.href = "menu.html";
-
-        });
-
-    }
-
-
-//boton de pausa donde esta la muusica ir al menu y volumen
-
-// Abrir ajustes
-btnAjustes.addEventListener("click", () => {
-
-    modalAjustes.style.display = "flex";
-
-});
-
-// Cerrar ajustes
-btnCerrarAjustes.addEventListener("click", () => {
-
-    modalAjustes.style.display = "none";
-
-});
-
-// Música
-if (btnMusica) {
-
-    btnMusica.addEventListener("click", async () => {
-
-        if (musica.paused) {
-
-            musicaActiva = true;
-
-            await musica.play();
-
-            btnMusica.textContent = "🎵 Música: ON";
-
-        } else {
-
-            musicaActiva = false;
-
-            musica.pause();
-
-            btnMusica.textContent = "🔇 Música: OFF";
-
-        }
-
-    });
-
-}
-
-// Pausar juego
-btnPausa.addEventListener("click", () => {
-
-    juegoPausado = !juegoPausado;
-
-    bloqueado = juegoPausado;
-
-    if (juegoPausado) {
-
-        btnPausa.textContent = "Reanudar partida";
-
+      numero -= 1;
+      if (numero > 0) {
+        contadorDOM.textContent = numero;
+      } else {
+        contadorDOM.textContent = "¡YA!";
+        clearInterval(intervalo);
+        setTimeout(() => {
+          contadorDOM.style.display = "none";
+          iniciarTemporizador();
+        }, 400);
+      }
+    }, 800);
+  }
+
+  // ================== TEMPORIZADOR ==================
+  function iniciarTemporizador() {
+    mostrarTiempo();
+
+    temporizadorInterval = setInterval(() => {
+      if (pausado || partidaTerminada) return;
+
+      segundosRestantes -= 1;
+      mostrarTiempo();
+
+      if (segundosRestantes <= 0) {
+        segundosRestantes = 0;
+        terminarPartida(false);
+      }
+    }, 1000);
+  }
+
+  function mostrarTiempo() {
+    const min = String(Math.floor(segundosRestantes / 60)).padStart(2, "0");
+    const seg = String(segundosRestantes % 60).padStart(2, "0");
+    tiempoDOM.textContent = `${min}:${seg}`;
+  }
+
+  // ================== FIN DE PARTIDA ==================
+  function terminarPartida(victoria) {
+    if (partidaTerminada) return;
+    partidaTerminada = true;
+
+    clearInterval(temporizadorInterval);
+    guardarRegistro(victoria);
+
+    if (victoria) {
+      victoriaTexto.style.display = "block";
+      if (typeof confetti === "function") {
+        confetti({ particleCount: 180, spread: 90, origin: { y: 0.6 } });
+      }
+      setTimeout(() => {
+        victoriaTexto.style.display = "none";
+        abrirModal(modalGanar);
+      }, 1700);
     } else {
-
-        btnPausa.textContent = "Pausar partida";
-
+      abrirModal(modalPerder);
     }
+  }
 
-});
+  function guardarRegistro(victoria) {
+    const registros = JSON.parse(localStorage.getItem("registros")) || [];
+    const nombre = (JSON.parse(localStorage.getItem("usuarioActivo")) || {}).nombre || "Jugador";
+    registros.push({
+      nombre: nombre,
+      puntaje: puntaje,
+      tiempo: tiempoDOM.textContent,
+      victoria: victoria
+    });
+    localStorage.setItem("registros", JSON.stringify(registros));
+  }
 
-// Ir al menú
-btnMenuAjustes.addEventListener("click", () => {
+  // ================== MODALES ==================
+  function abrirModal(modal) {
+    modal.style.display = "flex";
+  }
+  function cerrarModal(modal) {
+    modal.style.display = "none";
+  }
 
+  function reiniciar() {
+    window.location.reload();
+  }
+
+  // ================== AJUSTES ==================
+  btnAjustes.addEventListener("click", () => {
+    if (partidaTerminada) return;
+    pausado = true;
+    abrirModal(modalAjustes);
+  });
+
+  btnCerrarAjustes.addEventListener("click", () => {
+    cerrarModal(modalAjustes);
+    pausado = false;
+  });
+
+  btnPausa.addEventListener("click", () => {
+    pausado = !pausado;
+    btnPausa.textContent = pausado ? "Reanudar partida" : "Pausar partida";
+  });
+
+  btnMusica.addEventListener("click", () => {
+    if (musica.paused) {
+      musica.play();
+      btnMusica.textContent = "Música: ON";
+    } else {
+      musica.pause();
+      btnMusica.textContent = "Música: OFF";
+    }
+  });
+
+  btnMenuAjustes.addEventListener("click", () => {
     window.location.href = "menu.html";
+  });
 
-});
+  // Botones de los modales
+  document.getElementById("reiniciar").addEventListener("click", reiniciar);
+  document.getElementById("menu").addEventListener("click", () => {
+    window.location.href = "menu.html";
+  });
+  document.getElementById("volverJugar").addEventListener("click", reiniciar);
+  document.getElementById("volverMenu").addEventListener("click", () => {
+    window.location.href = "menu.html";
+  });
 
-});
+  // ================== ARRANQUE ==================
+  construirTablero();
+  iniciarCuentaRegresiva();
+})();

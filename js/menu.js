@@ -99,3 +99,36 @@ function cerrarSesion() {
   localStorage.removeItem("usuarioActivo");
   window.location.href = "login.html";
 }
+
+// === PING EN TIEMPO REAL EN LA BARRA DE ESTADO ===
+const pingValor = document.getElementById('pingValor');
+let pingSimulado = 45;
+
+function simularPing() {
+  const deriva = Math.round((Math.random() - 0.5) * 12);
+  pingSimulado = Math.min(140, Math.max(12, pingSimulado + deriva));
+  return pingSimulado;
+}
+
+async function medirPingReal() {
+  const inicio = performance.now();
+  try {
+    await fetch(`http://localhost:3000/api/estado?t=${Date.now()}`, {
+      mode: 'no-cors',
+      cache: 'no-store'
+    });
+    return Math.max(1, Math.round(performance.now() - inicio));
+  } catch {
+    return null; // Servidor no disponible
+  }
+}
+
+async function actualizarPing() {
+  if (!pingValor) return;
+  const ms = await medirPingReal();
+  const valor = ms ?? simularPing();
+  pingValor.textContent = `${valor}ms`;
+}
+
+setInterval(actualizarPing, 2000);
+actualizarPing();

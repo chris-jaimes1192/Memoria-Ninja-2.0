@@ -5,6 +5,7 @@ import { GameModeModal } from './ui/GameModeModal.js';
 import { RankingModal } from './ui/RankingModal.js';
 import { HistoryModal } from './ui/HistoryModal.js';
 import { TwoPlayersModal } from './ui/TwoPlayersModal.js';
+import { ConfigModal } from './ui/ConfigModal.js';
 import { BaseModal } from './ui/BaseModal.js';
 import { MenuController } from './ui/MenuController.js';
 
@@ -47,6 +48,9 @@ document.addEventListener('DOMContentLoaded', () => {
     ),
     puntajeModal: crearModalSiExiste('puntajeInfoModal', () =>
       new BaseModal('puntajeInfoModal')
+    ),
+    configModal: crearModalSiExiste('configModal', () =>
+      new ConfigModal('configModal')
     )
   };
 

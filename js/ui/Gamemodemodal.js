@@ -7,8 +7,8 @@ export class GameModeModal extends BaseModal {
 
   inicializarOpciones() {
     const rutas = {
-      btnEncontrarPares: { subModoJuego: 'pares', href: 'niveles.html' },
-      btnMemoria: { subModoJuego: 'memoria', href: 'pares.html', sesion: { iniciarMusica: 'si' } },
+      btnEncontrarPares: { subModoJuego: 'pares', href: 'pares.html' },
+      btnMemoria: { subModoJuego: 'memoria', href: 'orden.html', sesion: { iniciarMusica: 'si' } },
       btnCarpetas: { subModoJuego: 'carpetas', href: 'Agrupar/facil.html' },
       btnMuerte: { subModoJuego: 'muerte', href: 'muerte.html' }
     };

@@ -51,6 +51,11 @@ export class MenuController {
       this.abrirModal(this.modales.rankingModal);
     });
 
+    // 5b. Configuracion (Boton Arriba Derecha)
+    document.querySelector('.menu-superior')?.addEventListener('click', () => {
+      this.abrirModal(this.modales.configModal);
+    });
+
     // 6. Botones de la Barra Inferior (Historial, Puntaje, etc.)
     document.querySelectorAll('.contenedor-inferior .item').forEach(item => {
       item.addEventListener('click', () => {
