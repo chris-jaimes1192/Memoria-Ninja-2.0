@@ -49,7 +49,7 @@ historial_partidas(id TEXT PRIMARY KEY, id_usuario TEXT REFERENCES usuarios(id),
 | `src/repositories/UsuarioRepositorySQL.js` | CRUD de usuarios en SQL | `usuario`/`correo` UNIQUE, nunca expone el hash |
 | `src/repositories/HistorialPartidaRepositorySQL.js` | Insert/select de historial | FK a `usuarios(id)` |
 | `src/repositories/PartidaRepositoryMemoria.js` | Implementación en memoria (tests) | misma interfaz → **LSP** |
-| `src/repositories/PartidaRepositoryArchivo.js` | Implementación en archivos JSON (tests) | misma interfaz → **LSP** |
+| `src/repositories/PartidaRepositoryArchivo.js` | Implementación en archivos JSON en disco (`{id}.json`) | misma interfaz → **LSP**; `obtener()` **vuelve al disco** si el cache en memoria está vacío (sobrevive reinicios) |
 | `src/infraestructura/PasswordHasher.js` | Cifra contraseñas con scrypt | `sal:hash`, nunca texto plano |
 
 **El corazón del "SQL + JSON": `PartidaRepositorySQL.guardar()`**
@@ -64,6 +64,25 @@ db.prepare("INSERT INTO partidas (id, estado_json, creada_en, actualizada_en) VA
   .run(partida.id, JSON.stringify(estado), ahora, ahora);
 ```
 Y `obtener()` hace el proceso inverso: `JSON.parse(estado_json)` → reconstruye `Jugador`/`Tablero` reales.
+
+> **`PartidaRepositoryArchivo` (JSON en disco) — misma fidelidad, sin cache perdido.** El fix que igualó a SQL: `guardar()` serializa toda la partida a `{carpeta}/{id}.json` y `obtener()` consulta primero el **cache en memoria** y, si falla (p. ej. tras un reinicio del servidor), **vuelve al disco** y **materializa la ENTIDAD** real con sus métodos encapsulados:
+>
+> ```js
+> obtener(idPartida) {
+>   this.cacheEnMemoria ??= new Map();
+>   if (this.cacheEnMemoria.has(idPartida)) {
+>     return this.cacheEnMemoria.get(idPartida);   // cache hit → retorno directo
+>   }
+>   const ruta = this.#rutaDe(idPartida);
+>   if (!fs.existsSync(ruta)) return null;         // misses → null (contrato)
+>   const foto = JSON.parse(fs.readFileSync(ruta, "utf8")); // deserialización
+>   const partida = this.#reconstruirPartida(foto);         // hidratación
+>   this.cacheEnMemoria.set(idPartida, partida);            // repoblar cache
+>   return partida;
+> }
+> ```
+>
+> `#reconstruirPartida()` es el mismo corazón que `PartidaRepositorySQL.#reconstruirPartida()`: crea `Jugador` con `ganarChakra()`/`recibirDanio()` (multiplicación solo vía la API encapsulada, nunca `jugador.chakra = x`) y recompone `Partida` con sus `eventos`, `poderesActivos` (por id) y un `Tablero` nuevo. Antes este repositorio **escribía el JSON pero leía solo del cache** → al reiniciar devolvía `null`; ahora la partida sobrevive, igual que en SQLite.
 
 > **Prueba LSP**: la misma batería de tests de contrato (`tests/contratoPartidaRepository.js`) corre contra las 3 implementaciones y las 3 pasan. Cambiar de una a otra no toca el Service.
 
@@ -171,19 +190,20 @@ if (typeof notificar === "function") {
 
 ---
 
-## 5. Tests (55/55 verdes — 14 suites)
+## 5. Tests (58/58 verdes — 15 suites)
 
 | Archivo | Qué cubre |
 |---|---|
 | `tests/contratoPartidaRepository.js` | La MISMA batería contra Memoria, Archivo y SQL (**LSP**) |
-| `tests/partidaRepositorySQL.test.js` | Round-trip SQL + JSON, sobrescritura, ids aislados |
+| `tests/partidaRepositorySQL.test.js` | Round-trip SQL + JSON, sobrescritura, ids aislados, **persistencia tras reinicio** |
+| `tests/partidaRepositoryArchivo.test.js` | Round-trip JSON en disco, **persistencia tras reinicio (instancia nueva, cache vacío)**, restauración fiel de chakra/vida, `null` si no existe el `.json` |
 | `tests/partidaService.test.js` | Crear+persistir, chakra personalizado, ids distintos, validación 0-100 |
 | `tests/usuarioService.test.js` | Registro→login→historial→`obtenerTodos`→`buscarPorCorreo` |
 | `tests/poderService.test.js` | Activación, contraataques, chakra insuficiente |
 
 ```bash
 cd backend-poderes
-npm test     # 55 passing, 0 failing
+npm test     # 58 passing, 0 failing
 ```
 
 ---

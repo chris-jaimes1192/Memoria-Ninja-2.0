@@ -6,6 +6,8 @@ import { TiempoService } from "../services/TiempoService.js";
 import { Jugador } from "../entities/jugador.js";
 import { Partida } from "../entities/partida.js";
 
+import { historialApi } from "../../infraestructura/repositorios/HttpHistorialRepositorio.js";
+
 
 export class HyugaController {
 
@@ -621,6 +623,33 @@ export class HyugaController {
 
 
     // =================================================
+    // GUARDAR RESULTADO (SQL best-effort)
+    // =================================================
+
+    guardarResultadoServidor(victoria) {
+
+        historialApi.guardar({
+
+            zona: "hyuga",
+
+            puntaje:
+                this.partida.obtenerJugador()
+                    .getPuntaje(),
+
+            modo: "1",
+
+            ganador:
+                victoria
+                    ? this.jugador.nombre
+                    : "ninguno",
+
+            idPartida:
+                `hyuga-${Date.now()}`
+        });
+    }
+
+
+    // =================================================
     // DERROTA
     // =================================================
 
@@ -650,6 +679,8 @@ export class HyugaController {
                 "hidden"
             );
         }
+
+        this.guardarResultadoServidor(false);
     }
 
 
@@ -678,6 +709,8 @@ export class HyugaController {
                 "hidden"
             );
         }
+
+        this.guardarResultadoServidor(true);
     }
 
 

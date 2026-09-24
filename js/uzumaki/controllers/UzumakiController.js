@@ -6,6 +6,8 @@ import { TiempoService } from "../services/TiempoService.js";
 import { Jugador } from "../entities/jugador.js";
 import { Partida } from "../entities/partida.js";
 
+import { historialApi } from "../../infraestructura/repositorios/HttpHistorialRepositorio.js";
+
 
 export class UzumakiController {
 
@@ -621,6 +623,33 @@ export class UzumakiController {
 
 
     // =================================================
+    // GUARDAR RESULTADO (SQL best-effort)
+    // =================================================
+
+    guardarResultadoServidor(victoria) {
+
+        historialApi.guardar({
+
+            zona: "uzumaki",
+
+            puntaje:
+                this.partida.obtenerJugador()
+                    .getPuntaje(),
+
+            modo: "1",
+
+            ganador:
+                victoria
+                    ? this.jugador.nombre
+                    : "ninguno",
+
+            idPartida:
+                `uzumaki-${Date.now()}`
+        });
+    }
+
+
+    // =================================================
     // DERROTA
     // =================================================
 
@@ -650,6 +679,8 @@ export class UzumakiController {
                 "hidden"
             );
         }
+
+        this.guardarResultadoServidor(false);
     }
 
 
@@ -678,6 +709,8 @@ export class UzumakiController {
                 "hidden"
             );
         }
+
+        this.guardarResultadoServidor(true);
     }
 
 

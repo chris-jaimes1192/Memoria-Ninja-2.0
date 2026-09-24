@@ -48,7 +48,7 @@ These are ES modules on some files (`import`/`export`), CommonJS-style `require`
 cd backend-poderes
 npm install
 npm start          # runs on http://localhost:3000
-npm test           # Node built-in test runner (--test): 55 tests, 14 suites, all green
+npm test           # Node built-in test runner (--test): 58 tests, 15 suites, all green
 ```
 
 - Architecture: layered (entities → factories → repositories → services → controllers → routes)
@@ -56,7 +56,7 @@ npm test           # Node built-in test runner (--test): 55 tests, 14 suites, al
 - 6 powers: byakugan, sustitucion, robo, genjutsu, sello, bomba. Endpoints: `POST /api/poder/activar`, `POST /api/partida` (create+persist a match, SQLite), `POST /api/partida/prueba` (legacy demo), and the user/history endpoints under `/api/usuarios` (register/login/list/search/history)
 - Three repository implementations: `PartidaRepositoryMemoria` (in-memory), `PartidaRepositoryArchivo` (file-based) and `PartidaRepositorySQL` (SQLite, production default) — all pass the same contract tests (LSP proof)
 - Tests are contract-based: same test battery runs against multiple implementations
-- `PartidaRepositoryArchivo` writes a JSON snapshot per partida to `backend-poderes/data/` (gitignored via `data/*.json`), but **reads come from an in-memory cache**, not from disk — saved partidas return `null` after a server restart
+- `PartidaRepositoryArchivo` writes a JSON snapshot per partida to `backend-poderes/data/` (gitignored via `data/*.json`). `obtener()` checks the in-memory cache first and, on a miss, **reads back from the JSON file on disk** and rebuilds the `Partida` entity (same as the SQL repo) — partidas survive a server restart. Verified by the "persistencia REAL en disco" tests
 - Known dead-code bug: `BombaPoder.activar()` checks `rival.tieneSustitucionActiva === true`, but `Jugador` never sets that property — the "−10 if Sustitución active" branch never runs
 - `Poder.usosPermitidos` is defined in the base class but never enforced anywhere
 

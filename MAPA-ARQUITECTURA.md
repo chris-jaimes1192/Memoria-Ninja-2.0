@@ -53,7 +53,7 @@ Reglas **puras**, sin HTTP, sin HTML, sin SQL:
 |---|---|
 | Contrato de repositorio (interfaz) | `backend-poderes/src/repositories/PartidaRepository.js` |
 | Implementación en memoria | `backend-poderes/src/repositories/PartidaRepositoryMemoria.js` |
-| Implementación en archivos (JSON en disco) | `backend-poderes/src/repositories/PartidaRepositoryArchivo.js` → snapshots en `backend-poderes/data/*.json` (gitignored) |
+| Implementación en archivos (JSON en disco) | `backend-poderes/src/repositories/PartidaRepositoryArchivo.js` → snapshots en `backend-poderes/data/*.json` (gitignored). `obtener()` consulta el cache y, si falla, **vuelve al disco** y reconstruye la entidad (sobrevive reinicios) |
 | **Implementación real (SQLite + JSON) — producción** | `backend-poderes/src/repositories/PartidaRepositorySQL.js` → estado completo de la partida serializado en la columna `estado_json` de `data/memorice.sqlite` |
 | Usuarios + historial en SQL | `backend-poderes/src/repositories/{UsuarioRepositorySQL,HistorialPartidaRepositorySQL}.js` |
 | Persistencia frontend (localStorage) | `js/infraestructura/repositorios/LocalStorageUsuarioRepositorio.js`, `LocalStorageSesionRepositorio.js`, `js/infrastructure/LocalStorageRepository.js`, y los repositorios de clanes avanzados (`js/{hyuga,muerte,orden,sarutobi,uchiha,uzumaki}/repositories/`) |
@@ -207,7 +207,7 @@ Consultar también: `js/COMO-INTEGRAR-NAVEGACION.md` (refactor de `niveles.js`/`
 ## 7. Bugs conocidos y deuda técnica (relevantes para "los cimientos")
 
 1. **`tieneSustitucionActiva` — rama muerta (backend).** `BombaPoder.js:14` comprueba `rival.tieneSustitucionActiva === true`, pero `Jugador` nunca define esa propiedad → la Bomba siempre resta 20 (el "−10" nunca ocurre). Tampoco `SustitucionPoder` la marca.
-2. **`PartidaRepositoryArchivo` escribe a disco pero lee de caché.** Tras reiniciar el servidor, `obtener(id)` devuelve `null` aunque exista el `.json` (`PartidaRepositoryArchivo.js:55-58`).
+2. **~~`PartidaRepositoryArchivo` escribe a disco pero lee de caché~~ → RESUELTO.** Antes, tras reiniciar el servidor, `obtener(id)` devolvía `null` aunque existiera el `.json`. Hoy `obtener()` consulta el cache en memoria y, si falla, **vuelve al disco** (`fs.readFileSync(self.rutaDe(id), "utf8")`) y **reconstruye la entidad** con `#reconstruirPartida()` (`PartidaRepositoryArchivo.js:70-109`), igual que hace el repo SQL con `estado_json`. Test que lo garantiza: `partidaRepositoryArchivo.test.js` ("la partida sobrevive a otra instancia del repositorio").
 3. **`usosPermitidos` definido y nunca aplicado.** `Poder.js` lo guarda, pero ningún service lo cuenta ni limita.
 4. **Repositorios de clanes avanzados = scaffold muerto.** Ningún controller importa sus `repositories/`; solo `muerte` y `orden` tienen `JugadorRepository.js` con contenido.
 5. **Mezcla de idiomas:** capa de cuentas y clanes en español; `js/domain|services|ui|infrastructure` del menú en inglés. `verifivacion.html` es un nombre real (con errata).
@@ -223,7 +223,7 @@ Consultar también: `js/COMO-INTEGRAR-NAVEGACION.md` (refactor de `niveles.js`/`
 | Reglas puras aisladas de HTTP/DOM | `backend-poderes/src/services/PoderService.js`, `js/nucleo-GAME ONLI/poderes/Poder.js` |
 | El ejemplo "saldo/chakra insuficiente" | `backend-poderes/src/services/PoderService.js:38-41` |
 | Composition root | `backend-poderes/server.js`, `js/nucleo-GAME ONLI/GestorPartida.js`, `js/login.js`, `js/app.js` |
-| Prueba de LSP (contrato único, **3 implementaciones**: memoria/archivo/SQLite) | `backend-poderes/tests/` → `npm test` desde `backend-poderes/` (**55 tests / 14 suites**, todos verdes) |
+| Prueba de LSP (contrato único, **3 implementaciones**: memoria/archivo/SQLite) | `backend-poderes/tests/` → `npm test` desde `backend-poderes/` (**58 tests / 15 suites**, todos verdes) |
 | Abstracciones/interfaces | `backend-poderes/src/repositories/PartidaRepository.js`, `js/core/interfaces/`, `js/domain/` |
 | UI / filas "js.ui" | `js/ui/`, `js/utils/ModalHelper.js`, `js/utils/TogglePasswordHelper.js`, `js/controladores/` |
 | Cómo el motor viejo se reorganizó en clases | `js/nucleo-GAME ONLI/COMO-QUEDO-ORGANIZADO.md` |

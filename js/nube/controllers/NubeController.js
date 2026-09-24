@@ -7,6 +7,8 @@ import { TiempoService } from "../services/TiempoService.js";
 import { Jugador } from "../entities/Jugador.js";
 import { Partida } from "../entities/Partida.js";
 
+import { historialApi } from "../../infraestructura/repositorios/HttpHistorialRepositorio.js";
+
 
 export class NubeController {
 
@@ -547,6 +549,33 @@ export class NubeController {
 
 
     // ==================================================
+    // GUARDAR RESULTADO (SQL best-effort)
+    // ==================================================
+
+    guardarResultadoServidor(victoria) {
+
+        historialApi.guardar({
+
+            zona: "nube",
+
+            puntaje:
+                this.partida.obtenerJugador()
+                    .getPuntaje(),
+
+            modo: "1",
+
+            ganador:
+                victoria
+                    ? this.jugador.nombre
+                    : "ninguno",
+
+            idPartida:
+                `nube-${Date.now()}`
+        });
+    }
+
+
+    // ==================================================
     // DERROTA
     // ==================================================
 
@@ -572,6 +601,8 @@ export class NubeController {
         if (this.modal) {
             this.modal.classList.remove("hidden");
         }
+
+        this.guardarResultadoServidor(false);
     }
 
 
@@ -597,6 +628,8 @@ export class NubeController {
 
             this.victoryModal.classList.remove("hidden");
         }
+
+        this.guardarResultadoServidor(true);
     }
 
 
