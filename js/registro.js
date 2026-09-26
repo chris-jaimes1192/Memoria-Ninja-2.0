@@ -1,72 +1,54 @@
 /*=========================================================
   MEMORIA NINJA
-  COMPOSITION ROOT: registro.js
+  CAPA: SERVICIOS (lógica de negocio)
+  ARCHIVO: servicios/RegistroService.js
 
-  IMPORTANTE: type="module" en el <script> de registro.html.
+  SRP: valida y crea usuarios nuevos. No sabe nada de
+  checkboxes de términos/política ni de animaciones de mensaje;
+  eso es responsabilidad del controlador (capa de presentación).
+
+  OCP: si mañana se agrega una nueva regla de negocio (p. ej.
+  "el usuario debe tener mínimo 8 caracteres en la contraseña"),
+  se agrega dentro de este método sin tocar el controlador ni
+  el repositorio.
 =========================================================*/
 
-import { HttpUsuarioRepositorio } from "./infraestructura/repositorios/HttpUsuarioRepositorio.js";
-import { LocalStorageUsuarioRepositorio } from "./infraestructura/repositorios/LocalStorageUsuarioRepositorio.js";
-import { RepositorioUsuariosConRespaldo } from "./infraestructura/repositorios/RepositorioUsuariosConRespaldo.js";
-import { MensajeDomNotificador } from "./infraestructura/notificadores/MensajeDomNotificador.js";
-import { RegistroService } from "./servicios/RegistroService.js";
-import { RegistroController } from "./controladores/RegistroController.js";
-import { alternarVisibilidadPassword } from "./utils/TogglePasswordHelper.js";
-import {
-  abrirModal,
-  cerrarModal,
-  inicializarCierreClicFuera
-} from "./utils/ModalHelper.js";
+import { Usuario } from "../core/entities/Usuario.js";
 
-// --- Composición ---
-// El registro va contra SQLite (backend HTTP) cuando hay servidor: el
-// backend hashea la contraseña con scrypt y devuelve 400 si el
-// usuario/correo ya existe. Si el servidor no está arriba, el respaldo
-// local guarda el usuario en el navegador para que login/registro sigan
-// funcionando de punta a punta offline.
-const repositorioUsuarios = new RepositorioUsuariosConRespaldo({
-  principal: new HttpUsuarioRepositorio(),
-  respaldo: new LocalStorageUsuarioRepositorio()
-});
-const notificador = new MensajeDomNotificador("msg");
-const registroService = new RegistroService(repositorioUsuarios);
-const registroController = new RegistroController(registroService, notificador);
+export class RegistroService {
+  /**
+   * Necesita leer (verificar correo duplicado) Y escribir
+   * (guardar el nuevo usuario), por eso depende de las dos
+   * interfaces segregadas — a diferencia de AutenticacionService,
+   * que solo depende de IUsuarioLector.
+   * @param {import("../core/interfaces/IUsuarioLector.js").IUsuarioLector & import("../core/interfaces/IUsuarioEscritor.js").IUsuarioEscritor} repositorioUsuarios
+   */
+  constructor(repositorioUsuarios) {
+    this.repositorioUsuarios = repositorioUsuarios;
+  }
 
-// --- Conexión con el DOM ---
-async function registrar() {
-  const datosFormulario = {
-    usuario: document.getElementById("usuario").value.trim(),
-    nacimiento: document.getElementById("nacimiento").value.trim(),
-    correo: document.getElementById("correo").value.trim(),
-    pass: document.getElementById("pass").value.trim(),
-    confirmarPass: document.getElementById("pass2").value.trim()
-  };
+  async registrar({ usuario, nacimiento, correo, pass, confirmarPass }) {
+    if (!usuario || !nacimiento || !correo || !pass || !confirmarPass) {
+      throw new Error("Por favor, completa todos los campos.");
+    }
 
-  const aceptaTerminos = document.getElementById("aceptaTerminos").checked;
-  const aceptaPolitica = document.getElementById("aceptaPolitica").checked;
+    if (pass !== confirmarPass) {
+      throw new Error("Las contraseñas no coinciden.");
+    }
 
-  const exito = await registroController.manejarEnvio({
-    datosFormulario,
-    aceptaTerminos,
-    aceptaPolitica
-  });
+    if (await this.repositorioUsuarios.buscarPorCorreo(correo)) {
+      throw new Error("Este correo ya está registrado.");
+    }
 
-  if (exito) {
-    document.getElementById("usuario").value = "";
-    document.getElementById("nacimiento").value = "";
-    document.getElementById("correo").value = "";
-    document.getElementById("pass").value = "";
-    document.getElementById("pass2").value = "";
+    const nuevoUsuario = new Usuario({
+      usuario,
+      nacimiento,
+      correo,
+      pass
+    });
+
+    await this.repositorioUsuarios.guardar(nuevoUsuario);
+
+    return nuevoUsuario;
   }
 }
-
-function togglePassword(idInput, icono) {
-  alternarVisibilidadPassword(idInput, icono);
-}
-
-window.registrar = registrar;
-window.togglePassword = togglePassword;
-window.abrirModal = abrirModal;
-window.cerrarModal = cerrarModal;
-
-inicializarCierreClicFuera(["modalTerminos", "modalPolitica"]);
