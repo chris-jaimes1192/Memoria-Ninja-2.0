@@ -7,6 +7,18 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// La tabla usa nombres en español (nombre, password) pero la entidad
+// Usuario del frontend construye su estado con `usuario` y `pass`.
+// Esta función traduce una fila de la BD al contrato de la API para que
+// Usuario.desdeJSON() reciba las claves que espera.
+const aUsuario = (fila) => ({
+    id: fila.id,
+    usuario: fila.nombre,
+    nacimiento: fila.nacimiento,
+    correo: fila.correo,
+    pass: fila.password
+});
+
 app.get('/', (req, res) => {
     res.send('Servidor de Memoria Ninja funcionando');
 });
@@ -19,7 +31,7 @@ app.get('/jugadores', async (req, res) => {
             'SELECT * FROM jugadores'
         );
 
-        res.json(resultado.rows);
+        res.json(resultado.rows.map(aUsuario));
 
     } catch (error) {
 
@@ -55,7 +67,7 @@ app.post('/jugadores', async (req, res) => {
             ]
         );
 
-        res.json(resultado.rows[0]);
+        res.json(aUsuario(resultado.rows[0]));
 
     } catch (error) {
 

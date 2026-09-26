@@ -1,54 +1,59 @@
 /*=========================================================
   MEMORIA NINJA
-  CAPA: SERVICIOS (lógica de negocio)
-  ARCHIVO: servicios/RegistroService.js
+  COMPOSITION ROOT: registro.js
 
-  SRP: valida y crea usuarios nuevos. No sabe nada de
-  checkboxes de términos/política ni de animaciones de mensaje;
-  eso es responsabilidad del controlador (capa de presentación).
-
-  OCP: si mañana se agrega una nueva regla de negocio (p. ej.
-  "el usuario debe tener mínimo 8 caracteres en la contraseña"),
-  se agrega dentro de este método sin tocar el controlador ni
-  el repositorio.
+  IMPORTANTE: el <script> que carga este archivo en registro.html
+  debe tener type="module".
 =========================================================*/
 
-import { Usuario } from "../core/entities/Usuario.js";
+import { HttpUsuarioRepositorio } from "./infraestructura/repositorios/HttpUsuarioRepositorio.js";
+import { LocalStorageUsuarioRepositorio } from "./infraestructura/repositorios/LocalStorageUsuarioRepositorio.js";
+import { RepositorioUsuariosConRespaldo } from "./infraestructura/repositorios/RepositorioUsuariosConRespaldo.js";
+import { MensajeDomNotificador } from "./infraestructura/notificadores/MensajeDomNotificador.js";
+import { RegistroService } from "./servicios/RegistroService.js";
+import { RegistroController } from "./controladores/RegistroController.js";
+import { abrirModal, cerrarModal, inicializarCierreClicFuera } from "./utils/ModalHelper.js";
 
-export class RegistroService {
-  /**
-   * Necesita leer (verificar correo duplicado) Y escribir
-   * (guardar el nuevo usuario), por eso depende de las dos
-   * interfaces segregadas — a diferencia de AutenticacionService,
-   * que solo depende de IUsuarioLector.
-   * @param {import("../core/interfaces/IUsuarioLector.js").IUsuarioLector & import("../core/interfaces/IUsuarioEscritor.js").IUsuarioEscritor} repositorioUsuarios
-   */
-  constructor(repositorioUsuarios) {
-    this.repositorioUsuarios = repositorioUsuarios;
-  }
+// --- Composición (Dependency Injection manual) ---
+// Igual que en login.js: primero se intenta el backend real (SQLite) y,
+// si no está alcanzable, el registro sigue funcionando contra localStorage.
+const repositorioUsuarios = new RepositorioUsuariosConRespaldo({
+  principal: new HttpUsuarioRepositorio(),
+  respaldo: new LocalStorageUsuarioRepositorio()
+});
+const notificador = new MensajeDomNotificador("msg");
+const registroService = new RegistroService(repositorioUsuarios);
+const registroController = new RegistroController(registroService, notificador);
 
-  async registrar({ usuario, nacimiento, correo, pass, confirmarPass }) {
-    if (!usuario || !nacimiento || !correo || !pass || !confirmarPass) {
-      throw new Error("Por favor, completa todos los campos.");
-    }
+// --- Conexión con el DOM (se mantienen los mismos nombres de función
+// en window para no romper los onclick="..." ya existentes en registro.html) ---
+async function registrar() {
+  const datosFormulario = {
+    usuario: document.getElementById("usuario").value.trim(),
+    nacimiento: document.getElementById("nacimiento").value,
+    correo: document.getElementById("correo").value.trim(),
+    pass: document.getElementById("pass").value,
+    confirmarPass: document.getElementById("pass2").value
+  };
 
-    if (pass !== confirmarPass) {
-      throw new Error("Las contraseñas no coinciden.");
-    }
+  const aceptaTerminos = document.getElementById("aceptaTerminos").checked;
+  const aceptaPolitica = document.getElementById("aceptaPolitica").checked;
 
-    if (await this.repositorioUsuarios.buscarPorCorreo(correo)) {
-      throw new Error("Este correo ya está registrado.");
-    }
+  const exito = await registroController.manejarEnvio({
+    datosFormulario,
+    aceptaTerminos,
+    aceptaPolitica
+  });
 
-    const nuevoUsuario = new Usuario({
-      usuario,
-      nacimiento,
-      correo,
-      pass
-    });
-
-    await this.repositorioUsuarios.guardar(nuevoUsuario);
-
-    return nuevoUsuario;
+  if (exito) {
+    setTimeout(() => {
+      window.location.href = "login.html";
+    }, 1500);
   }
 }
+
+window.registrar = registrar;
+window.abrirModal = abrirModal;
+window.cerrarModal = cerrarModal;
+
+inicializarCierreClicFuera(["modalTerminos", "modalPolitica"]);
