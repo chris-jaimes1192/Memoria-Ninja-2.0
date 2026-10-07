@@ -26,7 +26,7 @@ verificarContratoDePartidaRepository(
 );
 
 describe("PartidaRepositorySQL — persistencia REAL en SQLite", () => {
-  it("la partida sobrevive a otra instancia del repositorio (como un reinicio del servidor)", () => {
+  it("la partida sobrevive a otra instancia del repositorio (como un reinicio del servidor)", async () => {
     const carpetaTemporal = fs.mkdtempSync(path.join(os.tmpdir(), "sqlite-"));
     const rutaBase = path.join(carpetaTemporal, "partidas.sqlite");
 
@@ -38,13 +38,13 @@ describe("PartidaRepositorySQL — persistencia REAL en SQLite", () => {
 
     // 2do "proceso": instancia NUEVA (nueva conexión, mismo archivo).
     const proceso2 = new PartidaRepositorySQL(new DatabaseSqlite(rutaBase));
-    const recuperada = proceso2.obtener("p-persistente");
+    const recuperada = await proceso2.obtener("p-persistente");
 
     assert.equal(recuperada.id, "p-persistente");
     assert.equal(recuperada.jugadores.j1.chakra, 0);
   });
 
-  it("restaura chakra y vida fielmente al reconstruir la entidad", () => {
+  it("restaura chakra y vida fielmente al reconstruir la entidad", async () => {
     const proceso = new PartidaRepositorySQL(new DatabaseSqlite(":memory:"));
     const j1 = new Jugador("naruto", "Naruto");
     const j2 = new Jugador("sasuke", "Sasuke");
@@ -54,7 +54,7 @@ describe("PartidaRepositorySQL — persistencia REAL en SQLite", () => {
     partida.registrarEvento("un evento guardado");
     proceso.guardar("p-chakra", partida);
 
-    const recuperada = proceso.obtener("p-chakra");
+    const recuperada = await proceso.obtener("p-chakra");
     const naruto = recuperada.obtenerJugador("naruto");
     const sasuke = recuperada.obtenerRival("naruto");
 
@@ -65,7 +65,7 @@ describe("PartidaRepositorySQL — persistencia REAL en SQLite", () => {
     assert.equal(recuperada.eventos[0].mensaje, "un evento guardado");
   });
 
-  it("el PoderService funciona completo contra el repositorio SQL (DIP + LSP de punta a punta)", () => {
+  it("el PoderService funciona completo contra el repositorio SQL (DIP + LSP de punta a punta)", async () => {
     const repo = new PartidaRepositorySQL(new DatabaseSqlite(":memory:"));
     const poderService = new PoderService(repo, new PoderFactory());
 
@@ -76,7 +76,7 @@ describe("PartidaRepositorySQL — persistencia REAL en SQLite", () => {
     const partida = new Partida("p-poder", j1, j2);
     repo.guardar("p-poder", partida);
 
-    const resultado = poderService.activarPoder({
+    const resultado = await poderService.activarPoder({
       idPartida: "p-poder",
       idJugador: "naruto",
       idPoder: "byakugan",
@@ -86,7 +86,7 @@ describe("PartidaRepositorySQL — persistencia REAL en SQLite", () => {
     assert.equal(resultado.chakraRestante, 60); // 80 - 20 de Byakugan
 
     // La partida modificada quedó persistida en SQLite.
-    const persistida = repo.obtener("p-poder");
+    const persistida = await repo.obtener("p-poder");
     assert.equal(persistida.obtenerJugador("naruto").chakra, 60);
     assert.equal(persistida.eventos[0].mensaje.includes("activó"), true);
   });

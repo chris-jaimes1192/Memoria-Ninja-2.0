@@ -37,17 +37,16 @@ class PartidaRepositorySQL extends PartidaRepository {
     // Los prepare() van en el constructor y NO como inicializadores de
     // campo de clase: los campos de clase se inicializan antes del cuerpo
     // del constructor, cuando this.database todavía no existe.
-    this.#insertarPartida = this.database.db.prepare(`
-      INSERT INTO partidas (id, estado_json)
-      VALUES (?, ?)
-      ON CONFLICT(id) DO UPDATE SET
-        estado_json    = excluded.estado_json,
-        actualizada_en = datetime('now')
-    `);
-
-    this.#consultaPorId = this.database.db.prepare(
-      "SELECT estado_json FROM partidas WHERE id = ?"
-    );
+this.#insertarPartida = this.database.db.prepare(`
+  INSERT INTO partidas (id, estado_json)
+  VALUES (?, ?)
+  ON CONFLICT(id) DO UPDATE SET
+    estado_json    = excluded.estado_json,
+    actualizada_en = CURRENT_TIMESTAMP
+`);
+this.#consultaPorId = this.database.db.prepare(
+  "SELECT estado_json FROM partidas WHERE id = ?"
+);
   }
 
   guardar(idPartida, partida) {
@@ -70,8 +69,8 @@ class PartidaRepositorySQL extends PartidaRepository {
     this.#insertarPartida.run(idPartida, JSON.stringify(foto));
   }
 
-  obtener(idPartida) {
-    const fila = this.#consultaPorId.get(idPartida);
+  async obtener(idPartida) {
+    const fila = await this.#consultaPorId.get(idPartida);
     if (!fila) return null;
     return this.#reconstruirPartida(JSON.parse(fila.estado_json));
   }

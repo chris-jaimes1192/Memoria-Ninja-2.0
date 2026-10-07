@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Encontrar Pares — Ninja Memory</title>
+    <title>Encontrar Pares ? Ninja Memory</title>
     <link rel="stylesheet" href="css/pares.css">
 </head>
 
@@ -23,7 +23,7 @@
         <div id="contador" class="contador"></div>
 
         <div id="victoriaTexto" class="victoria-texto">
-            ¡BUEN TRABAJO<br>NINJA!
+            ?BUEN TRABAJO<br>NINJA!
         </div>
 
         <section class="panel-principal">
@@ -58,7 +58,7 @@
                         JUEGA
                     </h1>
 
-                    <a href="menu.html" class="boton">volver</a>
+                    <a href="men�.html" class="boton">volver</a>
 
                 </div>
 
@@ -72,19 +72,19 @@
     </main>
 
     <!-- MODAL: PERDER -->
-    <div id="modalPerder" class="modal">
+    <div id="modalPerder" class="modal" role="dialog" aria-modal="true" aria-labelledby="tituloPerder">
         <div class="modal-contenido">
-            <h2>¡Has perdido!</h2>
-            <p>Se acabó el tiempo.</p>
+            <h2 id="tituloPerder">??Has perdido!</h2>
+            <p>Se acab? el tiempo.</p>
             <button id="reiniciar">Reiniciar</button>
-            <button id="menu">Ir al menú</button>
+            <button id="men�">Ir al menú</button>
         </div>
     </div>
 
     <!-- MODAL: GANAR -->
-    <div id="modalGanar" class="modal">
+    <div id="modalGanar" class="modal" role="dialog" aria-modal="true" aria-labelledby="tituloGanar">
         <div class="modal-contenido">
-            <h2>¡Felicidades!</h2>
+            <h2 id="tituloGanar">??Felicidades!</h2>
             <p>Has encontrado todas las parejas.</p>
             <button id="volverJugar">Jugar otra vez</button>
             <button id="volverMenu">Ir al menú</button>
@@ -92,10 +92,10 @@
     </div>
 
     <!-- MODAL: AJUSTES -->
-    <div id="modalAjustes" class="modal">
+    <div id="modalAjustes" class="modal" role="dialog" aria-modal="true" aria-labelledby="tituloAjustes">
         <div class="modal-contenido">
-            <h2>⚙ AJUSTES</h2>
-            <button id="btnMusica">Música: ON</button>
+            <h2 id="tituloAjustes">Ajustes</h2>
+            <button id="btnMusica">M?sica: ON</button>
             <button id="btnPausa">Pausar partida</button>
             <button id="btnMenuAjustes">Salir al menú</button>
             <button id="btnCerrarAjustes">Cerrar</button>
@@ -107,3 +107,37 @@
 </body>
 
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

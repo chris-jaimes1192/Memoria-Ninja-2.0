@@ -22,8 +22,8 @@ class PoderService {
     this.poderFactory = poderFactory;
   }
 
-  activarPoder({ idPartida, idJugador, idPoder }) {
-    const partida = this.partidaRepository.obtener(idPartida);
+  async activarPoder({ idPartida, idJugador, idPoder }) {
+    const partida = await this.partidaRepository.obtener(idPartida);
     if (!partida) {
       throw new Error(`No existe la partida ${idPartida}`);
     }
@@ -45,7 +45,7 @@ class PoderService {
     if (poderRivalActivo && poder.puedeSerContrarrestadoPor(poderRivalActivo)) {
       jugador.gastarChakra(poder.costoChakra); // igual pierde el chakra
       partida.registrarEvento(`${rival.nombre} contrarrestó ${poder.nombre} con ${poderRivalActivo.nombre}`);
-      this.partidaRepository.guardar(idPartida, partida);
+      await this.partidaRepository.guardar(idPartida, partida);
       return { exito: false, motivo: "contrarrestado", contrarrestadoPor: poderRivalActivo.nombre };
     }
 
@@ -57,7 +57,7 @@ class PoderService {
     });
 
     partida.marcarPoderActivo(jugador.id, poder);
-    this.partidaRepository.guardar(idPartida, partida);
+    await this.partidaRepository.guardar(idPartida, partida);
 
     return { exito: true, resultado, chakraRestante: jugador.chakra, vidaRival: rival.vida };
   }

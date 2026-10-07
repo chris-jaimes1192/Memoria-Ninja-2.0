@@ -29,7 +29,7 @@ class RepositorioDeJuguete extends PartidaRepository {
 }
 
 describe("PoderService con un repositorio inventado para el test (DIP en acción)", () => {
-  it("activa un poder correctamente sin que el Service sepa que el repositorio es de juguete", () => {
+  it("activa un poder correctamente sin que el Service sepa que el repositorio es de juguete", async () => {
     const repositorioDeJuguete = new RepositorioDeJuguete();
     const poderFactory = new PoderFactory();
     const poderService = new PoderService(repositorioDeJuguete, poderFactory);
@@ -41,7 +41,7 @@ describe("PoderService con un repositorio inventado para el test (DIP en acción
     const partida = new Partida("p1", jugador1, jugador2);
     repositorioDeJuguete.guardar("p1", partida);
 
-    const resultado = poderService.activarPoder({
+    const resultado = await poderService.activarPoder({
       idPartida: "p1",
       idJugador: "naruto",
       idPoder: "byakugan",
@@ -51,7 +51,7 @@ describe("PoderService con un repositorio inventado para el test (DIP en acción
     assert.equal(resultado.chakraRestante, 30); // 50 - 20 de costo de Byakugan
   });
 
-  it("responde con exito:false si el jugador no tiene chakra suficiente, sin importar el repositorio", () => {
+  it("responde con exito:false si el jugador no tiene chakra suficiente, sin importar el repositorio", async () => {
     const repositorioDeJuguete = new RepositorioDeJuguete();
     const poderFactory = new PoderFactory();
     const poderService = new PoderService(repositorioDeJuguete, poderFactory);
@@ -61,7 +61,7 @@ describe("PoderService con un repositorio inventado para el test (DIP en acción
     const partida = new Partida("p1", jugador1, jugador2);
     repositorioDeJuguete.guardar("p1", partida);
 
-    const resultado = poderService.activarPoder({
+    const resultado = await poderService.activarPoder({
       idPartida: "p1",
       idJugador: "naruto",
       idPoder: "bomba",

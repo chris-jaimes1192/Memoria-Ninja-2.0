@@ -18,10 +18,10 @@ function crearServicio() {
 }
 
 describe("PartidaService con repositorio SQL", () => {
-  it("crea y persiste una partida con chakra inicial por defecto (50)", () => {
+  it("crea y persiste una partida con chakra inicial por defecto (50)", async () => {
     const { servicio, partidaRepository } = crearServicio();
 
-    const creada = servicio.crearPartida({
+    const creada = await servicio.crearPartida({
       idJugador1: "sasuke",
       nombre1: "Sasuke",
       idJugador2: "naruto",
@@ -36,16 +36,16 @@ describe("PartidaService con repositorio SQL", () => {
     assert.equal(creada.jugadores[1].chakra, 50);
 
     // Sigue viva en SQLite: la leemos del repo tal cual.
-    const partidaGuardada = partidaRepository.obtener(creada.idPartida);
+    const partidaGuardada = await partidaRepository.obtener(creada.idPartida);
     assert.notEqual(partidaGuardada, null);
     assert.equal(partidaGuardada.obtenerJugador("sasuke").nombre, "Sasuke");
     assert.equal(partidaGuardada.obtenerJugador("sasuke").chakra, 50);
   });
 
-  it("respeta el chakra inicial pasado por cada jugador", () => {
+  it("respeta el chakra inicial pasado por cada jugador", async () => {
     const { servicio } = crearServicio();
 
-    const creada = servicio.crearPartida({
+    const creada = await servicio.crearPartida({
       idJugador1: "sasuke",
       nombre1: "Sasuke",
       idJugador2: "naruto",
@@ -58,34 +58,34 @@ describe("PartidaService con repositorio SQL", () => {
     assert.equal(creada.jugadores[1].chakra, 35);
   });
 
-  it("genera partidas con id distinto cada vez (no pisa la anterior)", () => {
+  it("genera partidas con id distinto cada vez (no pisa la anterior)", async () => {
     const { servicio, partidaRepository } = crearServicio();
 
-    const primera = servicio.crearPartida({ idJugador1: "p1", nombre1: "Uno", idJugador2: "p2", nombre2: "Dos" });
-    const segunda = servicio.crearPartida({ idJugador1: "p1", nombre1: "Uno", idJugador2: "p2", nombre2: "Dos" });
+    const primera = await servicio.crearPartida({ idJugador1: "p1", nombre1: "Uno", idJugador2: "p2", nombre2: "Dos" });
+    const segunda = await servicio.crearPartida({ idJugador1: "p1", nombre1: "Uno", idJugador2: "p2", nombre2: "Dos" });
 
     assert.notEqual(primera.idPartida, segunda.idPartida);
-    assert.notEqual(partidaRepository.obtener(primera.idPartida), null);
-    assert.notEqual(partidaRepository.obtener(segunda.idPartida), null);
+    assert.notEqual(await partidaRepository.obtener(primera.idPartida), null);
+    assert.notEqual(await partidaRepository.obtener(segunda.idPartida), null);
   });
 
-  it("valida que los identificadores de los jugadores existan y sean distintos", () => {
+  it("valida que los identificadores de los jugadores existan y sean distintos", async () => {
     const { servicio } = crearServicio();
 
-    assert.throws(
+    await assert.rejects(
       () => servicio.crearPartida({ idJugador1: "solo", nombre1: "Solo", nombre2: "Nadie" }),
       /identificadores/
     );
-    assert.throws(
+    await assert.rejects(
       () => servicio.crearPartida({ idJugador1: "mismo", nombre1: "A", idJugador2: "mismo", nombre2: "B" }),
       /distintos/
     );
   });
 
-  it("valida el rango del chakra inicial (0-100)", () => {
+  it("valida el rango del chakra inicial (0-100)", async () => {
     const { servicio } = crearServicio();
 
-    assert.throws(
+    await assert.rejects(
       () => servicio.crearPartida({ idJugador1: "a", nombre1: "A", idJugador2: "b", nombre2: "B", chakraInicial1: 150 }),
       /entre 0 y 100/
     );

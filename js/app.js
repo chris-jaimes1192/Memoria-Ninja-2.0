@@ -1,7 +1,8 @@
 import { LocalStorageRepository } from './infrastructure/LocalStorageRepository.js';
 import { ProfileService } from './services/ProfileService.js';
+import { SalaService } from './services/SalaService.js';
 import { ProfileModal } from './ui/ProfileModal.js';
-import { GameModeModal } from './ui/GameModeModal.js';
+import { GameModeModal } from './ui/Gamemodemodal.js';
 import { RankingModal } from './ui/RankingModal.js';
 import { HistoryModal } from './ui/HistoryModal.js';
 import { TwoPlayersModal } from './ui/TwoPlayersModal.js';
@@ -19,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // nunca se instancia dentro de él.
   const storageRepository = new LocalStorageRepository();
   const profileService = new ProfileService(storageRepository);
+  const salaService = new SalaService(storageRepository);
 
   // OCP/DRY: agregar un modal = agregar una entrada al mapa.
   // La fábrica decide si el contenedor existe en el DOM antes de instanciarlo (SRP).
@@ -35,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
       new GameModeModal('gameModeModal')
     ),
     dosJugadoresModal: crearModalSiExiste('twoPlayersModal', () =>
-      new TwoPlayersModal('twoPlayersModal')
+      new TwoPlayersModal('twoPlayersModal', salaService)
     ),
     multijugadorModal: crearModalSiExiste('multiplayerModal', () =>
       new BaseModal('multiplayerModal')

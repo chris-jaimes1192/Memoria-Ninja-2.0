@@ -34,7 +34,7 @@ class PartidaService {
    *
    * @returns {{ idPartida: string, jugadores: Array<{id,nombre,chakra,vida}> }}
    */
-  crearPartida({ idJugador1, nombre1, idJugador2, nombre2, chakraInicial1, chakraInicial2 } = {}) {
+  async crearPartida({ idJugador1, nombre1, idJugador2, nombre2, chakraInicial1, chakraInicial2 } = {}) {
     if (!idJugador1 || !idJugador2) {
       throw new Error("Se requieren los identificadores de ambos jugadores");
     }
@@ -54,7 +54,7 @@ class PartidaService {
     jugador2.ganarChakra(chakra2);
 
     const partida = new Partida(randomUUID(), jugador1, jugador2);
-    this.partidaRepository.guardar(partida.id, partida);
+    await this.partidaRepository.guardar(partida.id, partida);
 
     return {
       idPartida: partida.id,

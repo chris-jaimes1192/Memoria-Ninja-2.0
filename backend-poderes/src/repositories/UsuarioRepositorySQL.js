@@ -22,15 +22,15 @@ class UsuarioRepositorySQL extends UsuarioRepository {
     // inicializan antes del cuerpo del constructor (this.database aún no
     // existe en ese punto).
     this.#consultaPorUsuario = this.database.db.prepare(
-      "SELECT * FROM usuarios WHERE usuario = ? COLLATE NOCASE"
+      "SELECT * FROM usuarios WHERE lower(usuario) = lower(?)"
     );
 
     this.#consultaPorCorreo = this.database.db.prepare(
-      "SELECT * FROM usuarios WHERE correo = ? COLLATE NOCASE"
+      "SELECT * FROM usuarios WHERE lower(correo) = lower(?)"
     );
 
     this.#consultaTodos = this.database.db.prepare(
-      "SELECT * FROM usuarios ORDER BY usuario COLLATE NOCASE"
+      "SELECT * FROM usuarios ORDER BY lower(usuario) ASC"
     );
 
     this.#insertaUsuario = this.database.db.prepare(`
@@ -50,16 +50,17 @@ class UsuarioRepositorySQL extends UsuarioRepository {
     });
   }
 
-  buscarPorUsuario(usuario) {
-    return this.#filaAUsuario(this.#consultaPorUsuario.get(usuario));
+  async buscarPorUsuario(usuario) {
+    return this.#filaAUsuario(await this.#consultaPorUsuario.get(usuario));
   }
 
-  buscarPorCorreo(correo) {
-    return this.#filaAUsuario(this.#consultaPorCorreo.get(correo));
+  async buscarPorCorreo(correo) {
+    return this.#filaAUsuario(await this.#consultaPorCorreo.get(correo));
   }
 
-  obtenerTodos() {
-    return this.#consultaTodos.all().map((fila) => this.#filaAUsuario(fila));
+  async obtenerTodos() {
+    const filas = await this.#consultaTodos.all();
+    return filas.map((fila) => this.#filaAUsuario(fila));
   }
 
   guardar(usuario) {

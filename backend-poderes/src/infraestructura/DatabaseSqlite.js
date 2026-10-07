@@ -35,6 +35,7 @@ class DatabaseSqlite {
     }
 
     this.ubicacion = rutaArchivo;
+    this.motor = "sqlite";
     this.db = new DatabaseSync(rutaArchivo);
     this.db.exec("PRAGMA foreign_keys = ON;");
     this.#crearEsquema();
@@ -73,6 +74,49 @@ class DatabaseSqlite {
 
       CREATE INDEX IF NOT EXISTS idx_historial_usuario
         ON historial_partidas(id_usuario, jugada_en DESC);
+
+      -- 1 TRIGGER: actualiza actualizada_en automáticamente en cada UPDATE
+      CREATE TRIGGER IF NOT EXISTS trg_partidas_actualizar_fecha
+      BEFORE UPDATE ON partidas
+      FOR EACH ROW
+      BEGIN
+        UPDATE partidas
+        SET actualizada_en = datetime('now')
+        WHERE id = OLD.id;
+      END;
+
+      -- 4 VISTAS
+      CREATE VIEW IF NOT EXISTS vw_partidas_recientes AS
+        SELECT id, creada_en, actualizada_en
+        FROM partidas
+        ORDER BY actualizada_en DESC, creada_en DESC;
+
+      CREATE VIEW IF NOT EXISTS vw_historial_detallado AS
+        SELECT h.id, h.id_usuario, u.usuario, h.id_partida, h.zona,
+               h.puntaje, h.modo, h.ganador, h.jugada_en
+        FROM historial_partidas h
+        LEFT JOIN usuarios u ON u.id = h.id_usuario
+        ORDER BY h.jugada_en DESC;
+
+      CREATE VIEW IF NOT EXISTS vw_ranking_mejor_puntaje AS
+        SELECT u.id AS id_usuario, u.usuario,
+               MAX(h.puntaje) AS mejor_puntaje,
+               COUNT(h.id) AS total_partidas,
+               MAX(h.jugada_en) AS ultima_jugada
+        FROM historial_partidas h
+        INNER JOIN usuarios u ON u.id = h.id_usuario
+        GROUP BY u.id, u.usuario
+        ORDER BY mejor_puntaje DESC NULLS LAST, total_partidas DESC;
+
+      CREATE VIEW IF NOT EXISTS vw_usuarios_resumen AS
+        SELECT u.id, u.usuario, u.correo, u.nacimiento, u.creado_en,
+               COUNT(h.id) AS total_partidas,
+               MAX(h.puntaje) FILTER (WHERE h.puntaje IS NOT NULL) AS max_puntaje,
+               MAX(h.jugada_en) AS ultima_partida
+        FROM usuarios u
+        LEFT JOIN historial_partidas h ON h.id_usuario = u.id
+        GROUP BY u.id, u.usuario, u.correo, u.nacimiento, u.creado_en
+        ORDER BY total_partidas DESC, u.usuario ASC;
     `);
   }
 

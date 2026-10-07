@@ -11,31 +11,31 @@ class UsuarioController {
     this.usuarioService = usuarioService;
   }
 
-  registrar = (req, res) => {
+  registrar = async (req, res) => {
     try {
       const { usuario, correo, nacimiento, password } = req.body;
-      const creado = this.usuarioService.registrar({ usuario, correo, nacimiento, password });
+      const creado = await this.usuarioService.registrar({ usuario, correo, nacimiento, password });
       res.status(201).json({ exito: true, usuario: creado });
     } catch (error) {
       res.status(400).json({ exito: false, error: error.message });
     }
   };
 
-  iniciarSesion = (req, res) => {
+  iniciarSesion = async (req, res) => {
     try {
       const { usuario, password } = req.body;
-      const sesion = this.usuarioService.iniciarSesion({ usuario, password });
+      const sesion = await this.usuarioService.iniciarSesion({ usuario, password });
       res.json({ exito: true, usuario: sesion });
     } catch (error) {
       res.status(401).json({ exito: false, error: error.message });
     }
   };
 
-  registrarResultado = (req, res) => {
+  registrarResultado = async (req, res) => {
     try {
       const { idUsuario } = req.params;
       const { idPartida, zona, puntaje, modo, ganador } = req.body;
-      this.usuarioService.guardarResultadoPartida({
+      await this.usuarioService.guardarResultadoPartida({
         idUsuario,
         idPartida,
         zona,
@@ -49,28 +49,28 @@ class UsuarioController {
     }
   };
 
-  obtenerHistorial = (req, res) => {
+  obtenerHistorial = async (req, res) => {
     try {
       const { idUsuario } = req.params;
-      const historial = this.usuarioService.obtenerHistorial(idUsuario);
+      const historial = await this.usuarioService.obtenerHistorial(idUsuario);
       res.json({ exito: true, historial });
     } catch (error) {
       res.status(400).json({ exito: false, error: error.message });
     }
   };
 
-  obtenerTodos = (req, res) => {
+  obtenerTodos = async (req, res) => {
     try {
-      res.json({ exito: true, usuarios: this.usuarioService.obtenerTodos() });
+      res.json({ exito: true, usuarios: await this.usuarioService.obtenerTodos() });
     } catch (error) {
       res.status(500).json({ exito: false, error: error.message });
     }
   };
 
-  buscarPorCorreo = (req, res) => {
+  buscarPorCorreo = async (req, res) => {
     try {
       const { correo } = req.params;
-      const usuario = this.usuarioService.buscarPorCorreo(correo);
+      const usuario = await this.usuarioService.buscarPorCorreo(correo);
       res.json({ exito: true, usuario });
     } catch (error) {
       res.status(400).json({ exito: false, error: error.message });

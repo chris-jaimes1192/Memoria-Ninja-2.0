@@ -11,6 +11,9 @@ const UsuarioService = require("../src/services/UsuarioService");
  * Se arma un UsuarioService con repositorios SQL concretos y se prueba
  * el ciclo de vida real: registro -> login -> registro de partida ->
  * historial. Todo persistido en una base en memoria.
+ *
+ * Los métodos del Service son async (funcionan igual con SQLite síncrono
+ * y con PostgreSQL asíncrono), por eso los tests hacen await.
  */
 function crearServicio() {
   const database = new DatabaseSqlite(":memory:");
@@ -22,10 +25,10 @@ function crearServicio() {
 }
 
 describe("UsuarioService con repositorios SQL", () => {
-  it("registra un usuario y lo devuelve sin exponer el hash", () => {
+  it("registra un usuario y lo devuelve sin exponer el hash", async () => {
     const { servicio, usuarioRepository } = crearServicio();
 
-    const creado = servicio.registrar({
+    const creado = await servicio.registrar({
       usuario: "naruto",
       correo: "naruto@konoha.ni",
       nacimiento: "1990-10-10",
@@ -38,88 +41,88 @@ describe("UsuarioService con repositorios SQL", () => {
     assert.equal(creado.passwordHash, undefined);
 
     // En la base quedó un hash real (nunca la contraseña en texto plano).
-    const guardado = usuarioRepository.buscarPorCorreo("naruto@konoha.ni");
+    const guardado = await usuarioRepository.buscarPorCorreo("naruto@konoha.ni");
     assert.notEqual(guardado, null);
     assert.notEqual(guardado.passwordHash, "secreto123");
     assert.ok(guardado.passwordHash.includes(":"));
   });
 
-  it("rechaza registro con usuario ya existente (formato duplicado)", () => {
+  it("rechaza registro con usuario ya existente (formato duplicado)", async () => {
     const { servicio } = crearServicio();
-    servicio.registrar({ usuario: "sasuke", correo: "sasuke@konoha.ni", password: "clave123" });
+    await servicio.registrar({ usuario: "sasuke", correo: "sasuke@konoha.ni", password: "clave123" });
 
-    assert.throws(
+    await assert.rejects(
       () => servicio.registrar({ usuario: "sasuke", correo: "otro@correo.com", password: "clave123" }),
       /ya está en uso/
     );
   });
 
-  it("rechaza registro con correo ya existente", () => {
+  it("rechaza registro con correo ya existente", async () => {
     const { servicio } = crearServicio();
-    servicio.registrar({ usuario: "sakura", correo: "sakura@konoha.ni", password: "clave123" });
+    await servicio.registrar({ usuario: "sakura", correo: "sakura@konoha.ni", password: "clave123" });
 
-    assert.throws(
+    await assert.rejects(
       () => servicio.registrar({ usuario: "otro", correo: "Sakura@Konoha.ni", password: "clave123" }),
       /correo ya está registrado/
     );
   });
 
-  it("inicia sesión con credenciales correctas y rechaza las incorrectas", () => {
+  it("inicia sesión con credenciales correctas y rechaza las incorrectas", async () => {
     const { servicio } = crearServicio();
-    servicio.registrar({ usuario: "hinata", correo: "hinata@konoha.ni", password: "byakugan" });
+    await servicio.registrar({ usuario: "hinata", correo: "hinata@konoha.ni", password: "byakugan" });
 
-    const sesion = servicio.iniciarSesion({ usuario: "hinata", password: "byakugan" });
+    const sesion = await servicio.iniciarSesion({ usuario: "hinata", password: "byakugan" });
     assert.equal(sesion.usuario, "hinata");
 
-    assert.throws(
+    await assert.rejects(
       () => servicio.iniciarSesion({ usuario: "hinata", password: "mal" }),
       /Usuario o contraseña incorrectos/
     );
-    assert.throws(
+    await assert.rejects(
       () => servicio.iniciarSesion({ usuario: "fantasma", password: "byakugan" }),
       /Usuario o contraseña incorrectos/
     );
   });
 
-  it("guarda resultados de partidas y los lista ordenados del más reciente al más antiguo", () => {
+  it("guarda resultados de partidas y los lista ordenados del más reciente al más antiguo", async () => {
     const { servicio } = crearServicio();
-    const { id } = servicio.registrar({ usuario: "kiba", correo: "kiba@konoha.ni", password: "akamaru" });
+    const { id } = await servicio.registrar({ usuario: "kiba", correo: "kiba@konoha.ni", password: "akamaru" });
 
-    servicio.guardarResultadoPartida({ idUsuario: id, zona: "roca", puntaje: 120, modo: "1", ganador: "kiba" });
-    servicio.guardarResultadoPartida({ idUsuario: id, zona: "niebla", puntaje: 90, modo: "2", ganador: "rival" });
+    await servicio.guardarResultadoPartida({ idUsuario: id, zona: "roca", puntaje: 120, modo: "1", ganador: "kiba" });
+    await servicio.guardarResultadoPartida({ idUsuario: id, zona: "niebla", puntaje: 90, modo: "2", ganador: "rival" });
 
-    const historial = servicio.obtenerHistorial(id);
+    const historial = await servicio.obtenerHistorial(id);
     assert.equal(historial.length, 2);
     assert.equal(historial[0].zona, "niebla");
     assert.equal(historial[0].puntaje, 90);
     assert.equal(historial[1].zona, "roca");
   });
 
-  it("no guarda historial para un usuario inexistente (FK protegida por el Service)", () => {
+  it("no guarda historial para un usuario inexistente (FK protegida por el Service)", async () => {
     const { servicio } = crearServicio();
-    assert.throws(
+    await assert.rejects(
       () => servicio.guardarResultadoPartida({ idUsuario: "uuid-inexistente", zona: "roca", puntaje: 1 }),
       /no existe/
     );
   });
 
-  it("buscarPorCorreo devuelve el usuario público o null (para el repositorio HTTP del frontend)", () => {
+  it("buscarPorCorreo devuelve el usuario público o null (para el repositorio HTTP del frontend)", async () => {
     const { servicio } = crearServicio();
-    servicio.registrar({ usuario: "rocklee", correo: "lee@konoha.ni", password: "konohaForte" });
+    await servicio.registrar({ usuario: "rocklee", correo: "lee@konoha.ni", password: "konohaForte" });
 
-    const encontrado = servicio.buscarPorCorreo("lee@konoha.ni");
+    const encontrado = await servicio.buscarPorCorreo("lee@konoha.ni");
     assert.equal(encontrado.usuario, "rocklee");
     assert.equal(encontrado.passwordHash, undefined);
 
-    assert.equal(servicio.buscarPorCorreo("no-existe@konoha.ni"), null);
+    assert.equal(await servicio.buscarPorCorreo("no-existe@konoha.ni"), null);
   });
 
-  it("obtenerTodos lista usuarios públicos sin exponer hashes", () => {
+  it("obtenerTodos lista usuarios públicos sin exponer hashes", async () => {
     const { servicio } = crearServicio();
-    servicio.registrar({ usuario: "tenten", correo: "tenten@konoha.ni", password: "arma123" });
-    servicio.registrar({ usuario: "neji", correo: "neji@konoha.ni", password: "giro123" });
+    await servicio.registrar({ usuario: "tenten", correo: "tenten@konoha.ni", password: "arma123" });
+    await servicio.registrar({ usuario: "neji", correo: "neji@konoha.ni", password: "giro123" });
 
-    const todos = servicio.obtenerTodos();
+    const todos = await servicio.obtenerTodos();
     assert.equal(todos.length, 2);
     todos.forEach((u) => assert.equal(u.passwordHash, undefined));
   });

@@ -11,7 +11,7 @@
     <!-- FUENTE -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&display=swap" rel="stylesheet">
 
     <!-- CSS -->
     <link rel="stylesheet" href="css/menu.css">
@@ -122,8 +122,10 @@
                     </div>
                 </div>
                 <div class="lobby-action-box">
-                    <label>INGRESA EL CÓDIGO:</label>
-                    <input type="text" class="input-codigo-sala" id="inputCodigoSala" placeholder="CÓDIGO" maxlength="6">
+                    <label for="inputCodigoSala">INGRESA EL CÓDIGO:</label>
+                    <input type="text" class="input-codigo-sala" id="inputCodigoSala" placeholder="CÓDIGO" maxlength="6" inputmode="numeric" autocomplete="off">
+                    <button type="button" class="btn-unirse-sala" id="btnUnirseSala">UNIRSE</button>
+                    <p class="error-codigo" id="errorCodigoSala" hidden>Debes ingresar un código de sala</p>
                 </div>
             </div>
 
@@ -466,7 +468,7 @@
 
         <div class="historial-caja">
 
-            <button class="historial-cerrar" id="cerrarHistorial">×</button>
+            <button class="historial-cerrar" id="cerrarHistorial" aria-label="Cerrar historial">&times;</button>
 
             <h2>Historial de Jugador</h2>
             <p class="historial-sub">
@@ -646,7 +648,7 @@
         <!-- VENTANA MODAL DE PERFIL RPG -->
     <div class="modal-overlay" id="profileModal">
         <div class="modal-content-perfil">
-            <span class="cerrar-modal" id="closeProfileBtn" aria-label="Cerrar perfil">&times;</span>
+            <button class="cerrar-modal" id="closeProfileBtn" type="button" aria-label="Cerrar perfil">&times;</button>
             
             <div class="perfil-header-modal">
                 <div class="avatar-modal">🥷</div>

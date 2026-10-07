@@ -11,10 +11,10 @@ class PoderController {
     this.poderService = poderService;
   }
 
-  activarPoder = (req, res) => {
+  activarPoder = async (req, res) => {
     try {
       const { idPartida, idJugador, idPoder } = req.body;
-      const resultado = this.poderService.activarPoder({ idPartida, idJugador, idPoder });
+      const resultado = await this.poderService.activarPoder({ idPartida, idJugador, idPoder });
       res.json(resultado);
     } catch (error) {
       res.status(400).json({ exito: false, error: error.message });

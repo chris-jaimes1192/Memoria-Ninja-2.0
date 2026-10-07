@@ -1,20 +1,122 @@
 /* ===================================== */
+/* FUENTE GLOBAL: FREDOKA */
+/* ===================================== */
+:root{
+    --fuente-fredoka: 'Fredoka', 'Fredoka One', sans-serif;
+}
+
+/* ===================================== */
 /* RESET */
 /* ===================================== */
 *{
     margin:0;
     padding:0;
     box-sizing:border-box;
+    font-family: var(--fuente-fredoka);
+}
+
+/* controles de formulario NO heredan la fuente por defecto del navegador */
+button,
+input,
+select,
+textarea,
+optgroup,
+legend,
+summary,
+code,
+pre{
+    font-family: var(--fuente-fredoka);
 }
 
 /* ===================================== */
 /* BODY */
-/* ===================================== */ 
+/* ===================================== */
+html,
 body{
-  font-family: 'Fredoka', sans-serif;  /* activa la fuente Fredoka cargada desde el HTML */
+    font-family: var(--fuente-fredoka);  /* activa la fuente Fredoka cargada desde el HTML */
     color:white;
     min-height:100vh;
     overflow-x:hidden;
+}
+
+/* ===================================== */
+/* TIPOGRAFÍA EXPLÍCITA (todas las zonas del menú) */
+/* ===================================== */
+/* PERFIL: VER PERFIL + Estadísticas Shinobi */
+.perfil-panel,
+.perfil-panel p,
+.perfil-panel .nivel-badge,
+.avatar,
+
+/* CABECERA / BOTONES LATERALES: Configuración y Ranking */
+.derecha,
+.menu-superior,
+.ranking-panel,
+.menu-button,
+button,
+
+/* TARJETAS PRINCIPALES: títulos, subtítulos y etiquetas inferiores */
+.modos-juego,
+.panel,
+.panel-titulo,
+.panel-centro,
+.panel-centro .texto-centro,
+.panel-centro .icono-centro,
+.panel-centro .vs,
+.panel-footer,
+
+/* MÓDULOS INFERIORES: PUNTAJE, NIVELES, HISTORIAL, AMIGOS */
+.contenedor-inferior,
+.barra-inferior,
+.item,
+.item-icono,
+.item h3,
+.item p,
+
+/* BARRA DE ESTADO INFERIOR */
+.estado,
+.estado span,
+
+/* MODALES DEL MENÚ (juego, 2 jugadores, multijugador, ranking,
+   configuración, perfil, puntaje e historial) */
+.modal-overlay,
+.modal-overlay h2,
+.modal-overlay h3,
+.modal-overlay h4,
+.modal-overlay p,
+.modal-overlay span,
+.modal-overlay label,
+.modal-overlay strong,
+.modal-overlay small,
+.modal-content-juego,
+.modal-content-dos-jugadores,
+.modal-content-multijugador,
+.modal-content-ranking,
+.modal-content-config,
+.modal-content-perfil,
+.modal-content-info-puntaje,
+.historial-caja,
+.historial-tabla,
+.historial-tabla th,
+.historial-tabla td,
+.tab-historial,
+.tab-historial strong,
+.tab-historial span,
+.sala-row,
+.ranking-row,
+.stat-row,
+.stat-val,
+.nivel-badge,
+.exp-texto,
+
+/* CAMPOS Y CONTROLES */
+.input-codigo-sala,
+.codigo-generado-box,
+.config-label strong,
+.config-label small,
+.config-valor,
+.config-slider{
+    font-family: var(--fuente-fredoka);
 }
 
 /* ===================================== */
@@ -527,16 +629,58 @@ body{
 .amarillo-txt { color: #ffd23f; }
 .azul-txt { color: #00e5ff; }
 
-.cerrar-modal {
+/* ========================================================================== */
+/* BOTÓN × (cerrar modales)                                                   */
+/* ========================================================================== */
+.cerrar-modal,
+.historial-cerrar {
     position: absolute;
-    top: 15px;
-    right: 20px;
-    font-size: 34px;
+    top: 14px;
+    right: 14px;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255, 255, 255, 0.30);
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(6px);
+    color: #fff;
+    font-size: 24px;
+    line-height: 1;
     cursor: pointer;
-    color: rgba(255, 255, 255, 0.5);
-    transition: color 0.2s;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45),
+                inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    transition: transform 0.25s ease,
+                background 0.25s ease,
+                border-color 0.25s ease,
+                box-shadow 0.25s ease,
+                color 0.25s ease;
+    z-index: 6;
 }
-.cerrar-modal:hover { color: #ff3b3b; }
+
+.cerrar-modal:hover,
+.historial-cerrar:hover {
+    color: #fff;
+    background: linear-gradient(180deg, #ff4d6a, #c9184a);
+    border-color: #ff8fa3;
+    box-shadow: 0 0 16px rgba(255, 77, 106, 0.7),
+                inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    transform: rotate(90deg) scale(1.08);
+}
+
+.cerrar-modal:active,
+.historial-cerrar:active {
+    transform: rotate(90deg) scale(0.94);
+}
+
+.cerrar-modal:focus-visible,
+.historial-cerrar:focus-visible {
+    outline: 2px solid #00ddff;
+    outline-offset: 3px;
+}
 
 
 /* ========================================================================== */
@@ -850,6 +994,64 @@ body{
 
 .input-codigo-sala::placeholder {
     color: rgba(0, 221, 255, 0.4);
+}
+
+.input-codigo-sala:focus {
+    border-color: #00ddff;
+    box-shadow: 0 0 12px rgba(0, 221, 255, 0.45);
+}
+
+/* Botón UNIRSE A SALA */
+.btn-unirse-sala {
+    width: 90%;
+    height: 40px;
+    border-radius: 10px;
+    border: 1px solid #00a2ff;
+    background: linear-gradient(180deg, rgba(0, 162, 255, 0.35), rgba(0, 85, 128, 0.35));
+    color: #7fe6ff;
+    font-size: 14px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-unirse-sala:hover {
+    background: linear-gradient(180deg, #00a2ff, #0077b3);
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 0 14px rgba(0, 162, 255, 0.6);
+}
+
+.btn-unirse-sala:active {
+    transform: translateY(0);
+}
+
+.btn-unirse-sala:focus-visible {
+    outline: 2px solid #00ddff;
+    outline-offset: 2px;
+}
+
+/* Mensaje de error del código de sala */
+.error-codigo {
+    margin: 0;
+    font-size: 11px;
+    font-weight: bold;
+    color: #ff6b81;
+    text-align: center;
+    text-shadow: 0 0 8px rgba(255, 107, 129, 0.5);
+}
+
+.input-codigo-sala.input-error {
+    border-color: #ff4d6a;
+    box-shadow: 0 0 12px rgba(255, 77, 106, 0.5);
+    animation: temblor-codigo 0.3s ease;
+}
+
+@keyframes temblor-codigo {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
 }
 
 /* Botón Salir */
@@ -1327,126 +1529,6 @@ body{
 }
 
 
-/* ========================================================================== */
-/* ESTILOS DEL MODAL SELECCIÓN DE MODO DE JUEGO */
-/* ========================================================================== */
-
-.modal-content-juego {
-    width: min(650px, 95%);
-    background: rgba(6, 12, 26, 0.96);
-    border: 3px solid #0055cc;
-    box-shadow: 0 0 25px rgba(0, 128, 255, 0.6);
-    border-radius: 28px;
-    padding: 30px;
-    text-align: center;
-    position: relative;
-    transform: scale(0.8);
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.modal-overlay.activo .modal-content-juego {
-    transform: scale(1);
-}
-
-.avatar-modal-juego {
-    font-size: 35px;
-    margin-bottom: 5px;
-}
-
-.modal-juego-titulo {
-    font-size: clamp(18px, 2vw, 24px);
-    letter-spacing: 1px;
-    margin-bottom: 25px;
-}
-
-/* Contenedor de las dos tarjetas */
-.opciones-juego-container {
-    display: flex;
-    gap: 20px;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-bottom: 25px;
-}
-
-/* Tarjetas de opciones */
-.opcion-card {
-    flex: 1 1 220px;
-    max-width: 260px;
-    min-height: 200px;
-    border-radius: 20px;
-    padding: 15px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-    background: rgba(0, 0, 0, 0.4);
-}
-
-.opcion-card:hover {
-    transform: scale(1.04);
-}
-
-.opcion-card h3 {
-    font-size: 16px;
-    font-weight: bold;
-}
-
-/* Cajas centrales internas */
-.opcion-centro-box {
-    flex: 1;
-    margin: 12px 0;
-    border-radius: 14px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(0, 0, 0, 0.2);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.cartas-icon { font-size: 24px; color: #00ffaa; letter-spacing: -4px; }
-.cerebro-icon { font-size: 38px; }
-
-.opcion-desc {
-    font-size: 12px;
-}
-
-/* Variantes de color según diseño */
-.verde-card {
-    border: 2px solid #005f33;
-    color: #00ffaa;
-}
-.verde-card:hover {
-    box-shadow: 0 0 15px rgba(0, 255, 153, 0.4);
-    border-color: #00ff99;
-}
-
-.morada-card {
-    border: 2px solid #4a0e6d;
-    color: #bfa0ff;
-}
-.morada-card:hover {
-    box-shadow: 0 0 15px rgba(193, 60, 255, 0.4);
-    border-color: #c13cff;
-}
-
-/* Botón Volver de la parte inferior */
-.btn-volver-modal {
-    background: none;
-    border: none;
-    color: #0080ff;
-    font-family: "Fredoka", sans-serif;
-    font-size: 16px;
-    cursor: pointer;
-    letter-spacing: 1px;
-    transition: color 0.2s, text-shadow 0.2s;
-}
-
-.btn-volver-modal:hover {
-    color: #00dbff;
-    text-shadow: 0 0 8px #00a2ff;
-}
-
 .opciones-juego-container {
     display: grid;
     grid-template-columns: repeat(2, 1fr); /* Crea las dos columnas */
@@ -1555,25 +1637,7 @@ MODAL
                0 12px 30px rgba(0,0,0,.6);
 }
 
-.historial-cerrar{
-    position:absolute;
-    top:16px;
-    right:16px;
-    width:34px;
-    height:34px;
-    border-radius:50%;
-    border:none;
-    background:#7300f7;
-    color:#fff;
-    font-size:18px;
-    cursor:pointer;
-    transition:.2s;
-}
-
-.historial-cerrar:hover{
-    background:#8f2bff;
-    transform:scale(1.08);
-}
+/* .historial-cerrar comparte los estilos del botón × (.cerrar-modal) */
 
 .historial-caja h2{
     color:#fff;
@@ -1675,8 +1739,82 @@ TABLA
     color:#8f8aa8;
 }
 
-.fecha-hora small{
+/*=====================
+FECHA Y HORA (celda de la tabla)
+=====================*/
+
+.fecha-hora{
+    white-space:nowrap;
+    line-height:1;
+    vertical-align:middle;
+}
+
+.fecha-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:5px 9px;
+    background:linear-gradient(180deg,rgba(115,0,247,.30),rgba(90,31,201,.12));
+    border:1px solid #6a3ad6;
+    border-radius:9px;
+    box-shadow:0 0 8px rgba(132,0,255,.25);
+    transition:.2s;
+}
+
+.fecha-hora:hover .fecha-chip{
+    transform:translateY(-1px);
+    border-color:#9b5cff;
+    box-shadow:0 0 14px rgba(155,92,255,.55);
+}
+
+.fecha-dia{
+    font-size:18px;
+    font-weight:bold;
+    color:#fff;
+    letter-spacing:.5px;
+    text-shadow:0 0 9px rgba(155,92,255,.85);
+}
+
+.fecha-dia-solo{
+    font-size:13px;
+    text-shadow:none;
+}
+
+.fecha-texto{
+    display:flex;
+    flex-direction:column;
+    gap:1px;
+    padding-left:8px;
+    border-left:1px solid rgba(255,255,255,.25);
+}
+
+.fecha-mes{
+    font-size:10px;
+    font-weight:bold;
+    letter-spacing:1.5px;
+    color:#c9a6ff;
+}
+
+.fecha-anio{
+    font-size:9px;
+    letter-spacing:.5px;
     color:#8f8aa8;
+}
+
+.hora-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:4px;
+    margin-left:8px;
+    padding:4px 9px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:bold;
+    color:#4fe3a1;
+    background:rgba(0,255,153,.08);
+    border:1px solid rgba(0,255,153,.35);
+    box-shadow:0 0 8px rgba(0,255,153,.18);
+    vertical-align:middle;
 }
 
 .resultado-victoria{

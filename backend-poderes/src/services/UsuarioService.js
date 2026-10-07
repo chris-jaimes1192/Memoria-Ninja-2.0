@@ -21,14 +21,14 @@ class UsuarioService {
     this.passwordHasher = passwordHasher;
   }
 
-  registrar({ usuario, correo, nacimiento, password }) {
+  async registrar({ usuario, correo, nacimiento, password }) {
     // Validación en el límite (fail fast): no se confía en el cliente.
     this.#validarCamposObligatorios({ usuario, correo, password });
 
-    if (this.usuarioRepository.buscarPorUsuario(usuario)) {
+    if (await this.usuarioRepository.buscarPorUsuario(usuario)) {
       throw new Error("El nombre de usuario ya está en uso");
     }
-    if (this.usuarioRepository.buscarPorCorreo(correo)) {
+    if (await this.usuarioRepository.buscarPorCorreo(correo)) {
       throw new Error("El correo ya está registrado");
     }
 
@@ -36,14 +36,14 @@ class UsuarioService {
     const passwordHash = this.passwordHasher.generarHash(password);
 
     const nuevo = new Usuario({ id, usuario, correo, nacimiento, passwordHash });
-    this.usuarioRepository.guardar(nuevo);
+    await this.usuarioRepository.guardar(nuevo);
     return nuevo.publico();
   }
 
-  iniciarSesion({ usuario, password }) {
+  async iniciarSesion({ usuario, password }) {
     const encontrado =
-      this.usuarioRepository.buscarPorUsuario(usuario) ||
-      this.usuarioRepository.buscarPorCorreo(usuario);
+      (await this.usuarioRepository.buscarPorUsuario(usuario)) ||
+      (await this.usuarioRepository.buscarPorCorreo(usuario));
 
     // Mensaje idéntico para "no existe" y "contraseña mala":
     // no se filtra qué usuario está registrado.
@@ -54,25 +54,27 @@ class UsuarioService {
     return encontrado.publico();
   }
 
-  buscarPorId(idUsuario) {
-    const usuarios = this.usuarioRepository.obtenerTodos();
+  async buscarPorId(idUsuario) {
+    const usuarios = await this.usuarioRepository.obtenerTodos();
     return usuarios.find((u) => u.id === idUsuario)?.publico() || null;
   }
 
-  buscarPorCorreo(correo) {
-    return this.usuarioRepository.buscarPorCorreo(correo)?.publico() || null;
+  async buscarPorCorreo(correo) {
+    const encontrado = await this.usuarioRepository.buscarPorCorreo(correo);
+    return encontrado?.publico() || null;
   }
 
-  obtenerTodos() {
-    return this.usuarioRepository.obtenerTodos().map((u) => u.publico());
+  async obtenerTodos() {
+    const usuarios = await this.usuarioRepository.obtenerTodos();
+    return usuarios.map((u) => u.publico());
   }
 
-  guardarResultadoPartida({ idUsuario, idPartida, zona, puntaje, modo, ganador }) {
+  async guardarResultadoPartida({ idUsuario, idPartida, zona, puntaje, modo, ganador }) {
     // El historial solo tiene sentido para un usuario que exista.
-    if (!this.buscarPorId(idUsuario)) {
+    if (!(await this.buscarPorId(idUsuario))) {
       throw new Error(`El usuario ${idUsuario} no existe`);
     }
-    this.historialRepository.registrar({
+    await this.historialRepository.registrar({
       id: crypto.randomUUID(),
       idUsuario,
       idPartida,
@@ -83,7 +85,7 @@ class UsuarioService {
     });
   }
 
-  obtenerHistorial(idUsuario) {
+  async obtenerHistorial(idUsuario) {
     return this.historialRepository.porUsuario(idUsuario);
   }
 

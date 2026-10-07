@@ -10,9 +10,9 @@ class PartidaController {
     this.partidaService = partidaService;
   }
 
-  crearPartida = (req, res) => {
+  crearPartida = async (req, res) => {
     try {
-      const partida = this.partidaService.crearPartida(req.body || {});
+      const partida = await this.partidaService.crearPartida(req.body || {});
       res.status(201).json({ exito: true, ...partida });
     } catch (error) {
       res.status(400).json({ exito: false, error: error.message });
