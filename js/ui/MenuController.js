@@ -11,6 +11,7 @@ export class MenuController {
     Object.values(this.modales).forEach(modal => {
       if (modal?.modalElement) {
         this.registroElementos.set(modal.modalElement, modal);
+        modal.modalElement.setAttribute('aria-hidden', 'true');
       }
     });
   }

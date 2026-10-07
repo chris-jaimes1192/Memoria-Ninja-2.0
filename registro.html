@@ -30,7 +30,7 @@
     <label class="check-label">
         <input type="checkbox" id="aceptaTerminos">
         He leído y acepto los
-        <span class="link-modal" onclick="abrirModal('modalTerminos')">
+        <span class="link-modal" onclick="abrirModal('modalTerminos')" role="button" tabindex="0" aria-label="Ver términos y condiciones">
             Términos y Condiciones
         </span>
     </label>
@@ -38,7 +38,7 @@
     <label class="check-label">
         <input type="checkbox" id="aceptaPolitica">
         He leído y acepto la
-        <span class="link-modal" onclick="abrirModal('modalPolitica')">
+        <span class="link-modal" onclick="abrirModal('modalPolitica')" role="button" tabindex="0" aria-label="Ver política de privacidad">
             Política de Privacidad
         </span>
     </label>
@@ -61,7 +61,7 @@
 
     <div class="modal-contenido">
 
-        <span class="cerrar" onclick="cerrarModal('modalTerminos')">&times;</span>
+        <span class="cerrar" onclick="cerrarModal('modalTerminos')" role="button" tabindex="0" aria-label="Cerrar términos">&times;</span>
 
         <h2>Términos y Condiciones</h2>
 
@@ -98,7 +98,7 @@
 
     <div class="modal-contenido">
 
-        <span class="cerrar" onclick="cerrarModal('modalPolitica')">&times;</span>
+        <span class="cerrar" onclick="cerrarModal('modalPolitica')" role="button" tabindex="0" aria-label="Cerrar política">&times;</span>
 
         <h2>Política de Privacidad</h2>
 
