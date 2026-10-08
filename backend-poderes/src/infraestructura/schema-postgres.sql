@@ -20,6 +20,13 @@ CREATE TABLE IF NOT EXISTS usuarios (
   creado_en     TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
+-- Perfil de juego (migración idempotente): cuenta nueva = 500 XP, resto en 0.
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS xp          INTEGER NOT NULL DEFAULT 500;
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS victorias   INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS derrotas    INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS racha       INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS puntaje_max INTEGER NOT NULL DEFAULT 0;
+
 CREATE TABLE IF NOT EXISTS historial_partidas (
   id         TEXT PRIMARY KEY,
   id_usuario TEXT NOT NULL,

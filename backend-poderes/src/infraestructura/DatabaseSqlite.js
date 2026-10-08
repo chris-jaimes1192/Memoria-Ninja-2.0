@@ -39,6 +39,35 @@ class DatabaseSqlite {
     this.db = new DatabaseSync(rutaArchivo);
     this.db.exec("PRAGMA foreign_keys = ON;");
     this.#crearEsquema();
+    this.#migrarColumnasPerfil();
+  }
+
+  /**
+   * Migración idempotente del PERFIL: las bases creadas antes de existir
+   * el sistema de experiencia no tienen las columnas de perfil. Como
+   * CREATE TABLE IF NOT EXISTS no añade columnas a una tabla ya creada,
+   * se agregan una por una solo si faltan. El DEFAULT rellena las filas
+   * viejas: toda cuenta preexistente queda con 500 XP y el resto en 0.
+   */
+  #migrarColumnasPerfil() {
+    const columnasExistentes = this.db
+      .prepare("PRAGMA table_info(usuarios)")
+      .all()
+      .map((columna) => columna.name);
+
+    const columnasPerfil = [
+      ["xp", "INTEGER NOT NULL DEFAULT 500"],
+      ["victorias", "INTEGER NOT NULL DEFAULT 0"],
+      ["derrotas", "INTEGER NOT NULL DEFAULT 0"],
+      ["racha", "INTEGER NOT NULL DEFAULT 0"],
+      ["puntaje_max", "INTEGER NOT NULL DEFAULT 0"],
+    ];
+
+    for (const [nombre, definicion] of columnasPerfil) {
+      if (!columnasExistentes.includes(nombre)) {
+        this.db.exec(`ALTER TABLE usuarios ADD COLUMN ${nombre} ${definicion}`);
+      }
+    }
   }
 
   /** Crea las tablas si no existen (migración idempotente). */
@@ -57,7 +86,13 @@ class DatabaseSqlite {
         correo        TEXT NOT NULL UNIQUE,
         nacimiento    TEXT,
         password_hash TEXT NOT NULL,
-        creado_en     TEXT NOT NULL DEFAULT (datetime('now'))
+        creado_en     TEXT NOT NULL DEFAULT (datetime('now')),
+        -- Perfil de juego: toda cuenta nueva nace con 500 XP y el resto en 0.
+        xp            INTEGER NOT NULL DEFAULT 500,
+        victorias     INTEGER NOT NULL DEFAULT 0,
+        derrotas      INTEGER NOT NULL DEFAULT 0,
+        racha         INTEGER NOT NULL DEFAULT 0,
+        puntaje_max   INTEGER NOT NULL DEFAULT 0
       );
 
       CREATE TABLE IF NOT EXISTS historial_partidas (

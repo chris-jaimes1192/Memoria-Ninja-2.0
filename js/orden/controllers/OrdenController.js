@@ -6,6 +6,7 @@ import { SecuenciaService } from "../services/SecuenciaService.js";
 import { JuegoService } from "../services/JuegoService.js";
 import { PuntajeService } from "../services/PuntajeService.js";
 import { TiempoService } from "../services/TiempoService.js";
+import { progresoService } from "../../services/progresoService.js";
 
 
 export class OrdenController {
@@ -550,6 +551,11 @@ export class OrdenController {
 
     async perder() {
 
+        progresoService.registrarFinPartida({
+            victoria: false,
+            puntaje: this.juegoService.obtenerPuntaje(),
+        });
+
         this.bloqueado = true;
 
 
@@ -894,6 +900,11 @@ export class OrdenController {
 
 
     async mostrarVictoria() {
+
+        progresoService.registrarFinPartida({
+            victoria: true,
+            puntaje: this.juegoService.obtenerPuntaje(),
+        });
 
         this.lanzarConfeti();
 

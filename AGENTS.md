@@ -48,23 +48,51 @@ These are ES modules on some files (`import`/`export`), CommonJS-style `require`
 cd backend-poderes
 npm install
 npm start          # runs on http://localhost:3000
-npm test           # Node built-in test runner (--test): 58 tests, 15 suites, all green
+npm test           # Node built-in test runner (--test): 72 tests, 19 suites, all green
 ```
 
 - Architecture: layered (entities → factories → repositories → services → controllers → routes)
 - `server.js` is the **composition root** — only place where concrete implementations are instantiated with `new`
-- 6 powers: byakugan, sustitucion, robo, genjutsu, sello, bomba. Endpoints: `POST /api/poder/activar`, `POST /api/partida` (create+persist a match, SQLite), `POST /api/partida/prueba` (legacy demo), and the user/history endpoints under `/api/usuarios` (register/login/list/search/history)
+- 6 powers: byakugan, sustitucion, robo, genjutsu, sello, bomba. Endpoints: `POST /api/poder/activar`, `POST /api/partida` (create+persist a match, SQLite), `POST /api/partida/prueba` (legacy demo), and the user/history/profile endpoints under `/api/usuarios` (register/login/list/search/history/`GET|POST :id/perfil`)
 - Three repository implementations: `PartidaRepositoryMemoria` (in-memory), `PartidaRepositoryArchivo` (file-based) and `PartidaRepositorySQL` (SQLite, production default) — all pass the same contract tests (LSP proof)
 - Tests are contract-based: same test battery runs against multiple implementations
 - `PartidaRepositoryArchivo` writes a JSON snapshot per partida to `backend-poderes/data/` (gitignored via `data/*.json`). `obtener()` checks the in-memory cache first and, on a miss, **reads back from the JSON file on disk** and rebuilds the `Partida` entity (same as the SQL repo) — partidas survive a server restart. Verified by the "persistencia REAL en disco" tests
 - Known dead-code bug: `BombaPoder.activar()` checks `rival.tieneSustitucionActiva === true`, but `Jugador` never sets that property — the "−10 if Sustitución active" branch never runs
 - `Poder.usosPermitidos` is defined in the base class but never enforced anywhere
 
+## Experience / profile system (XP)
+
+Covers **1-player matches only** (never the online engine or 2-player mode). Business rules:
+
+- Every account is born with **500 XP**, the rest of the stats in 0; level = `floor(xp / 1000) + 1`.
+- **Victory → +100 XP**, +1 victoria, +1 racha. **Defeat → +1 derrota, racha = 0, no XP.**
+- `puntajeMax` keeps the best score ever (never goes down).
+
+Backend:
+
+- `usuarios` has `xp/victorias/derrotas/racha/puntaje_max` columns; `DatabaseSqlite.#migrarColumnasPerfil()` adds them idempotently to old DBs (defaults 500/0/0/0/0). Same columns in `schema-postgres.sql`.
+- `UsuarioService.obtenerPerfil(id)` (null if the account does not exist) and `registrarFinPartidaPerfil({idUsuario, victoria, puntaje})` with `XP_POR_VICTORIA = 100`.
+- Routes `GET|POST /api/usuarios/:idUsuario/perfil` — GET → 404 if missing, POST → 400 if missing. Tests in `tests/usuarioPerfil.test.js`.
+
+Frontend (all ES modules):
+
+- `js/domain/ProgresoReglas.js` — **single source of truth in the browser** (defaults, level, `aplicarFinPartida`); mirrors the backend constant. `js/domain/IPerfilRepositorio.js` is the contract.
+- `js/infraestructura/repositorios/` — `HttpPerfilRepositorio` (404 → null, network down → `ErrorDeConexion`), `LocalStoragePerfilRepositorio` (key `perfil:<id>`), `PerfilRepositorioConRespaldo` (guest / unknown account / no backend → local; business errors propagate).
+- `js/services/ProfileService.js` (async: `obtenerPerfil()`, `registrarFinPartida()` which is best-effort and never throws) + **singleton `js/services/progresoService.js`** — the composition both `js/app.js` (menu modal) and every game page import.
+- `js/ui/ProfileModal.js` fills `modalName/modalLevel/modalExpBar/modalExpText/statWins/statLosses/statStreak/statHighScore` asynchronously.
+
+Hooks (12 pages, all call `progresoService.registrarFinPartida({victoria, puntaje})`):
+
+- The 9 controllers with `guardarResultadoServidor(victoria)`: akatsuki, arena, hyuga, niebla, nube, roca, sarutobi, uchiha, uzumaki.
+- `MuerteController.mostrarVictoria()` / `tiempoAgotado()` — guarded by `!this.modo2Jugadores`.
+- `OrdenController.mostrarVictoria()` / `perder()`; `js/pares.js terminarPartida(victoria)` (classic script → dynamic `import()` from `document.baseURI`).
+- Guest sessions use `perfil:invitado` and never touch HTTP.
+
 ## Testing
 
 - **Backend only** — there are no frontend tests
 - Run from `backend-poderes/` directory: `npm test`
-- Test files: `contratoPartidaRepository.js`, `contratoPoder.test.js`, `poderService.test.js`, `partidaService.test.js`, `partidaRepositorySQL.test.js`, `usuarioService.test.js`, plus one per repository implementation
+- Test files: `contratoPartidaRepository.js`, `contratoPoder.test.js`, `poderService.test.js`, `partidaService.test.js`, `partidaRepositorySQL.test.js`, `usuarioService.test.js`, `usuarioPerfil.test.js`, plus one per repository implementation
 - Running tests creates real fixture data under `backend-poderes/data/` only when the file repository is exercised by tests
 
 ## Installed Skills (Autoskills)
@@ -90,6 +118,6 @@ Four specialized skills are installed and should be loaded via the `skill` tool 
 - No `package.json` at root — root `package-lock.json` is empty (`"packages": {}`)
 - Frontend has no dev server — open HTML files directly or use a static file server
 - Some JS files use ES modules, some don't — check each file's module style before adding code
-- The backend is connected to the frontend for auth, match creation and history (best-effort HTTP with local fallback); the per-zone game pages (`pares.js`, `uzumaki.js`, `muerte.js`, `arena.js`, etc.) still keep their match state in `localStorage`
+- The backend is connected to the frontend for auth, match creation, history and profile/XP (best-effort HTTP with local fallback); the per-zone game pages (`pares.js`, `uzumaki.js`, `muerte.js`, `arena.js`, etc.) still keep their match state in `localStorage`
 - Variable/function names mix Spanish and English; `verifivacion.html` is a real (misspelled) filename
 - `js/nucleo-GAME ONLI/` folder has a space in its name — quotes/`-LiteralPath` required in shell commands

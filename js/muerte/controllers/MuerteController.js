@@ -7,6 +7,7 @@ import { PuntajeService } from "../services/PuntajeService.js";
 import { TiempoService } from "../services/TiempoService.js";
 
 import { historialApi } from "../../infraestructura/repositorios/HttpHistorialRepositorio.js";
+import { progresoService } from "../../services/progresoService.js";
 
 
 export class MuerteController {
@@ -569,6 +570,13 @@ export class MuerteController {
 
     tiempoAgotado() {
 
+        if (!this.modo2Jugadores) {
+            progresoService.registrarFinPartida({
+                victoria: false,
+                puntaje: this.jugador1.getPuntaje(),
+            });
+        }
+
         this.tiempoService
             .detener();
 
@@ -729,6 +737,13 @@ export class MuerteController {
 
 
     mostrarVictoria() {
+
+        if (!this.modo2Jugadores) {
+            progresoService.registrarFinPartida({
+                victoria: true,
+                puntaje: this.jugador1.getPuntaje(),
+            });
+        }
 
         if (
             this.victoryStats

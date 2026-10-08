@@ -1,5 +1,5 @@
 import { LocalStorageRepository } from './infrastructure/LocalStorageRepository.js';
-import { ProfileService } from './services/ProfileService.js';
+import { progresoService } from './services/progresoService.js';
 import { SalaService } from './services/SalaService.js';
 import { ProfileModal } from './ui/ProfileModal.js';
 import { GameModeModal } from './ui/Gamemodemodal.js';
@@ -19,7 +19,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // DIP: el repositorio (infraestructura) se inyecta al servicio por constructor,
   // nunca se instancia dentro de él.
   const storageRepository = new LocalStorageRepository();
-  const profileService = new ProfileService(storageRepository);
+  // El progreso del perfil (XP/nivel/estadísticas) ya viene compuesto desde
+  // services/progresoService.js, que es el mismo singleton que usan las
+  // páginas de juego al cerrar una partida.
+  const profileService = progresoService;
   const salaService = new SalaService(storageRepository);
 
   // OCP/DRY: agregar un modal = agregar una entrada al mapa.

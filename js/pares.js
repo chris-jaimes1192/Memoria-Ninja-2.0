@@ -209,6 +209,7 @@
 
     clearInterval(temporizadorInterval);
     guardarRegistro(victoria);
+    registrarProgreso(victoria);
 
     if (victoria) {
       victoriaTexto.style.display = "block";
@@ -251,6 +252,19 @@
         });
       } catch {
         // Backend no disponible: sin problema, sigue el juego.
+      }
+    })();
+  }
+
+  function registrarProgreso(victoria) {
+    (async () => {
+      try {
+        const { progresoService } = await import(
+          new URL("js/services/progresoService.js", document.baseURI).href
+        );
+        await progresoService.registrarFinPartida({ victoria, puntaje });
+      } catch {
+        // El avance de XP es best-effort: nunca rompe el fin de partida.
       }
     })();
   }

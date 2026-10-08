@@ -2,6 +2,13 @@ const crypto = require("crypto");
 const Usuario = require("../entities/Usuario");
 
 /**
+ * Regla de negocio del perfil: XP fija que se gana por cada victoria
+ * de 1 jugador. Es UNA constante en todo el sistema (frontend y backend
+ * usan el mismo número) para que el progreso nunca se desincronice.
+ */
+const XP_POR_VICTORIA = 100;
+
+/**
  * SERVICIO: UsuarioService
  *
  * >>> SRP <<<
@@ -55,8 +62,7 @@ class UsuarioService {
   }
 
   async buscarPorId(idUsuario) {
-    const usuarios = await this.usuarioRepository.obtenerTodos();
-    return usuarios.find((u) => u.id === idUsuario)?.publico() || null;
+    return (await this.usuarioRepository.buscarPorId(idUsuario))?.publico() || null;
   }
 
   async buscarPorCorreo(correo) {
@@ -67,6 +73,60 @@ class UsuarioService {
   async obtenerTodos() {
     const usuarios = await this.usuarioRepository.obtenerTodos();
     return usuarios.map((u) => u.publico());
+  }
+
+  /**
+   * Perfil de juego de una cuenta: nombre + XP y estadísticas.
+   * Devuelve null (no un perfil inventado) si la cuenta no existe.
+   */
+  async obtenerPerfil(idUsuario) {
+    const usuario = await this.usuarioRepository.buscarPorId(idUsuario);
+    if (!usuario) {
+      return null;
+    }
+    return this.#perfilPublico(usuario);
+  }
+
+  /**
+   * Aplica el resultado de una partida de 1 jugador al perfil:
+   *  - victoria => +XP_POR_VICTORIA, +1 victoria, +1 racha;
+   *  - derrota  => +1 derrota y la racha se pone en 0;
+   *  - en ambos => el puntaje máximo guarda el mejor puntaje.
+   */
+  async registrarFinPartidaPerfil({ idUsuario, victoria, puntaje }) {
+    const usuario = await this.usuarioRepository.buscarPorId(idUsuario);
+    if (!usuario) {
+      throw new Error(`El usuario ${idUsuario} no existe`);
+    }
+
+    const puntajeValido = Number.isFinite(Number(puntaje)) ? Number(puntaje) : 0;
+    const gano = victoria === true;
+
+    const perfilActualizado = {
+      xp: usuario.xp + (gano ? XP_POR_VICTORIA : 0),
+      victorias: usuario.victorias + (gano ? 1 : 0),
+      derrotas: usuario.derrotas + (gano ? 0 : 1),
+      racha: gano ? usuario.racha + 1 : 0,
+      puntajeMax: Math.max(usuario.puntajeMax, puntajeValido),
+    };
+
+    usuario.actualizarPerfil(perfilActualizado);
+    this.usuarioRepository.actualizarPerfil(idUsuario, perfilActualizado);
+
+    return this.#perfilPublico(usuario);
+  }
+
+  #perfilPublico(usuario) {
+    const datos = usuario.publico();
+    return {
+      id: datos.id,
+      nombre: datos.usuario,
+      xp: datos.xp,
+      victorias: datos.victorias,
+      derrotas: datos.derrotas,
+      racha: datos.racha,
+      puntajeMax: datos.puntajeMax,
+    };
   }
 
   async guardarResultadoPartida({ idUsuario, idPartida, zona, puntaje, modo, ganador }) {

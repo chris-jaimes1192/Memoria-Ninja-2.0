@@ -59,6 +59,36 @@ class UsuarioController {
     }
   };
 
+  obtenerPerfil = async (req, res) => {
+    try {
+      const { idUsuario } = req.params;
+      const perfil = await this.usuarioService.obtenerPerfil(idUsuario);
+      if (!perfil) {
+        return res
+          .status(404)
+          .json({ exito: false, error: `El usuario ${idUsuario} no existe` });
+      }
+      res.json({ exito: true, perfil });
+    } catch (error) {
+      res.status(400).json({ exito: false, error: error.message });
+    }
+  };
+
+  actualizarPerfil = async (req, res) => {
+    try {
+      const { idUsuario } = req.params;
+      const { victoria, puntaje } = req.body;
+      const perfil = await this.usuarioService.registrarFinPartidaPerfil({
+        idUsuario,
+        victoria,
+        puntaje,
+      });
+      res.json({ exito: true, perfil });
+    } catch (error) {
+      res.status(400).json({ exito: false, error: error.message });
+    }
+  };
+
   obtenerTodos = async (req, res) => {
     try {
       res.json({ exito: true, usuarios: await this.usuarioService.obtenerTodos() });

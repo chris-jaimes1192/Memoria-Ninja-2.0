@@ -7,6 +7,7 @@ import { Jugador } from "../entities/jugador.js";
 import { Partida } from "../entities/partida.js";
 
 import { historialApi } from "../../infraestructura/repositorios/HttpHistorialRepositorio.js";
+import { progresoService } from "../../services/progresoService.js";
 
 
 export class UchihaController {
@@ -627,6 +628,13 @@ export class UchihaController {
     // =================================================
 
     guardarResultadoServidor(victoria) {
+
+        progresoService.registrarFinPartida({
+            victoria,
+            puntaje:
+                this.partida.obtenerJugador()
+                    .getPuntaje(),
+        });
 
         historialApi.guardar({
 

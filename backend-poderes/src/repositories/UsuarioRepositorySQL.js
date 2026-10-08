@@ -12,8 +12,10 @@ const Usuario = require("../entities/Usuario");
 class UsuarioRepositorySQL extends UsuarioRepository {
   #consultaPorUsuario;
   #consultaPorCorreo;
+  #consultaPorId;
   #consultaTodos;
   #insertaUsuario;
+  #actualizaPerfil;
 
   constructor(database) {
     super();
@@ -29,13 +31,24 @@ class UsuarioRepositorySQL extends UsuarioRepository {
       "SELECT * FROM usuarios WHERE lower(correo) = lower(?)"
     );
 
+    this.#consultaPorId = this.database.db.prepare(
+      "SELECT * FROM usuarios WHERE id = ?"
+    );
+
     this.#consultaTodos = this.database.db.prepare(
       "SELECT * FROM usuarios ORDER BY lower(usuario) ASC"
     );
 
     this.#insertaUsuario = this.database.db.prepare(`
-      INSERT INTO usuarios (id, usuario, correo, nacimiento, password_hash)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO usuarios (id, usuario, correo, nacimiento, password_hash,
+                            xp, victorias, derrotas, racha, puntaje_max)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    this.#actualizaPerfil = this.database.db.prepare(`
+      UPDATE usuarios
+      SET xp = ?, victorias = ?, derrotas = ?, racha = ?, puntaje_max = ?
+      WHERE id = ?
     `);
   }
 
@@ -47,6 +60,11 @@ class UsuarioRepositorySQL extends UsuarioRepository {
       correo: fila.correo,
       nacimiento: fila.nacimiento,
       passwordHash: fila.password_hash,
+      xp: fila.xp,
+      victorias: fila.victorias,
+      derrotas: fila.derrotas,
+      racha: fila.racha,
+      puntajeMax: fila.puntaje_max,
     });
   }
 
@@ -56,6 +74,10 @@ class UsuarioRepositorySQL extends UsuarioRepository {
 
   async buscarPorCorreo(correo) {
     return this.#filaAUsuario(await this.#consultaPorCorreo.get(correo));
+  }
+
+  async buscarPorId(id) {
+    return this.#filaAUsuario(await this.#consultaPorId.get(id));
   }
 
   async obtenerTodos() {
@@ -69,7 +91,23 @@ class UsuarioRepositorySQL extends UsuarioRepository {
       usuario.usuario,
       usuario.correo,
       usuario.nacimiento,
-      usuario.passwordHash
+      usuario.passwordHash,
+      usuario.xp,
+      usuario.victorias,
+      usuario.derrotas,
+      usuario.racha,
+      usuario.puntajeMax
+    );
+  }
+
+  actualizarPerfil(id, perfil) {
+    this.#actualizaPerfil.run(
+      perfil.xp,
+      perfil.victorias,
+      perfil.derrotas,
+      perfil.racha,
+      perfil.puntajeMax,
+      id
     );
   }
 }

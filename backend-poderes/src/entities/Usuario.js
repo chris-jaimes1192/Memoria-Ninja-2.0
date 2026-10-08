@@ -13,13 +13,36 @@ class Usuario {
   #correo;
   #nacimiento;
   #passwordHash;
+  #xp;
+  #victorias;
+  #derrotas;
+  #racha;
+  #puntajeMax;
 
-  constructor({ id, usuario, correo, nacimiento, passwordHash }) {
+  constructor({
+    id,
+    usuario,
+    correo,
+    nacimiento,
+    passwordHash,
+    xp,
+    victorias,
+    derrotas,
+    racha,
+    puntajeMax,
+  }) {
     this.#id = id;
     this.#usuario = usuario;
     this.#correo = correo;
     this.#nacimiento = nacimiento ?? null;
     this.#passwordHash = passwordHash;
+    // Toda cuenta nueva (o migrada desde una base sin perfil) nace con
+    // 500 XP y el resto de las estadísticas en 0.
+    this.#xp = xp ?? 500;
+    this.#victorias = victorias ?? 0;
+    this.#derrotas = derrotas ?? 0;
+    this.#racha = racha ?? 0;
+    this.#puntajeMax = puntajeMax ?? 0;
   }
 
   get id() {
@@ -43,6 +66,39 @@ class Usuario {
     return this.#passwordHash;
   }
 
+  get xp() {
+    return this.#xp;
+  }
+
+  get victorias() {
+    return this.#victorias;
+  }
+
+  get derrotas() {
+    return this.#derrotas;
+  }
+
+  get racha() {
+    return this.#racha;
+  }
+
+  get puntajeMax() {
+    return this.#puntajeMax;
+  }
+
+  /**
+   * Único punto de entrada para modificar el progreso de juego.
+   * El Service calcula los valores (XP, racha, etc.) y acá solo se
+   * aplican — el estado interno nunca se toca desde afuera.
+   */
+  actualizarPerfil({ xp, victorias, derrotas, racha, puntajeMax }) {
+    this.#xp = xp;
+    this.#victorias = victorias;
+    this.#derrotas = derrotas;
+    this.#racha = racha;
+    this.#puntajeMax = puntajeMax;
+  }
+
   /**
    * Representación pública: seguro para enviar al frontend.
    * Jamás incluye el passwordHash.
@@ -53,6 +109,11 @@ class Usuario {
       usuario: this.#usuario,
       correo: this.#correo,
       nacimiento: this.#nacimiento,
+      xp: this.#xp,
+      victorias: this.#victorias,
+      derrotas: this.#derrotas,
+      racha: this.#racha,
+      puntajeMax: this.#puntajeMax,
     };
   }
 

@@ -8,6 +8,7 @@ import { Jugador } from "../entities/Jugador.js";
 import { Partida } from "../entities/Partida.js";
 
 import { historialApi } from "../../infraestructura/repositorios/HttpHistorialRepositorio.js";
+import { progresoService } from "../../services/progresoService.js";
 
 
 export class AkatsukiController {
@@ -553,6 +554,13 @@ export class AkatsukiController {
     // ==================================================
 
     guardarResultadoServidor(victoria) {
+
+        progresoService.registrarFinPartida({
+            victoria,
+            puntaje:
+                this.partida.obtenerJugador()
+                    .getPuntaje(),
+        });
 
         historialApi.guardar({
 

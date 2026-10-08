@@ -16,12 +16,20 @@ class UsuarioRepository {
     throw new Error("buscarPorCorreo() no implementado");
   }
 
+  buscarPorId(id) {
+    throw new Error("buscarPorId() no implementado");
+  }
+
   obtenerTodos() {
     throw new Error("obtenerTodos() no implementado");
   }
 
   guardar(usuario) {
     throw new Error("guardar() no implementado");
+  }
+
+  actualizarPerfil(id, perfil) {
+    throw new Error("actualizarPerfil() no implementado");
   }
 }
 
