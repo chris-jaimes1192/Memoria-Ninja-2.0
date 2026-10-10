@@ -51,6 +51,12 @@ class DatabasePostgres {
       .replace(/\?/g, () => `$${++indice}`)
       .replace(/\browid\b/gi, "ctid");
 
+
+
+
+
+      
+
     return {
       run: async (...args) => {
         const res = await this.pool.query(sqlPostgres, args);
