@@ -22,44 +22,47 @@ class PoderService {
     this.poderFactory = poderFactory;
   }
 
+  /**
+   * Activa un poder dentro de una partida.
+   *
+   * >>> ACID -> Isolation <<<
+   * Toda la lectura-modificación-escritura ocurre dentro de
+   * `partidaRepository.actualizar(...)`, que la ejecuta en UNA transacción
+   * con aislamiento. Antes eran dos pasos (obtener + guardar) que, bajo
+   * concurrencia, permitían un "lost update"; ahora no.
+   */
   async activarPoder({ idPartida, idJugador, idPoder }) {
-    const partida = await this.partidaRepository.obtener(idPartida);
-    if (!partida) {
-      throw new Error(`No existe la partida ${idPartida}`);
-    }
+    return this.partidaRepository.actualizar(idPartida, (partida) => {
+      const jugador = partida.obtenerJugador(idJugador);
+      const rival = partida.obtenerRival(idJugador);
 
-    const jugador = partida.obtenerJugador(idJugador);
-    const rival = partida.obtenerRival(idJugador);
+      // >>> POLIMORFISMO <<<
+      // No importa cuál de los 6 poderes sea: siempre se llama igual.
+      const poder = this.poderFactory.crear(idPoder);
 
-    // >>> POLIMORFISMO <<<
-    // No importa cuál de los 6 poderes sea: siempre se llama igual.
-    const poder = this.poderFactory.crear(idPoder);
+      if (!jugador.tieneChakraPara(poder.costoChakra)) {
+        partida.registrarEvento(`${jugador.nombre} intentó usar ${poder.nombre} sin chakra suficiente`);
+        return { exito: false, motivo: "chakra_insuficiente" };
+      }
 
-    if (!jugador.tieneChakraPara(poder.costoChakra)) {
-      partida.registrarEvento(`${jugador.nombre} intentó usar ${poder.nombre} sin chakra suficiente`);
-      return { exito: false, motivo: "chakra_insuficiente" };
-    }
+      // Contraataque: si el rival tiene el poder contrario listo, se bloquea
+      const poderRivalActivo = partida.poderActivoDe(rival.id);
+      if (poderRivalActivo && poder.puedeSerContrarrestadoPor(poderRivalActivo)) {
+        jugador.gastarChakra(poder.costoChakra); // igual pierde el chakra
+        partida.registrarEvento(`${rival.nombre} contrarrestó ${poder.nombre} con ${poderRivalActivo.nombre}`);
+        return { exito: false, motivo: "contrarrestado", contrarrestadoPor: poderRivalActivo.nombre };
+      }
 
-    // Contraataque: si el rival tiene el poder contrario listo, se bloquea
-    const poderRivalActivo = partida.poderActivoDe(rival.id);
-    if (poderRivalActivo && poder.puedeSerContrarrestadoPor(poderRivalActivo)) {
-      jugador.gastarChakra(poder.costoChakra); // igual pierde el chakra
-      partida.registrarEvento(`${rival.nombre} contrarrestó ${poder.nombre} con ${poderRivalActivo.nombre}`);
-      await this.partidaRepository.guardar(idPartida, partida);
-      return { exito: false, motivo: "contrarrestado", contrarrestadoPor: poderRivalActivo.nombre };
-    }
+      const resultado = poder.activar({
+        jugador,
+        rival,
+        tablero: partida.tablero,
+        registrarEvento: (mensaje) => partida.registrarEvento(mensaje),
+      });
 
-    const resultado = poder.activar({
-      jugador,
-      rival,
-      tablero: partida.tablero,
-      registrarEvento: (mensaje) => partida.registrarEvento(mensaje),
+      partida.marcarPoderActivo(jugador.id, poder);
+      return { exito: true, resultado, chakraRestante: jugador.chakra, vidaRival: rival.vida };
     });
-
-    partida.marcarPoderActivo(jugador.id, poder);
-    await this.partidaRepository.guardar(idPartida, partida);
-
-    return { exito: true, resultado, chakraRestante: jugador.chakra, vidaRival: rival.vida };
   }
 }
 

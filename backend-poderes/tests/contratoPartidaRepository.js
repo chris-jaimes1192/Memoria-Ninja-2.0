@@ -64,6 +64,30 @@ function verificarContratoDePartidaRepository(nombreImplementacion, crearReposit
       assert.equal((await repo.obtener("pA")).id, "pA");
       assert.equal((await repo.obtener("pB")).id, "pB");
     });
+
+    it("actualizar() lanza si la partida no existe (contrato uniforme)", async () => {
+      const repo = crearRepositorioVacio();
+      await assert.rejects(
+        () => repo.actualizar("no-existe", () => null),
+        /No existe la partida/
+      );
+    });
+
+    it("actualizar() lee, aplica el mutador y persiste en una sola operación", async () => {
+      const repo = crearRepositorioVacio();
+      const partida = new Partida("p1", new Jugador("j1", "Naruto"), new Jugador("j2", "Sasuke"));
+      repo.guardar("p1", partida);
+
+      const resultado = await repo.actualizar("p1", (p) => {
+        p.registrarEvento("mutado en transacción");
+        return "valor-de-retorno";
+      });
+
+      assert.equal(resultado, "valor-de-retorno");
+      const recuperada = await repo.obtener("p1");
+      assert.equal(recuperada.eventos.length, 1);
+      assert.equal(recuperada.eventos[0].mensaje, "mutado en transacción");
+    });
   });
 }
 
