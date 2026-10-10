@@ -44,7 +44,7 @@ class DatabasePostgres {
 
   prepare(sql) {
     // Los repositorios usan "?" y "rowid" (estilo SQLite).
-    // PostgreSQL exige $1,$2,... y su columna equivalente es "ctid".
+    // PostgreSQL exige $1,$2,... y su columna equivalente es "ctid"
     // La traducción ocurre en UN solo lugar: esta capa de infraestructura.
     let indice = 0;
     const sqlPostgres = sql
