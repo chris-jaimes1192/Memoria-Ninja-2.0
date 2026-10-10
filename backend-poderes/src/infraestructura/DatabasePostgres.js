@@ -42,7 +42,7 @@ class DatabasePostgres {
     return this.pool.query(text, params);
   }
 
-  prepare(sql) {
+  #prepararCon(ejecutar, sql) {
     // Los repositorios usan "?" y "rowid" (estilo SQLite).
     // PostgreSQL exige $1,$2,... y su columna equivalente es "ctid"
     // La traducción ocurre en UN solo lugar: esta capa de infraestructura.
@@ -59,18 +59,58 @@ class DatabasePostgres {
 
     return {
       run: async (...args) => {
-        const res = await this.pool.query(sqlPostgres, args);
+        const res = await ejecutar(sqlPostgres, args);
         return { changes: res.rowCount, lastInsertRowid: res.rows?.[0]?.id };
       },
       get: async (...args) => {
-        const res = await this.pool.query(sqlPostgres, args);
+        const res = await ejecutar(sqlPostgres, args);
         return res.rows[0] || undefined;
       },
       all: async (...args) => {
-        const res = await this.pool.query(sqlPostgres, args);
+        const res = await ejecutar(sqlPostgres, args);
         return res.rows;
       },
     };
+  }
+
+  prepare(sql) {
+    return this.#prepararCon(
+      (texto, params) => this.pool.query(texto, params),
+      sql
+    );
+  }
+
+  /**
+   * TRANSACCIÓN con AISLAMIENTO real.
+   *
+   * Un pool reparte cada pool.query() en una conexión DISTINTA, así que un
+   * BEGIN + INSERT no comparten transacción. Para que sí la compartan se
+   * toma UNA conexión dedicada (client) y todas las sentencias del callback
+   * se ejecutan sobre ella: BEGIN -> ... -> COMMIT/ROLLBACK.
+   *
+   * El callback recibe un `db` con prepare()/query() ligados al client, de
+   * modo que un repositorio puede hacer SELECT ... FOR UPDATE y luego el
+   * UPDATE dentro del MISMO aislamiento (ACID -> Isolation).
+   */
+  async transaccion(fn) {
+    const client = await this.pool.connect();
+    const dbCliente = {
+      query: (texto, params) => client.query(texto, params),
+      prepare: (sql) =>
+        this.#prepararCon((texto, params) => client.query(texto, params), sql),
+    };
+
+    try {
+      await client.query("BEGIN");
+      const resultado = await fn(dbCliente);
+      await client.query("COMMIT");
+      return resultado;
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
+    }
   }
 
   close() {

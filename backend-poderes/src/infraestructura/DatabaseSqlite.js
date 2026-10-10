@@ -155,6 +155,31 @@ class DatabaseSqlite {
     `);
   }
 
+  /**
+   * TRANSACCIÓN con AISLAMIENTO real.
+   *
+   * BEGIN IMMEDIATE toma el bloqueo de escritura DESDE EL ARRANQUE (no al
+   * primer write), así que dos operaciones leer-modificar-guardar
+   * concurrentes sobre la misma partida NO pueden intercalarse: la
+   * segunda espera a que la primera confirme. Eso es lo que evita el
+   * "lost update" (ACID -> Isolation). Todas las sentencias comparten
+   * `this.db` (la única conexión), por lo que todas caen en la misma
+   * transacción.
+   *
+   * Recibe un callback `fn(db)` que devuelve el resultado a propagar.
+   */
+  async transaccion(fn) {
+    this.db.exec("BEGIN IMMEDIATE");
+    try {
+      const resultado = await fn(this.db);
+      this.db.exec("COMMIT");
+      return resultado;
+    } catch (error) {
+      this.db.exec("ROLLBACK");
+      throw error;
+    }
+  }
+
   cerrar() {
     this.db.close();
   }

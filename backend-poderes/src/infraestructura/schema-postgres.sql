@@ -43,6 +43,17 @@ CREATE TABLE IF NOT EXISTS historial_partidas (
 CREATE INDEX IF NOT EXISTS idx_historial_usuario
   ON historial_partidas (id_usuario, jugada_en DESC);
 
+-- Tabla legacy: sistema antiguo de cuentas (aislada, sin relación con las demás)
+CREATE TABLE IF NOT EXISTS jugadores (
+  id          SERIAL PRIMARY KEY,
+  nombre      VARCHAR(50)  NOT NULL UNIQUE,
+  password    VARCHAR(255) NOT NULL,
+  nacimiento  DATE,
+  correo      VARCHAR(120) UNIQUE,
+  created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+  experiencia INTEGER DEFAULT 0
+);
+
 -- VISTAS
 -- 1) Partidas más recientes
 CREATE OR REPLACE VIEW vw_partidas_recientes AS
