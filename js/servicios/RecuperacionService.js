@@ -3,62 +3,58 @@
   CAPA: SERVICIOS (lógica de negocio)
   ARCHIVO: servicios/RecuperacionService.js
 
-  SRP: coordina las 3 reglas de negocio del flujo de
-  recuperación (buscar correo, validar código, cambiar
-  contraseña), sin tocar el DOM.
+  SRP: coordina las reglas de negocio del flujo de recuperación de
+  contraseña contra el módulo /api/auth REAL del backend: solicitar
+  código, verificar código (sin consumirlo) y restablecer contraseña
+  con el código como prueba de identidad.
 
-  DIP + ISP: depende de IUsuarioLector + IUsuarioEscritor
-  (necesita leer para buscar el correo y escribir para
-  actualizar la contraseña) e ICodigoGenerador, todas
-  abstracciones inyectadas por constructor. Nota que aquí se
-  inyecta un CodigoNumericoGenerador, mientras que en
-  VerificacionService se inyecta un CodigoAlfanumericoGenerador:
-  mismo servicio "tipo", distinta estrategia, cero código
-  duplicado de generación.
+  DIP: recibe un repositorio de autenticación inyectado (cliente
+  HttpAuthRepositorio). No sabe nada de fetch ni de DOM.
 =========================================================*/
 
 export class RecuperacionService {
-  #codigoActual = null;
   #correoActual = "";
+  #codigoActual = null;
 
   /**
-   * @param {import("../core/interfaces/IUsuarioLector.js").IUsuarioLector & import("../core/interfaces/IUsuarioEscritor.js").IUsuarioEscritor} repositorioUsuarios
-   * @param {import("../core/interfaces/ICodigoGenerador.js").ICodigoGenerador} generadorCodigo
+   * @param {import("../infraestructura/repositorios/HttpAuthRepositorio.js").HttpAuthRepositorio} repositorioAuth
    */
-  constructor(repositorioUsuarios, generadorCodigo) {
-    this.repositorioUsuarios = repositorioUsuarios;
-    this.generadorCodigo = generadorCodigo;
+  constructor(repositorioAuth) {
+    this.repositorioAuth = repositorioAuth;
   }
 
-  solicitarRecuperacion(correo) {
-    const usuario = this.repositorioUsuarios.buscarPorCorreo(correo);
-    if (!usuario) {
-      throw new Error("Ese correo no esta registrado.");
-    }
-
+  /** Pide al backend un código RECUPERACION para el correo. */
+  async solicitarRecuperacion(correo) {
+    await this.repositorioAuth.solicitarRecuperacion({ correo });
     this.#correoActual = correo;
-    this.#codigoActual = this.generadorCodigo.generar();
-    return this.#codigoActual;
   }
 
-  verificarCodigo(codigoIngresado) {
-    if (codigoIngresado !== this.#codigoActual) {
-      throw new Error("Codigo incorrecto.");
-    }
-    return true;
+  /**
+   * Valida el código contra el backend (código correcto y vigente).
+   * No lo consume: el consumo real ocurre en restablecerPassword().
+   */
+  async verificarCodigo(codigo) {
+    await this.repositorioAuth.verificarCodigoRecuperacion({
+      correo: this.#correoActual,
+      codigo
+    });
+    this.#codigoActual = codigo;
   }
 
-  cambiarPassword(nuevaPassword, confirmarPassword) {
+  /**
+   * Cambia la contraseña usando el código ya verificado. El backend lo
+   * consume de forma atómica, revoca todas las sesiones e invalida los
+   * códigos pendientes (sp_restablecer_password).
+   */
+  async cambiarPassword(nuevaPassword, confirmarPassword) {
     if (nuevaPassword !== confirmarPassword) {
       throw new Error("Las contraseñas no coinciden.");
     }
 
-    const usuario = this.repositorioUsuarios.buscarPorCorreo(this.#correoActual);
-    if (!usuario) {
-      throw new Error("Usuario no encontrado.");
-    }
-
-    usuario.actualizarPassword(nuevaPassword);
-    this.repositorioUsuarios.actualizar(usuario);
+    await this.repositorioAuth.restablecerPassword({
+      correo: this.#correoActual,
+      codigo: this.#codigoActual,
+      nuevaPassword
+    });
   }
 }

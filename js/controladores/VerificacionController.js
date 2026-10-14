@@ -3,14 +3,12 @@
   CAPA: CONTROLADORES (presentación)
   ARCHIVO: controladores/VerificacionController.js
 
-  Orquesta el flujo de verificación de correo: usa
-  VerificacionService para la lógica de negocio (generar y
-  validar código) y un IEnviadorCodigo para "entregar" el
-  código (hoy en modo de prueba, mañana por correo real) sin
-  que esta clase sepa ni le importe cuál de los dos es (OCP).
+  Orquesta el flujo de verificación de correo: usa VerificacionService
+  para la lógica (que a su vez habla con /api/auth). Aquí solo viven el
+  temporizador en pantalla, el enmascarado de correo y la navegación.
 
-  POLIMORFISMO / LSP: manejarEnvio(datos) — misma firma que el
-  resto de controladores.
+  POLIMORFISMO / LSP: manejarEnvio(datos) — misma firma que el resto
+  de controladores.
 =========================================================*/
 
 import { FormularioControllerBase } from "./FormularioControllerBase.js";
@@ -24,14 +22,12 @@ export class VerificacionController extends FormularioControllerBase {
   /**
    * @param {import("../servicios/VerificacionService.js").VerificacionService} verificacionService
    * @param {import("../core/interfaces/INotificador.js").INotificador} notificador
-   * @param {import("../core/interfaces/IEnviadorCodigo.js").IEnviadorCodigo} enviadorCodigo
-   * @param {object} elementos
+   * @param {object} elementos referencias a nodos del DOM (composition root)
    */
-  constructor(verificacionService, notificador, enviadorCodigo, elementos) {
+  constructor(verificacionService, notificador, elementos) {
     super(notificador);
     this.verificacionService = verificacionService;
-    this.enviadorCodigo = enviadorCodigo;
-    this.elementos = elementos; // referencias a nodos del DOM inyectadas desde el composition root
+    this.elementos = elementos;
   }
 
   enmascararCorreo(correo) {
@@ -41,18 +37,21 @@ export class VerificacionController extends FormularioControllerBase {
     return `${visible}${"•".repeat(Math.max(usuario.length - 2, 2))}@${dominio}`;
   }
 
-  enviarCodigo(correo) {
-    const codigo = this.verificacionService.generarNuevoCodigo(correo);
-
-    // OCP: esta clase no sabe CÓMO se entrega el código. Hoy
-    // enviadorCodigo es EnvioCodigoModoPrueba (lo muestra en
-    // pantalla). El día que exista backend de correo, se
-    // inyecta EnvioCodigoPorCorreo en el composition root y
-    // esta línea sigue exactamente igual.
-    this.enviadorCodigo.enviar(correo, codigo);
-
-    this.elementos.textoEnviado.textContent = `Enviamos un código a ${this.enmascararCorreo(correo)}`;
-    this.#iniciarTemporizador();
+  /**
+   * Pide el código al backend y, si el envío es exitoso, pone en marcha
+   * el temporizador de expiración.
+   * @returns {Promise<boolean>}
+   */
+  async enviarCodigo(correo) {
+    try {
+      await this.verificacionService.enviarCodigo(correo);
+      this.elementos.textoEnviado.textContent = `Enviamos un código a ${this.enmascararCorreo(correo)}`;
+      this.#iniciarTemporizador();
+      return true;
+    } catch (error) {
+      this.notificador.mostrar(error.message, "error");
+      return false;
+    }
   }
 
   #iniciarTemporizador() {
@@ -67,7 +66,6 @@ export class VerificacionController extends FormularioControllerBase {
 
       if (this.#segundosRestantes <= 0) {
         clearInterval(this.#intervaloId);
-        this.verificacionService.expirarCodigo();
         this.elementos.temporizador.textContent = "Tu código expiró.";
         this.elementos.reenviarBox.style.display = "block";
       }
@@ -81,11 +79,11 @@ export class VerificacionController extends FormularioControllerBase {
   /**
    * @param {{ codigo: string }} datos
    */
-  manejarEnvio(datos) {
+  async manejarEnvio(datos) {
     const { codigo } = datos;
 
     try {
-      this.verificacionService.validarCodigo(codigo);
+      await this.verificacionService.confirmarCodigo(codigo);
       clearInterval(this.#intervaloId);
 
       this.elementos.btnComprobarCodigo.style.display = "none";

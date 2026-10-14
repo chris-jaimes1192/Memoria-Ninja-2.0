@@ -5,9 +5,8 @@
   IMPORTANTE: type="module" en el <script> de verificacion.html.
 =========================================================*/
 
-import { CodigoAlfanumericoGenerador } from "./infraestructura/generadores/CodigoAlfanumericoGenerador.js";
+import { HttpAuthRepositorio } from "./infraestructura/repositorios/HttpAuthRepositorio.js";
 import { AlertaNotificador } from "./infraestructura/notificadores/AlertaNotificador.js";
-import { EnvioCodigoModoPrueba } from "./infraestructura/envios/EnvioCodigoModoPrueba.js";
 import { VerificacionService } from "./servicios/VerificacionService.js";
 import { VerificacionController } from "./controladores/VerificacionController.js";
 
@@ -25,14 +24,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnReenviar = document.getElementById("btn-reenviar");
 
   // --- Composición ---
-  const generadorCodigo = new CodigoAlfanumericoGenerador(6);
+  // Verificación REAL: el código lo genera el backend (/api/auth), no el
+  // navegador. Con MAILER=consola aparece impreso en la consola del
+  // servidor; con MAILER=ethereal llega al correo de verdad.
+  const repositorioAuth = new HttpAuthRepositorio();
   const notificador = new AlertaNotificador();
-  const enviadorCodigo = new EnvioCodigoModoPrueba(notificador);
-  const verificacionService = new VerificacionService(generadorCodigo);
+  const verificacionService = new VerificacionService(repositorioAuth);
   const verificacionController = new VerificacionController(
     verificacionService,
     notificador,
-    enviadorCodigo,
     {
       textoEnviado,
       temporizador,
@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let correoActual = "";
 
-  btnEnviarCorreo.addEventListener("click", () => {
+  btnEnviarCorreo.addEventListener("click", async () => {
     const correo = inputCorreo.value.trim();
 
     if (correo === "") {
@@ -53,20 +53,23 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    correoActual = correo;
-    verificacionController.enviarCodigo(correoActual);
+    const exito = await verificacionController.enviarCodigo(correo);
+    if (!exito) return;
 
+    correoActual = correo;
     paso1.classList.remove("activa");
     setTimeout(() => paso2.classList.add("activa"), 150);
   });
 
-  btnReenviar.addEventListener("click", () => {
-    verificacionController.enviarCodigo(correoActual);
+  btnReenviar.addEventListener("click", async () => {
+    const exito = await verificacionController.enviarCodigo(correoActual);
+    if (!exito) return;
+
     inputCodigo.value = "";
     inputCodigo.focus();
   });
 
-  btnComprobarCodigo.addEventListener("click", () => {
+  btnComprobarCodigo.addEventListener("click", async () => {
     const codigo = inputCodigo.value.trim();
 
     if (codigo === "") {
@@ -74,6 +77,6 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    verificacionController.manejarEnvio({ codigo });
+    await verificacionController.manejarEnvio({ codigo });
   });
 });

@@ -20,6 +20,17 @@ export class MenuController {
     modal?.abrir();
   }
 
+  // Funciones que requieren sesión (perfil/ranking/historial).
+  // En modo invitado u offline se cancela la acción y se avisa al usuario.
+  // Devuelve true si la acción debe cancelarse.
+  estaBloqueado(motivo) {
+    const sesion = window.SesionNinja;
+    const estado = sesion?.estadoActual?.() || 'desconocido';
+    if (estado === 'activa' || estado === 'desconocido') return false;
+    sesion?.avisarInvitado?.(motivo);
+    return true;
+  }
+
   cerrarModalDesdeElemento(elemento) {
     const contenedor = elemento.closest('.modal-overlay, .modal-historial');
     const modal = contenedor ? this.registroElementos.get(contenedor) : null;
@@ -29,6 +40,7 @@ export class MenuController {
   inicializarEventos() {
     // 1. Perfil (Arriba Izquierda)
     document.querySelector('.perfil-panel')?.addEventListener('click', () => {
+      if (this.estaBloqueado('ver tu perfil')) return;
       this.abrirModal(this.modales.profileModal);
     });
 
@@ -49,6 +61,7 @@ export class MenuController {
 
     // 5. Ranking (Boton Arriba Derecha)
     document.querySelector('.ranking-panel')?.addEventListener('click', () => {
+      if (this.estaBloqueado('ver el ranking')) return;
       this.abrirModal(this.modales.rankingModal);
     });
 
@@ -62,6 +75,7 @@ export class MenuController {
       item.addEventListener('click', () => {
         const texto = item.innerText.toLowerCase();
         if (texto.includes('historial')) {
+          if (this.estaBloqueado('ver tu historial')) return;
           this.abrirModal(this.modales.historyModal);
         } else if (texto.includes('puntaje')) {
           this.abrirModal(this.modales.puntajeModal);

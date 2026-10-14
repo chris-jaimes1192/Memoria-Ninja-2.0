@@ -36,6 +36,10 @@ class PrePartidaController {
         this.vistaClan.mostrar(clan);
     }
 
+    seleccionarClan(idClan) {
+        this._seleccionarClan(idClan);
+    }
+
     confirmarNivel() {
         this.vistaClan.mostrarBotonIniciar();
         this.vistaClan.marcarConfirmado();
@@ -52,7 +56,23 @@ const repositorioClanes = new RepositorioClanes();
 const vistaClan = new VistaClan();
 const prePartidaController = new PrePartidaController(repositorioClanes, vistaClan);
 
-// El HTML llama onclick="confirmarNivel()" directo desde el botón.
+// Se mantiene window.confirmarNivel por compatibilidad, pero el botón se
+// conecta por listener (el CSP bloquea los onclick inline).
 window.confirmarNivel = () => prePartidaController.confirmarNivel();
 
-window.onload = () => prePartidaController.iniciar();
+// --- Conexión real con el DOM (sin onclick inline: el CSP lo bloquea) ---
+document.getElementById("btn-confirmar")?.addEventListener("click", () =>
+  prePartidaController.confirmarNivel()
+);
+
+document.getElementById("btnVolverMenu")?.addEventListener("click", () => {
+  window.location.href = "menu.html";
+});
+
+document.querySelectorAll("[data-clan]").forEach((boton) => {
+  boton.addEventListener("click", () =>
+    prePartidaController.seleccionarClan(boton.dataset.clan)
+  );
+});
+
+prePartidaController.iniciar();

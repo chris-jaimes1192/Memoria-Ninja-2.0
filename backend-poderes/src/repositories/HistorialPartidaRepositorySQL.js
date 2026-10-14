@@ -31,8 +31,10 @@ class HistorialPartidaRepositorySQL {
     `);
   }
 
-  registrar({ id, idUsuario, idPartida, zona, puntaje, modo, ganador }) {
-    this.#insertaRegistro.run(
+  // async + devolver la promesa del run(): imprescindible en PostgreSQL
+  // (asíncrono) e inocuo en SQLite (síncrono).
+  async registrar({ id, idUsuario, idPartida, zona, puntaje, modo, ganador }) {
+    return this.#insertaRegistro.run(
       id,
       idUsuario,
       idPartida ?? null,
@@ -43,7 +45,7 @@ class HistorialPartidaRepositorySQL {
     );
   }
 
-  porUsuario(idUsuario) {
+  async porUsuario(idUsuario) {
     return this.#consultaPorUsuario.all(idUsuario);
   }
 }

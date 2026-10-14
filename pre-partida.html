@@ -8,6 +8,8 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Fredoka:wght@400;500;600;700&display=swap"
     rel="stylesheet">
+    <!-- GUARD DE SESIÓN (valida contra el servidor; nunca redirige) -->
+    <script src="js/sesion-guard.js"></script>
 </head>
 
 <body>
@@ -41,7 +43,7 @@
 
             <div class="action-buttons">
                 <button class="btn-secondary">CAMBIAR NIVEL</button>
-                <button id="btn-confirmar" class="btn-primary" onclick="confirmarNivel()">CONFIRMAR</button>
+                <button id="btn-confirmar" class="btn-primary">CONFIRMAR</button>
             </div>
         </main>
 
@@ -65,18 +67,18 @@
         </footer>
 
         <nav class="bottom-nav">
-            <button class="btn-back" onclick="window.location.href='menu.html'">← VOLVER AL MENU</button>
-<button id="btn-iniciar" class="btn-start" style="display: none;" onclick="window.location.href='game.html'">INICIAR JUEGO</button>        </nav>
+            <button class="btn-back" id="btnVolverMenu">← VOLVER AL MENU</button>
+<button id="btn-iniciar" class="btn-start" style="display: none;">INICIAR JUEGO</button>        </nav>
     </div>
 
     <div
         style="position: fixed; top: 10px; left: 10px; z-index: 9999; background: rgba(0,0,0,0.8); padding: 15px; border-radius: 10px; border: 1px solid #FF8C00;">
         <h4 style="color: white; margin-bottom: 10px;">SIMULADOR</h4>
-        <button onclick="actualizarClan('uzumaki')">Uzumaki</button>
-        <button onclick="actualizarClan('uchiha')">Uchiha</button>
-        <button onclick="actualizarClan('akatsuki')">Akatsuki</button>
-        <button onclick="actualizarClan('arena')">Arena</button>
-        <button onclick="actualizarClan('roca')">Roca</button>
+        <button data-clan="uzumaki">Uzumaki</button>
+        <button data-clan="uchiha">Uchiha</button>
+        <button data-clan="akatsuki">Akatsuki</button>
+        <button data-clan="arena">Arena</button>
+        <button data-clan="roca">Roca</button>
     </div>
 
 <script type="module" src="js/pre-partida.js"></script></body>

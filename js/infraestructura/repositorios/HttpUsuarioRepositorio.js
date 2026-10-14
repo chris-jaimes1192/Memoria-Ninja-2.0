@@ -5,7 +5,8 @@
 
   Implementa AMBAS interfaces (IUsuarioLector + IUsuarioEscritor)
   pero con el backend REAL detrás: cada método es un fetch a la
-  API Node/Express que a su vez habla con SQLite.
+  API Node/Express que a su vez habla con PostgreSQL. El LOGIN y el
+  REGISTRO pasan por el módulo /api/auth (cookie de sesión httpOnly).
 
   Este es el reemplazo moderno de LocalStorageUsuarioRepositorio:
   los usuarios ya no viven en el navegador, viven en la base de
@@ -24,7 +25,7 @@
 import { IUsuarioLector } from "../../core/interfaces/IUsuarioLector.js";
 import { Usuario } from "../../core/entities/Usuario.js";
 
-const URL_BASE = "http://localhost:3000/api";
+const URL_BASE = "/api";
 
 /**
  * Error TIPADO para distinguir "el backend no está alcanzable" (caída de
@@ -52,6 +53,7 @@ export class HttpUsuarioRepositorio extends IUsuarioLector {
     let respuesta;
     try {
       respuesta = await fetch(`${URL_BASE}${ruta}`, {
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         ...opciones
       });
@@ -93,25 +95,25 @@ export class HttpUsuarioRepositorio extends IUsuarioLector {
   }
 
   async buscarPorCredenciales(usuario, password) {
-    try {
-      const cuerpo = await this.#peticion("/usuarios/login", {
-        method: "POST",
-        body: JSON.stringify({ usuario, password })
-      });
-      return this.#aEntidad(cuerpo.usuario);
-    } catch (error) {
-      // 401 = credenciales inválidas -> no es un error del sistema,
-      // es "usuario no encontrado" para el AutenticacionService.
-      if (error.message === "Usuario o contraseña incorrectos") return null;
-      throw error;
-    }
+    // Login REAL: valida credenciales en el backend, y si son válidas el
+    // servidor responde la entidad pública del usuario además de fijar la
+    // cookie httpOnly de sesión. Cualquier fallo (401 credenciales, 403
+    // correo sin verificar, 423 cuenta bloqueada) se propaga con el mensaje
+    // que el servidor envió en body.error.
+    const cuerpo = await this.#peticion("/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ usuario, password })
+    });
+    return this.#aEntidad(cuerpo.usuario);
   }
 
   async guardar(usuario) {
-    // Mismo contrato que LocalStorageUsuarioRepositorio: la entidad solo
-    // deja salir sus datos por toJSON() (nunca por getters sueltos).
+    // Registro REAL vía /api/auth: el backend crea la cuenta DESACTIVADA
+    // y le envía un código de verificación al correo (MAILER=consola lo
+    // imprime en la consola del servidor). La cuenta solo podrá iniciar
+    // sesión después de confirmar ese código en verificacion.html.
     const datos = usuario.toJSON();
-    await this.#peticion("/usuarios/registro", {
+    await this.#peticion("/auth/registro", {
       method: "POST",
       body: JSON.stringify({
         usuario: datos.usuario,

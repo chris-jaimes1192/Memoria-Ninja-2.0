@@ -7,26 +7,22 @@
 =========================================================*/
 
 import { HttpUsuarioRepositorio } from "./infraestructura/repositorios/HttpUsuarioRepositorio.js";
-import { LocalStorageUsuarioRepositorio } from "./infraestructura/repositorios/LocalStorageUsuarioRepositorio.js";
-import { RepositorioUsuariosConRespaldo } from "./infraestructura/repositorios/RepositorioUsuariosConRespaldo.js";
 import { MensajeDomNotificador } from "./infraestructura/notificadores/MensajeDomNotificador.js";
 import { RegistroService } from "./servicios/RegistroService.js";
 import { RegistroController } from "./controladores/RegistroController.js";
 import { abrirModal, cerrarModal, inicializarCierreClicFuera } from "./utils/ModalHelper.js";
 
 // --- Composición (Dependency Injection manual) ---
-// Igual que en login.js: primero se intenta el backend real (SQLite) y,
-// si no está alcanzable, el registro sigue funcionando contra localStorage.
-const repositorioUsuarios = new RepositorioUsuariosConRespaldo({
-  principal: new HttpUsuarioRepositorio(),
-  respaldo: new LocalStorageUsuarioRepositorio()
-});
+// Registro REAL vía /api/auth: el backend guarda la cuenta en PostgreSQL
+// DESACTIVADA y envía un código de verificación al correo. Sin respaldo
+// local: la cuenta nace en el servidor, no en el navegador.
+const repositorioUsuarios = new HttpUsuarioRepositorio();
 const notificador = new MensajeDomNotificador("msg");
 const registroService = new RegistroService(repositorioUsuarios);
 const registroController = new RegistroController(registroService, notificador);
 
-// --- Conexión con el DOM (se mantienen los mismos nombres de función
-// en window para no romper los onclick="..." ya existentes en registro.html) ---
+// --- Conexión con el DOM (listeners; sin onclick inline, que el CSP bloquea.
+// Los nombres en window se mantienen por compatibilidad) ---
 async function registrar() {
   const datosFormulario = {
     usuario: document.getElementById("usuario").value.trim(),
@@ -47,7 +43,7 @@ async function registrar() {
 
   if (exito) {
     setTimeout(() => {
-      window.location.href = "login.html";
+      window.location.href = "verificacion.html";
     }, 1500);
   }
 }
@@ -55,5 +51,28 @@ async function registrar() {
 window.registrar = registrar;
 window.abrirModal = abrirModal;
 window.cerrarModal = cerrarModal;
+
+// --- Conexión real con el DOM (sin onclick inline: el CSP lo bloquea) ---
+document.getElementById("btnRegistrar")?.addEventListener("click", registrar);
+
+document.querySelectorAll("[data-modal]").forEach((el) => {
+  el.addEventListener("click", () => abrirModal(el.dataset.modal));
+  el.addEventListener("keydown", (evento) => {
+    if (evento.key === "Enter" || evento.key === " ") {
+      evento.preventDefault();
+      abrirModal(el.dataset.modal);
+    }
+  });
+});
+
+document.querySelectorAll("[data-cerrar]").forEach((el) => {
+  el.addEventListener("click", () => cerrarModal(el.dataset.cerrar));
+  el.addEventListener("keydown", (evento) => {
+    if (evento.key === "Enter" || evento.key === " ") {
+      evento.preventDefault();
+      cerrarModal(el.dataset.cerrar);
+    }
+  });
+});
 
 inicializarCierreClicFuera(["modalTerminos", "modalPolitica"]);

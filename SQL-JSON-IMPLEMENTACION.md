@@ -1,18 +1,18 @@
 # SQL + JSON — Implementación en Memorice Duel (Ninja Memory)
 
-> Mapa archivo por archivo de cómo se le dio **persistencia real** al proyecto: SQLite como base de datos y JSON como formato de serialización (en la columna `estado_json`, en el intercambio HTTP y en el respaldo de `localStorage`). Documento de apoyo para la sustentación.
+> Mapa archivo por archivo de cómo se le dio **persistencia real** al proyecto: **PostgreSQL** como base de datos (SQLite solo para tests) y JSON como formato de serialización (en la columna `estado_json`, en el intercambio HTTP y en el respaldo de `localStorage`). Documento de apoyo para la sustentación.
 
 ---
 
 ## 0. Resumen ejecutivo
 
-El repo pasó de **funcionar 100% en el navegador** (localStorage + `MockServer`) a tener una **base de datos SQLite real** en el backend y una **capa HTTP/JSON** que la conecta con el frontend. El juego quedó así:
+El repo pasó de **funcionar 100% en el navegador** (localStorage + `MockServer`) a tener una **base de datos PostgreSQL real** en el backend y una **capa HTTP/JSON** que la conecta con el frontend. El juego quedó así:
 
 | Escenario | Qué pasa |
 |---|---|
-| Backend arriba | Login, registro, partidas, poderes e historial viven en **SQLite** (sobreviven reinicios). |
-| Backend caído | Todo cae a los **respaldos locales** (`localStorage` + `MockServer`): el juego no se rompe. |
-| Servidor responde con error (400/401) | Ese error es la verdad del servidor y **se propaga** — no se falsea con datos locales. |
+| Backend arriba | Autenticación (cookie httpOnly), cuentas, partidas, poderes e historial viven en **PostgreSQL** (sobreviven reinicios). |
+| Backend caído | Las partidas y los datos no críticos caen a los **respaldos locales** (`localStorage` + `MockServer`); la autenticación es la excepción: requiere el servidor. |
+| Servidor responde con error (400/401/403) | Ese error es la verdad del servidor y **se propaga** — no se falsea con datos locales. |
 
 **Dónde vive el JSON (3 sitios):**
 
@@ -24,30 +24,39 @@ El repo pasó de **funcionar 100% en el navegador** (localStorage + `MockServer`
 
 ## 1. SQL — la base de datos
 
-### 1.1 Esquema (`backend-poderes/src/infraestructura/DatabaseSqlite.js`)
+### 1.1 Esquema (`sql/esquema.sql` — PostgreSQL)
 
-Conexión SQLite nativa de Node 24 (`node:sqlite`, **cero dependencias npm**) al archivo `backend-poderes/data/memorice.sqlite` (gitignored).
+El esquema canónico vive en `sql/esquema.sql` (raíz del repo), es **idempotente** y lo aplica cada PC con `npm run db:setup` usando su propio `.env`. Al arrancar, `DatabasePostgres.init()` lo vuelve a aplicar por si falta algo. Sobre `memoria_ninja` crea **7 tablas, 6 vistas, 5 triggers y 90 funciones/procedimientos**.
 
 ```sql
--- partidas: EL cuerpo se guarda como JSON
-partidas(id TEXT PRIMARY KEY, estado_json TEXT, creada_en TEXT, actualizada_en TEXT);
+-- partidas: EL cuerpo se guarda como JSON en estado_json
+partidas(id, estado_json, creada_en, actualizada_en);
 
--- usuarios: contraseña SOLO como hash scrypt ("sal:hash")
-usuarios(id TEXT PRIMARY KEY, usuario TEXT UNIQUE, correo TEXT UNIQUE,
-         password_hash TEXT, nacimiento TEXT, creado_en TEXT);
+-- usuarios: contraseña SOLO como hash scrypt ("sal:hash") + estado de cuenta
+usuarios(id, usuario UNIQUE, correo UNIQUE, password_hash, nacimiento, creado_en,
+         xp, victorias, derrotas, racha, puntaje_max,
+         correo_verificado, intentos_fallidos, bloqueado_hasta);
 
--- historial: un registro por partida jugada, con clave foránea al usuario
-historial_partidas(id TEXT PRIMARY KEY, id_usuario TEXT REFERENCES usuarios(id),
-                   id_partida TEXT, zona TEXT, puntaje INTEGER, modo TEXT, ganador TEXT, jugada_en TEXT);
+-- historial: un registro por partida jugada, con FK al usuario
+historial_partidas(id, id_usuario REFERENCES usuarios(id), id_partida, zona,
+                   puntaje, modo, ganador, jugada_en);
+
+-- auth: códigos de verificación/recuperación, sesiones y auditoría
+codigos_verificacion(...);   sesiones(...);   auditoria_cuentas(...);
 ```
+
+> `DatabaseSqlite` (SQLite nativo vía `node:sqlite`, cero dependencias npm) se conserva **solo para los tests** (persistencia de partidas y migración de perfil). La aplicación corre **únicamente PostgreSQL** (`DatabasePostgres`, cliente asíncrono).
 
 ### 1.2 Repositorios (capa de acceso a datos)
 
 | Archivo | Rol | Clave |
 |---|---|---|
 | `src/repositories/PartidaRepositorySQL.js` | Guarda/lee partidas en SQL | `estado_json` en `JSON.stringify`/`JSON.parse` |
-| `src/repositories/UsuarioRepositorySQL.js` | CRUD de usuarios en SQL | `usuario`/`correo` UNIQUE, nunca expone el hash |
+| `src/repositories/UsuarioRepositorySQL.js` | CRUD + estado de cuenta (verificación, intentos, bloqueo) | `usuario`/`correo` UNIQUE, nunca expone el hash |
 | `src/repositories/HistorialPartidaRepositorySQL.js` | Insert/select de historial | FK a `usuarios(id)` |
+| `src/repositories/CodigoVerificacionRepositorySQL.js` | Códigos de verificación/recuperación | `fn_confirmar_codigo` compara hashes sha256 |
+| `src/repositories/SesionRepositorySQL.js` | Sesiones de la cookie httpOnly | se revocan al cambiar la contraseña |
+| `src/repositories/VistaRepositorySQL.js` / `ProcedimientoRepositorySQL.js` | Consultas a vistas / `CALL sp_registrar_partida(...)` | SQL avanzado |
 | `src/repositories/PartidaRepositoryMemoria.js` | Implementación en memoria (tests) | misma interfaz → **LSP** |
 | `src/repositories/PartidaRepositoryArchivo.js` | Implementación en archivos JSON en disco (`{id}.json`) | misma interfaz → **LSP**; `obtener()` **vuelve al disco** si el cache en memoria está vacío (sobrevive reinicios) |
 | `src/infraestructura/PasswordHasher.js` | Cifra contraseñas con scrypt | `sal:hash`, nunca texto plano |
@@ -64,6 +73,8 @@ db.prepare("INSERT INTO partidas (id, estado_json, creada_en, actualizada_en) VA
   .run(partida.id, JSON.stringify(estado), ahora, ahora);
 ```
 Y `obtener()` hace el proceso inverso: `JSON.parse(estado_json)` → reconstruye `Jugador`/`Tablero` reales.
+
+> El mismo repositorio funciona con ambos motores: `DatabasePostgres` traduce los placeholders `?` a `$n` y `rowid` a `ctid`, y sus métodos de escritura hacen `await` del `.run()`. Por eso el repositorio es agnóstico — con SQLite (tests) es síncrono y con PostgreSQL (app) es asíncrono.
 
 > **`PartidaRepositoryArchivo` (JSON en disco) — misma fidelidad, sin cache perdido.** El fix que igualó a SQL: `guardar()` serializa toda la partida a `{carpeta}/{id}.json` y `obtener()` consulta primero el **cache en memoria** y, si falla (p. ej. tras un reinicio del servidor), **vuelve al disco** y **materializa la ENTIDAD** real con sus métodos encapsulados:
 >
@@ -88,17 +99,37 @@ Y `obtener()` hace el proceso inverso: `JSON.parse(estado_json)` → reconstruye
 
 ### 1.3 Servicios y endpoints
 
+**Poderes / partidas / cuentas**
+
 | Endpoint | Método | Servicio | Qué hace |
 |---|---|---|---|
-| `/api/partida` | POST | `PartidaService.crearPartida` | Valida jugadores/chakra, crea `Partida(UUID)` y la persiste en SQLite |
+| `/api/partida` | POST | `PartidaService.crearPartida` | Valida jugadores/chakra, crea `Partida(UUID)` y la persiste |
 | `/api/poder/activar` | POST | `PoderService.activarPoder` | Valida chakra/contraataques, cambia el estado y lo vuelve a persistir |
-| `/api/usuarios/registro` | POST | `UsuarioService.registrar` | Hashea (scrypt) y crea el usuario |
-| `/api/usuarios/login` | POST | `UsuarioService.iniciarSesion` | Verifica hash y devuelve datos públicos |
 | `/api/usuarios` | GET | `UsuarioService.obtenerTodos` | Lista usuarios sin hashes |
-| `/api/usuarios/por-correo/:correo` | GET | `UsuarioService.buscarPorCorreo` | Busca por correo (para validar duplicados) |
-| `/api/usuarios/:id/historial` | GET/POST | `UsuarioService.obtenerHistorial` / `guardarResultadoPartida` | Historial de SQL por usuario |
+| `/api/usuarios/por-correo/:correo` | GET | `UsuarioService.buscarPorCorreo` | Busca por correo (validar duplicados) |
+| `/api/usuarios/:id/historial` | GET/POST | `UsuarioService.obtenerHistorial` / `guardarResultadoPartida` | Historial por usuario |
+| `/api/usuarios/:id/perfil` | GET/POST | `UsuarioService.obtenerPerfil` / `registrarFinPartidaPerfil` | XP y estadísticas |
 
-> **Composition Root**: en `server.js` es el ÚNICO lugar donde se hace `new` de las implementaciones (SQL). Todo lo demás recibe sus dependencias por constructor. Eso es DIP en vivo.
+**Autenticación (`AuthService`, `VerificacionService`, `RecuperacionService`)**
+
+| Endpoint | Método | Qué hace |
+|---|---|---|
+| `/api/auth/registro` | POST | Crea la cuenta (nace sin verificar) |
+| `/api/auth/login` | POST | Verifica credenciales; fija cookie httpOnly. 403 si no está verificada |
+| `/api/auth/logout` | POST | Cierra sesión y borra la cookie |
+| `/api/auth/me` | GET | Sesión activa (401 sin cookie válida) |
+| `/api/auth/verificacion/enviar` \| `/confirmar` | POST | Reenvía / confirma el código de correo |
+| `/api/auth/recuperacion/solicitar` \| `/verificar` \| `/restablecer` | POST | Recuperación de contraseña en 3 pasos |
+
+**SQL avanzado**
+
+| Endpoint | Método | Qué hace |
+|---|---|---|
+| `/api/vistas/*` | GET | `vw_partidas_recientes`, `vw_historial_detallado`, `vw_ranking_mejor_puntaje`, `vw_usuarios_resumen` |
+| `/api/procedimientos/registrar-partida` | POST | `CALL sp_registrar_partida(...)` |
+| `/api/estado` | GET | Healthcheck |
+
+> **Composition Root**: en `server.js` es el ÚNICO lugar donde se hace `new` de las implementaciones. Todo lo demás recibe sus dependencias por constructor. Eso es DIP en vivo.
 
 ---
 
@@ -108,14 +139,14 @@ Y `obtener()` hace el proceso inverso: `JSON.parse(estado_json)` → reconstruye
 
 | Archivo | Rol |
 |---|---|
-| `HttpUsuarioRepositorio.js` | Cliente HTTP de usuarios: `obtenerTodos`, `buscarPorCorreo`, `buscarPorCredenciales`, `guardar`. Lanza `ErrorDeConexion` tipado cuando el backend no responde. |
-| `RepositorioUsuariosConRespaldo.js` | Decorator: intenta HTTP y, ante `ErrorDeConexion`, repite la llamada en `localStorage`. |
+| `HttpUsuarioRepositorio.js` | Cliente HTTP de usuarios (base `/api`, `credentials:"include"`): `obtenerTodos`, `buscarPorCorreo`, `buscarPorCredenciales` (POST `/auth/login`), `guardar` (POST `/auth/registro`). Lanza `ErrorDeConexion` tipado cuando el backend no responde. |
+| `HttpAuthRepositorio.js` | Cliente del módulo de autenticación: `enviarCodigoVerificacion`, `confirmarCodigoVerificacion`, `solicitarRecuperacion`, `verificarCodigoRecuperacion`, `restablecerPassword`. |
 | `HttpHistorialRepositorio.js` | `historialApi.obtener(idUsuario)` / `guardar({zona, puntaje, modo, ganador})`. Best-effort. |
 
 ```js
-// HttpUsuarioRepositorio — el patrón de cada método
+// HttpUsuarioRepositorio — login real contra /api/auth (cookie httpOnly)
 async buscarPorCredenciales(usuario, password) {
-  const cuerpo = await this.#peticion("/usuarios/login", {
+  const cuerpo = await this.#peticion("/auth/login", {
     method: "POST",
     body: JSON.stringify({ usuario, password })
   });
@@ -127,9 +158,10 @@ async buscarPorCredenciales(usuario, password) {
 
 | Archivo | Qué instancia ahora |
 |---|---|
-| `js/login.js` | `RepositorioUsuariosConRespaldo({ principal: HttpUsuarioRepositorio, respaldo: LocalStorageUsuarioRepositorio })` |
-| `js/registro.js` | Ídem. |
-| `js/menu.js` | `actualizarHistorial()`: lee de SQLite si hay sesión con `id`; si no, cae a `localStorage`. |
+| `js/login.js` | `HttpUsuarioRepositorio` directo → `POST /api/auth/login` (la sesión real vive en la cookie httpOnly, no en `localStorage`). |
+| `js/registro.js` | `HttpUsuarioRepositorio` directo → `POST /api/auth/registro`; al terminar redirige a `verificacion.html`. |
+| `js/verificacion.js` / `js/recuperar.js` | `HttpAuthRepositorio` (server-driven: los códigos los emite y valida el servidor). |
+| `js/menu.js` | `actualizarHistorial()`: lee del backend si hay sesión con `id`; si no, cae a `localStorage`. |
 
 ### 2.3 Costo real del desacople
 
@@ -150,7 +182,7 @@ Ese "efecto colateral" es la prueba de que el cambio es real: el dato ya no vive
 - **`ProveedorDatosServidor.js` (nuevo)** — impl. real:
 
 ```js
-// Crear la partida real en SQLite y devolver el MISMO formato que el MockServer
+// Crear la partida real en el backend y devolver el MISMO formato que el MockServer
 const respuesta = await fetch(`${URL_BASE}/partida`, {
   method: "POST", headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ idJugador1: "sasuke", nombre1, idJugador2: "naruto", nombre2,
@@ -184,13 +216,14 @@ if (typeof notificar === "function") {
 
 | Commit | Qué contiene |
 |---|---|
-| `9c55c68` | SQLite completo (esquema, repos, usuarios/historial, scrypt), endpoints de usuarios, frontend HTTP de login/registro/historial, juegos con POST best-effort. |
+| `9c55c68` | Persistencia SQL inicial (esquema, repos, usuarios/historial, scrypt), endpoints de usuarios, frontend HTTP de login/registro/historial, juegos con POST best-effort. |
 | `206714b` | `POST /api/partida` real, `ProveedorDatosServidor`, hook de poderes → servidor, fix de rutas en `ByakuganPoder`, AGENTS.md corregido. |
-| `c718dae` | `ErrorDeConexion` + `RepositorioUsuariosConRespaldo`: login/registro a prueba de daños sin backend. |
+| `c718dae` | `ErrorDeConexion` + `RepositorioUsuariosConRespaldo`: datos a prueba de daños sin backend. |
+| (posterior) | Módulo de autenticación real (registro→verificación→login con cookie httpOnly→recuperación), migración a **PostgreSQL** como motor único, vistas y procedimientos, y `sql/esquema.sql` como fuente de verdad. |
 
 ---
 
-## 5. Tests (58/58 verdes — 15 suites)
+## 5. Tests (91/91 verdes — 20 suites)
 
 | Archivo | Qué cubre |
 |---|---|
@@ -198,12 +231,15 @@ if (typeof notificar === "function") {
 | `tests/partidaRepositorySQL.test.js` | Round-trip SQL + JSON, sobrescritura, ids aislados, **persistencia tras reinicio** |
 | `tests/partidaRepositoryArchivo.test.js` | Round-trip JSON en disco, **persistencia tras reinicio (instancia nueva, cache vacío)**, restauración fiel de chakra/vida, `null` si no existe el `.json` |
 | `tests/partidaService.test.js` | Crear+persistir, chakra personalizado, ids distintos, validación 0-100 |
-| `tests/usuarioService.test.js` | Registro→login→historial→`obtenerTodos`→`buscarPorCorreo` |
+| `tests/usuarioService.test.js` | Registro→login→historial→`obtenerTodos`→`buscarPorCorreo` (PostgreSQL) |
+| `tests/usuarioPerfil.test.js` | XP/estadísticas + migración de perfil SQLite |
+| `tests/procedimientoService.test.js` | `sp_registrar_partida` + vista `vw_historial_detallado` (PostgreSQL) |
 | `tests/poderService.test.js` | Activación, contraataques, chakra insuficiente |
+| `tests/authE2e.test.js` | e2e real: levanta `server.js` y recorre registro→verificación→login/cookie→logout→recuperación por HTTP |
 
 ```bash
 cd backend-poderes
-npm test     # 58 passing, 0 failing
+npm test     # 91 passing, 0 failing (el pretest aplica el esquema a memoria_ninja_test)
 ```
 
 ---
@@ -211,12 +247,18 @@ npm test     # 58 passing, 0 failing
 ## 6. Cómo levantarlo
 
 ```bash
-# Backend (SQLite en data/memorice.sqlite)
+# 1) Configurar por máquina (cada PC tiene su .env, gitignored)
 cd backend-poderes
-npm install
-npm start                     # http://localhost:3000
+cp .env.example .env          # Windows: Copy-Item .env.example .env
+#   completar PGPASSWORD (y PGPORT/PGDATABASE si difieren)
 
-# Frontend (los ES modules requieren HTTP, no file://)
-cd ..
-npx serve .                   # o cualquier servidor estático → abrir game-online.html
+# 2) Aplicar el esquema canónico (idempotente)
+npm run db:setup              # base de producción
+npm run db:test-setup         # base de pruebas
+
+# 3) Arrancar
+npm install
+npm start                     # http://localhost:3000 (sirve el frontend en el mismo origen)
+
+# Frontend: abrir http://localhost:3000/login.html (mismo origen → cookies httpOnly OK)
 ```

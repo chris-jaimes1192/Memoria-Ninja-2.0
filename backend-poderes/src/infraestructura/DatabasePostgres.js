@@ -26,10 +26,14 @@ class DatabasePostgres {
 
   async init() {
     if (this._initialized) return;
-    const schemaPath = path.join(__dirname, "schema-postgres.sql");
+    // FUENTE ÚNICA DEL ESQUEMA: sql/esquema.sql en la raíz del repo.
+    // (Ya no existe schema-postgres.sql duplicado dentro de src/infraestructura.)
+    const schemaPath = path.resolve(__dirname, "..", "..", "..", "sql", "esquema.sql");
     if (fs.existsSync(schemaPath)) {
       const schema = fs.readFileSync(schemaPath, "utf8");
       await this.pool.query(schema);
+    } else {
+      throw new Error(`Esquema no encontrado: ${schemaPath} (corre npm run db:setup)`);
     }
     this._initialized = true;
   }

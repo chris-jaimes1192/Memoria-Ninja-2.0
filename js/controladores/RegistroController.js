@@ -34,7 +34,7 @@ export class RegistroController extends FormularioControllerBase {
             );
 
             this.notificador.mostrar(
-                "Registro exitoso. Ahora puedes iniciar sesión.",
+                "Registro exitoso. Revisa tu correo para el código de verificación.",
                 "exito"
             );
 

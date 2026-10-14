@@ -18,6 +18,9 @@ class Usuario {
   #derrotas;
   #racha;
   #puntajeMax;
+  #correoVerificado;
+  #intentosFallidos;
+  #bloqueadoHasta;
 
   constructor({
     id,
@@ -30,6 +33,9 @@ class Usuario {
     derrotas,
     racha,
     puntajeMax,
+    correoVerificado,
+    intentosFallidos,
+    bloqueadoHasta,
   }) {
     this.#id = id;
     this.#usuario = usuario;
@@ -43,6 +49,10 @@ class Usuario {
     this.#derrotas = derrotas ?? 0;
     this.#racha = racha ?? 0;
     this.#puntajeMax = puntajeMax ?? 0;
+    // Seguridad de cuenta (módulo de autenticación real).
+    this.#correoVerificado = correoVerificado ?? false;
+    this.#intentosFallidos = intentosFallidos ?? 0;
+    this.#bloqueadoHasta = bloqueadoHasta ?? null;
   }
 
   get id() {
@@ -86,6 +96,18 @@ class Usuario {
     return this.#puntajeMax;
   }
 
+  get correoVerificado() {
+    return this.#correoVerificado;
+  }
+
+  get intentosFallidos() {
+    return this.#intentosFallidos;
+  }
+
+  get bloqueadoHasta() {
+    return this.#bloqueadoHasta;
+  }
+
   /**
    * Único punto de entrada para modificar el progreso de juego.
    * El Service calcula los valores (XP, racha, etc.) y acá solo se
@@ -114,6 +136,7 @@ class Usuario {
       derrotas: this.#derrotas,
       racha: this.#racha,
       puntajeMax: this.#puntajeMax,
+      correoVerificado: this.#correoVerificado,
     };
   }
 

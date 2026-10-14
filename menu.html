@@ -15,9 +15,18 @@
 
     <!-- CSS -->
     <link rel="stylesheet" href="css/menu.css">
+
+    <!-- GUARD DE SESIÓN (valida contra el servidor; nunca redirige) -->
+    <script src="js/sesion-guard.js"></script>
 </head>
 
 <body>
+
+    <!-- CARTEL DE INVITADO (lo muestra/oculta js/sesion-guard.js) -->
+    <div id="avisoInvitado" class="aviso-invitado" role="status" aria-live="polite" hidden>
+        <span id="avisoInvitadoTexto">Estás como invitado. Inicia sesión para guardar tu progreso y aparecer en el ranking.</span>
+        <a class="aviso-invitado-btn" href="login.html">Iniciar sesión</a>
+    </div>
 
     <!-- VIDEO DE FONDO -->
     <video autoplay muted loop class="video-bg">
@@ -81,7 +90,7 @@
             <div class="vs-match-box">
                 <div class="perfil-match">
                     <div class="avatar-match border-azul">
-                        <img src="assets/img/itachi-avatar.png" alt="Tu Avatar" onerror="this.innerText='🥷'; this.style.fontSize='30px'">
+                        <img src="assets/img/itachi-avatar.png" alt="Tu Avatar" class="avatar-img">
                     </div>
                     <span class="match-label label-azul">TU</span>
                 </div>
@@ -235,7 +244,7 @@
             <div class="ranking-row">
                 <div class="col-pos"><span class="badge-rank oro">1</span></div>
                 <div class="col-jugador">
-                    <div class="avatar-table"><img src="assets/img/itachi-avatar.png" alt="Itachi" onerror="this.innerText='🥷'"></div>
+                    <div class="avatar-table"><img src="assets/img/itachi-avatar.png" alt="Itachi" class="avatar-img"></div>
                     <span class="nombre-jugador">Itachi</span>
                 </div>
                 <div class="col-nivel"><span class="punto-online">🟢</span> 25</div>
@@ -687,7 +696,7 @@
 
 
 
-<button onclick="cerrarSesion()">
+<button id="btnCerrarSesion">
     Cerrar sesión
 </button> 
 

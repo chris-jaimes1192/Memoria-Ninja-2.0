@@ -6,32 +6,27 @@
   IMPORTANTE: type="module" en el <script> de recuperar.html.
 =========================================================*/
 
-import { LocalStorageUsuarioRepositorio } from "./infraestructura/repositorios/LocalStorageUsuarioRepositorio.js";
-import { CodigoNumericoGenerador } from "./infraestructura/generadores/CodigoNumericoGenerador.js";
+import { HttpAuthRepositorio } from "./infraestructura/repositorios/HttpAuthRepositorio.js";
 import { MensajeDomNotificador } from "./infraestructura/notificadores/MensajeDomNotificador.js";
-import { EnvioCodigoModoPrueba } from "./infraestructura/envios/EnvioCodigoModoPrueba.js";
 import { RecuperacionService } from "./servicios/RecuperacionService.js";
 import { RecuperacionController } from "./controladores/RecuperacionController.js";
 
 // --- Composición ---
-const repositorioUsuarios = new LocalStorageUsuarioRepositorio();
-const generadorCodigo = new CodigoNumericoGenerador();
+// Recuperación REAL vía /api/auth: el backend envía un código al correo
+// (MAILER=consola lo imprime en la consola del servidor) y restablece la
+// contraseña de forma atómica. Sin almacenamiento local de por medio.
+const repositorioAuth = new HttpAuthRepositorio();
 const notificador = new MensajeDomNotificador("msg");
-const enviadorCodigo = new EnvioCodigoModoPrueba(notificador);
-const recuperacionService = new RecuperacionService(
-  repositorioUsuarios,
-  generadorCodigo
-);
+const recuperacionService = new RecuperacionService(repositorioAuth);
 const recuperacionController = new RecuperacionController(
   recuperacionService,
-  notificador,
-  enviadorCodigo
+  notificador
 );
 
 // --- Conexión con el DOM ---
-function buscarCorreo() {
+async function buscarCorreo() {
   const correo = document.getElementById("correo").value.trim();
-  const exito = recuperacionController.manejarEnvio({ paso: "correo", correo });
+  const exito = await recuperacionController.manejarEnvio({ paso: "correo", correo });
 
   if (exito) {
     document.getElementById("paso1").style.display = "none";
@@ -39,9 +34,9 @@ function buscarCorreo() {
   }
 }
 
-function verificarCodigo() {
+async function verificarCodigo() {
   const codigo = document.getElementById("codigo").value.trim();
-  const exito = recuperacionController.manejarEnvio({ paso: "codigo", codigo });
+  const exito = await recuperacionController.manejarEnvio({ paso: "codigo", codigo });
 
   if (exito) {
     document.getElementById("paso2").style.display = "none";
@@ -49,15 +44,20 @@ function verificarCodigo() {
   }
 }
 
-function guardarPassword() {
+async function guardarPassword() {
   const nuevaPassword = document.getElementById("nuevaPass").value.trim();
   const confirmarPassword = document.getElementById("confirmarPass").value.trim();
-  recuperacionController.manejarEnvio({ paso: "password", nuevaPassword, confirmarPassword });
+  await recuperacionController.manejarEnvio({ paso: "password", nuevaPassword, confirmarPassword });
 }
 
 window.buscarCorreo = buscarCorreo;
 window.verificarCodigo = verificarCodigo;
 window.guardarPassword = guardarPassword;
+
+// --- Conexión real con el DOM (sin onclick inline: el CSP lo bloquea) ---
+document.getElementById("btnBuscarCorreo")?.addEventListener("click", buscarCorreo);
+document.getElementById("btnVerificarCodigo")?.addEventListener("click", verificarCodigo);
+document.getElementById("btnGuardarPassword")?.addEventListener("click", guardarPassword);
 
 document.addEventListener("DOMContentLoaded", () =>
   recuperacionController.marcarPaso(1)
