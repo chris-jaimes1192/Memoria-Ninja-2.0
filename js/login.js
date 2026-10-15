@@ -7,8 +7,6 @@
 =========================================================*/
 
 import { HttpUsuarioRepositorio } from "./infraestructura/repositorios/HttpUsuarioRepositorio.js";
-import { LocalStorageUsuarioRepositorio } from "./infraestructura/repositorios/LocalStorageUsuarioRepositorio.js";
-import { RepositorioUsuariosConRespaldo } from "./infraestructura/repositorios/RepositorioUsuariosConRespaldo.js";
 import { LocalStorageSesionRepositorio } from "./infraestructura/repositorios/LocalStorageSesionRepositorio.js";
 import { MensajeDomNotificador } from "./infraestructura/notificadores/MensajeDomNotificador.js";
 import { AutenticacionService } from "./servicios/AutenticacionService.js";
@@ -17,14 +15,11 @@ import { LoginController } from "./controladores/LoginController.js";
 import { alternarVisibilidadPassword } from "./utils/TogglePasswordHelper.js";
 
 // --- Composición (Dependency Injection manual) ---
-// Los usuarios viven en SQLite (backend) y este repositorio intenta con
-// HTTP primero. Si el backend NO está arriba (ErrorDeConexion), cae solo
-// al respaldo local: el login sigue funcionando contra los usuarios que
-// se registraron alguna vez sin servidor.
-const repositorioUsuarios = new RepositorioUsuariosConRespaldo({
-  principal: new HttpUsuarioRepositorio(),
-  respaldo: new LocalStorageUsuarioRepositorio()
-});
+// Login REAL contra PostgreSQL: buscaPorCredenciales() llama a
+// /api/auth/login, que valida la contraseña (hash con escrypt), crea la
+// sesión en tabla sesiones y fija la cookie httpOnly. Ya NO hay respaldo
+// local: los usuarios viven solo en el servidor.
+const repositorioUsuarios = new HttpUsuarioRepositorio();
 const sesionRepositorio = new LocalStorageSesionRepositorio();
 const notificador = new MensajeDomNotificador("msg");
 const autenticacionService = new AutenticacionService(repositorioUsuarios);
@@ -35,8 +30,8 @@ const loginController = new LoginController(
   notificador
 );
 
-// --- Conexión con el DOM (se mantienen los mismos nombres de función
-// en window para no romper los onclick="..." ya existentes en login.html) ---
+// --- Conexión con el DOM (listeners; sin onclick inline, que el CSP bloquea.
+// Los nombres en window se mantienen por compatibilidad) ---
 async function login() {
   const usuario = document.getElementById("user").value.trim();
   const password = document.getElementById("pass").value.trim();
@@ -51,3 +46,9 @@ function togglePassword(idInput, icono) {
 
 window.login = login;
 window.togglePassword = togglePassword;
+
+// --- Conexión real con el DOM (sin onclick inline: el CSP lo bloquea) ---
+document.getElementById("btnLogin")?.addEventListener("click", login);
+document.getElementById("ojoPass")?.addEventListener("click", (evento) =>
+  togglePassword("pass", evento.currentTarget)
+);

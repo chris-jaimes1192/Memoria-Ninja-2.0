@@ -111,7 +111,7 @@ class UsuarioService {
     };
 
     usuario.actualizarPerfil(perfilActualizado);
-    this.usuarioRepository.actualizarPerfil(idUsuario, perfilActualizado);
+    await this.usuarioRepository.actualizarPerfil(idUsuario, perfilActualizado);
 
     return this.#perfilPublico(usuario);
   }

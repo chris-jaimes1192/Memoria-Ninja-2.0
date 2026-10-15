@@ -1,123 +1,145 @@
 # AGENTS.md — Memorice Duel (Ninja Memory)
 
-## What this is
+## Qué es esto
 
-Naruto-themed memory card game. Spanish UI and code comments throughout.
-No build system, no bundler, no linter, no CI — vanilla HTML/CSS/JS frontend, Node.js + Express backend.
+Juego de cartas de memoria temático de Naruto. Interfaz y comentarios de código en español.
+Sin build system, sin bundler, sin linter, sin CI — frontend vanilla HTML/CSS/JS, backend Node.js + Express.
 
-## Repository structure
+## Estructura del repositorio
 
-- **Root**: static frontend (HTML pages + `js/` + `css/` + `assets/`). Each page = one HTML + one CSS + one JS file.
-- **`backend-poderes/`**: Separate Node.js app for the powers system. Has its own `package.json`.
-- **`Agrupar/`**: Legacy/prototype version of the game — do not modify unless explicitly asked.
-- **`-files`**: Git log dump (15KB text file), not a real source file.
-- **`README.md` (root)** is a broken placeholder (`# MEMORIA-NINJA-1111` repeated) — do not treat it as a source of truth.
+- **Raíz**: frontend estático (páginas HTML + `js/` + `css/` + `assets/`). Cada página = un HTML + un CSS + un JS.
+- **`backend-poderes/`**: app Node.js aparte para el sistema de poderes. Tiene su propio `package.json`.
+- **`Agrupar/`**: versión legado/prototipo del juego — no modificar salvo pedido explícito.
+- **`-files`**: volcado del log de git (archivo de texto de 15KB), no es un archivo fuente real.
+- **`README.md` (raíz)**: guía real del proyecto en español (ya no es el placeholder roto `# MEMORIA-NINJA-1111`).
 
-## Frontend (root)
+## Frontend (raíz)
 
-- Entry flow: `login.html` → `menu.html` → `game-online.html`
-- State is stored in `localStorage` (user session, player names, game history, difficulty level), with best-effort sync to the backend over HTTP
-- `js/mock-server.js` provides fake game data; `js/nucleo-GAME ONLI/datos/ProveedorDatosServidor.js` is the REAL provider (POST `/api/partida`, SQLite) that falls back to the mock when the server is unreachable
-- Card images are in `assets/img/cards/aldeas/{village}/` — village names: arena, konoha (hyuga, sarutobi, uchiha, uzumaki), niebla, nube, roca, otros
-- `js/board-manager.js` has the core board rendering logic; `ALDEA` variable at top controls which village's cards are shown
-- `js/game-online.js` is a small ES-module bootstrap (`new GestorPartida().iniciar()`). The real live engine lives in `js/nucleo-GAME ONLI/` (see below)
+- Flujo de entrada: `login.html` → `menu.html` → `game-online.html`
+- El estado se guarda en `localStorage` (sesión de usuario, nombres de jugadores, historial de partidas, nivel de dificultad), con sincronización best-effort al backend por HTTP
+- `js/sesion-guard.js` (script clásico) valida la sesión contra `GET /api/auth/me` en cada página protegida (menu + páginas de juego), refresca la copia local del usuario y deja el estado en `localStorage["estadoSesion"]` (`activa`/`invitado`/`offline`). **Nunca redirige**: el juego es jugable como invitado/offline
+- `js/mock-server.js` provee datos falsos del juego; `js/nucleo-GAME ONLI/datos/ProveedorDatosServidor.js` es el proveedor REAL (POST `/api/partida`, PostgreSQL) que cae al mock cuando el servidor no responde
+- Las imágenes de cartas están en `assets/img/cards/aldeas/{village}/` — nombres de aldea: arena, konoha (hyuga, sarutobi, uchiha, uzumaki), niebla, nube, roca, otros
+- `js/board-manager.js` tiene la lógica central de render del tablero; la variable `ALDEA` de arriba controla qué cartas de aldea se muestran
+- `js/game-online.js` es un bootstrap chico de ES module (`new GestorPartida().iniciar()`). El motor vivo real está en `js/nucleo-GAME ONLI/` (ver abajo)
 
-### `js/` layered modules (auth + account flows)
+### Módulos en capas de `js/` (auth + flujos de cuenta)
 
-`js/` also contains a small layered architecture mirroring the backend's SOLID style:
+`js/` también contiene una arquitectura en capas pequeña que refleja el estilo SOLID del backend:
 
 - `controladores/` — `LoginController`, `RegistroController`, `RecuperacionController`, `VerificacionController`, `FormularioControllerBase`
 - `core/` — `entities/Usuario.js` + `interfaces/` (`ICodigoGenerador`, `INotificador`, `IUsuarioRepositorio`)
-- `infraestructura/` — `repositorios/LocalStorageUsuarioRepositorio`, `generadores/` (alphanumeric + numeric codes), `notificadores/` (DOM alert + message)
+- `infraestructura/` — `repositorios/LocalStorageUsuarioRepositorio`, `generadores/` (códigos alfanuméricos + numéricos), `notificadores/` (alerta DOM + mensaje)
 - `servicios/` — `AutenticacionService`, `RegistroService`, `RecuperacionService`, `SesionService`, `VerificacionService`
 - `utils/` — `ModalHelper`, `TogglePasswordHelper`
 
-These are ES modules on some files (`import`/`export`), CommonJS-style `require` might not work — check each file's module style.
+Algunos archivos son ES modules (`import`/`export`); `require` estilo CommonJS puede no funcionar — revisá el estilo de módulo de cada archivo.
 
-### Duplicate powers system (`js/nucleo-GAME ONLI/`)
+### Sistema de poderes duplicado (`js/nucleo-GAME ONLI/`)
 
-- Folder name **contains spaces**: `js/nucleo-GAME ONLI/` — use quotes or `-LiteralPath` in shell commands. Import paths use the space too (works in browser module resolution, but bash globs will need quotes).
-- **This IS the live engine.** `game-online.js` is a thin bootstrap; `muelle-nucleo` no, el real: `GestorPartida.js` (composition root), `GestorTurno.js`, `GestorTiempo.js`, `entidades/Personaje.js`, `poderes/Poder.js` (Template Method) + the 6 power classes + `GestorPoderes.js`, `datos/ProveedorDatos*.js`, `vista/VistaPartida.js`
-- Data + persistence wiring: `ProveedorDatosServidor` creates the match on the backend (`POST /api/partida` → SQLite) and `Poder.activar()` notifies `POST /api/poder/activar` best-effort; both fall back silently to local simulado logic when the server is unreachable, so the game works offline too.
-- `COMO-QUEDO-ORGANIZADO.md` inside the folder maps old `game-online.js` code to the new classes.
-- There's a 0-byte junk file `{entidades,poderes,datos,vista}` in the folder (broken brace-expansion), safe to ignore.
+- El nombre de la carpeta **contiene espacios**: `js/nucleo-GAME ONLI/` — usá comillas o `-LiteralPath` en comandos de shell. Las rutas de import también usan el espacio (funciona en la resolución de módulos del navegador, pero los glob del shell necesitan comillas).
+- **Este ES el motor vivo.** `game-online.js` es un bootstrap delgado; el motor real: `GestorPartida.js` (raíz de composición), `GestorTurno.js`, `GestorTiempo.js`, `entidades/Personaje.js`, `poderes/Poder.js` (Template Method) + las 6 clases de poderes + `GestorPoderes.js`, `datos/ProveedorDatos*.js`, `vista/VistaPartida.js`
+- Conexión de datos + persistencia: `ProveedorDatosServidor` crea la partida en el backend (`POST /api/partida` → PostgreSQL) y `Poder.activar()` notifica `POST /api/poder/activar` best-effort; ambos caen silenciosamente a la lógica simulada local cuando el servidor no responde, así el juego funciona offline también.
+- `COMO-QUEDO-ORGANIZADO.md` dentro de la carpeta mapea el código viejo de `game-online.js` a las clases nuevas.
+- Hay un archivo basura de 0 bytes `{entidades,poderes,datos,vista}` en la carpeta (brace-expansion roto), ignorarlo sin problema.
+
+## Sesión (frontend): 3 estados
+
+La sesión real vive en la cookie httpOnly `memoria_ninja_sesion`. El frontend expone `window.SesionNinja` (`js/sesion-guard.js`), que consulta `GET /api/auth/me` y marca:
+
+- **`activa`** (200): sesión válida; menú completo y funciones de perfil/ranking/historial habilitadas.
+- **`invitado`** (401): online pero sin sesión; se puede jugar, el menú muestra un cartel ("inicia sesión para guardar tu progreso y aparecer en el ranking") y perfil/ranking/historial piden login (`MenuController.estaBloqueado`).
+- **`offline`** (el servidor no responde): igual que invitado, jugable con guardado local.
+
+El **logout es real**: `window.SesionNinja.cerrarSesion()` (usado por `js/menu.js` y `js/services/GameSessionService.js`) hace `POST /api/auth/logout` (revoca la cookie en el servidor), limpia `localStorage` y vuelve a `login.html`. No se fuerza el login: `login.html` no redirige. Trabajo futuro: modo offline con sincronización y merge invitado→cuenta (Partes 3 y 7 de `PLAN-DESARROLLO.md`).
 
 ## Backend (`backend-poderes/`)
 
 ```bash
 cd backend-poderes
 npm install
-npm start          # runs on http://localhost:3000
-npm test           # Node built-in test runner (--test): 72 tests, 19 suites, all green
+npm start          # corre en http://localhost:3000
+npm test           # runner de tests nativo de Node (--test): 98 tests, 22 suites, todas verdes
+npm run seed:demo  # llena PGDATABASE con datos demo (7 cuentas @demo.ninja / clave123)
 ```
 
-- Architecture: layered (entities → factories → repositories → services → controllers → routes)
-- `server.js` is the **composition root** — only place where concrete implementations are instantiated with `new`
-- 6 powers: byakugan, sustitucion, robo, genjutsu, sello, bomba. Endpoints: `POST /api/poder/activar`, `POST /api/partida` (create+persist a match, SQLite), `POST /api/partida/prueba` (legacy demo), and the user/history/profile endpoints under `/api/usuarios` (register/login/list/search/history/`GET|POST :id/perfil`)
-- Three repository implementations: `PartidaRepositoryMemoria` (in-memory), `PartidaRepositoryArchivo` (file-based) and `PartidaRepositorySQL` (SQLite, production default) — all pass the same contract tests (LSP proof)
-- Tests are contract-based: same test battery runs against multiple implementations
-- `PartidaRepositoryArchivo` writes a JSON snapshot per partida to `backend-poderes/data/` (gitignored via `data/*.json`). `obtener()` checks the in-memory cache first and, on a miss, **reads back from the JSON file on disk** and rebuilds the `Partida` entity (same as the SQL repo) — partidas survive a server restart. Verified by the "persistencia REAL en disco" tests
-- Known dead-code bug: `BombaPoder.activar()` checks `rival.tieneSustitucionActiva === true`, but `Jugador` never sets that property — the "−10 if Sustitución active" branch never runs
-- `Poder.usosPermitidos` is defined in the base class but never enforced anywhere
+### Datos demo / seed
 
-## Experience / profile system (XP)
+`npm run seed:demo` (`scripts/seed-demo.js`) llena todas las tablas y vistas para que nada se vea vacío en pgAdmin, y crea cuentas reales con las que se puede iniciar sesión (7 usuarios ninja, `@demo.ninja`, contraseña `clave123`). Es **idempotente**: borra solo las filas demo (`@demo.ninja` / `estado_json` que contiene `"demo":true`) y las vuelve a crear; ejercita los 3 procedimientos almacenados y `fn_confirmar_codigo`, y dispara los 5 triggers (auditoría, código previo inválido, `actualizado_en`). Equivalente en SQL puro: `sql/datos-simulados.sql`. Consultas listas para pegar en pgAdmin: `sql/consultas-demo.sql`. Guía paso a paso: `sql/COMO-VER-EN-PGADMIN.md`. Nota: PostgreSQL prohíbe subconsultas como argumento de `CALL`, por eso tanto el seed SQL como `consultas-demo.sql` envuelven los `CALL` en bloques `DO`.
 
-Covers **1-player matches only** (never the online engine or 2-player mode). Business rules:
+- Arquitectura: en capas (entities → factories → repositories → services → controllers → routes)
+- `server.js` es la **raíz de composición** — único lugar donde se instancian implementaciones concretas con `new`
+- 6 poderes: byakugan, sustitucion, robo, genjutsu, sello, bomba. Endpoints: `POST /api/poder/activar`, `POST /api/partida` (crea + persiste una partida, PostgreSQL), `POST /api/partida/prueba` (demo legado), y los endpoints de usuario/historial/perfil bajo `/api/usuarios` (register/login/list/search/history/`GET|POST :id/perfil`)
+- Tres implementaciones de repositorio: `PartidaRepositoryMemoria` (en memoria), `PartidaRepositoryArchivo` (en archivo) y `PartidaRepositorySQL` (PostgreSQL, default en producción) — todas pasan los mismos tests de contrato (prueba de LSP)
+- Los tests son basados en contratos: la misma batería corre contra varias implementaciones
+- `PartidaRepositoryArchivo` escribe un snapshot JSON por partida en `backend-poderes/data/` (ignorado por git vía `data/*.json`). `obtener()` revisa primero el caché en memoria y, si falla, **relee el archivo JSON del disco** y reconstruye la entidad `Partida` (igual que el repo SQL) — las partidas sobreviven un reinicio del servidor. Verificado por los tests de "persistencia REAL en disco"
+- Bug conocido de código muerto: `BombaPoder.activar()` chequea `rival.tieneSustitucionActiva === true`, pero `Jugador` nunca setea esa propiedad — la rama "−10 si Sustitución activa" nunca corre
+- `Poder.usosPermitidos` está definido en la clase base pero nunca se aplica en ningún lado
 
-- Every account is born with **500 XP**, the rest of the stats in 0; level = `floor(xp / 1000) + 1`.
-- **Victory → +100 XP**, +1 victoria, +1 racha. **Defeat → +1 derrota, racha = 0, no XP.**
-- `puntajeMax` keeps the best score ever (never goes down).
+## Sistema de experiencia / perfil (XP)
+
+Cubre **solo partidas de 1 jugador** (nunca el motor online ni el modo de 2 jugadores). Reglas de negocio:
+
+- Toda cuenta nace con **500 XP**, el resto de las estadísticas en 0; nivel = `floor(xp / 1000) + 1`.
+- **Victoria → +100 XP**, +1 victoria, +1 racha. **Derrota → +1 derrota, racha = 0, sin XP.**
+- `puntajeMax` guarda el mejor puntaje histórico (nunca baja).
 
 Backend:
 
-- `usuarios` has `xp/victorias/derrotas/racha/puntaje_max` columns; `DatabaseSqlite.#migrarColumnasPerfil()` adds them idempotently to old DBs (defaults 500/0/0/0/0). Same columns in `schema-postgres.sql`.
-- `UsuarioService.obtenerPerfil(id)` (null if the account does not exist) and `registrarFinPartidaPerfil({idUsuario, victoria, puntaje})` with `XP_POR_VICTORIA = 100`.
-- Routes `GET|POST /api/usuarios/:idUsuario/perfil` — GET → 404 if missing, POST → 400 if missing. Tests in `tests/usuarioPerfil.test.js`.
+- `usuarios` tiene columnas `xp/victorias/derrotas/racha/puntaje_max`; `DatabaseSqlite.#migrarColumnasPerfil()` las agrega de forma idempotente a bases viejas (defaults 500/0/0/0/0). Las mismas columnas están en `sql/esquema.sql`.
+- `UsuarioService.obtenerPerfil(id)` (null si la cuenta no existe) y `registrarFinPartidaPerfil({idUsuario, victoria, puntaje})` con `XP_POR_VICTORIA = 100`.
+- Rutas `GET|POST /api/usuarios/:idUsuario/perfil` — GET → 404 si falta, POST → 400 si falta. Tests en `tests/usuarioPerfil.test.js`.
 
-Frontend (all ES modules):
+Frontend (todo ES modules):
 
-- `js/domain/ProgresoReglas.js` — **single source of truth in the browser** (defaults, level, `aplicarFinPartida`); mirrors the backend constant. `js/domain/IPerfilRepositorio.js` is the contract.
-- `js/infraestructura/repositorios/` — `HttpPerfilRepositorio` (404 → null, network down → `ErrorDeConexion`), `LocalStoragePerfilRepositorio` (key `perfil:<id>`), `PerfilRepositorioConRespaldo` (guest / unknown account / no backend → local; business errors propagate).
-- `js/services/ProfileService.js` (async: `obtenerPerfil()`, `registrarFinPartida()` which is best-effort and never throws) + **singleton `js/services/progresoService.js`** — the composition both `js/app.js` (menu modal) and every game page import.
-- `js/ui/ProfileModal.js` fills `modalName/modalLevel/modalExpBar/modalExpText/statWins/statLosses/statStreak/statHighScore` asynchronously.
+- `js/domain/ProgresoReglas.js` — **única fuente de verdad en el navegador** (defaults, nivel, `aplicarFinPartida`); refleja la constante del backend. `js/domain/IPerfilRepositorio.js` es el contrato.
+- `js/infraestructura/repositorios/` — `HttpPerfilRepositorio` (404 → null, red caída → `ErrorDeConexion`), `LocalStoragePerfilRepositorio` (clave `perfil:<id>`), `PerfilRepositorioConRespaldo` (invitado / cuenta desconocida / sin backend → local; los errores de negocio se propagan).
+- `js/services/ProfileService.js` (async: `obtenerPerfil()`, `registrarFinPartida()` que es best-effort y nunca lanza) + **singleton `js/services/progresoService.js`** — la composición que importan tanto `js/app.js` (modal del menú) como cada página de juego.
+- `js/ui/ProfileModal.js` llena `modalName/modalLevel/modalExpBar/modalExpText/statWins/statLosses/statStreak/statHighScore` de forma asíncrona.
 
-Hooks (12 pages, all call `progresoService.registrarFinPartida({victoria, puntaje})`):
+Hooks (12 páginas, todas llaman a `progresoService.registrarFinPartida({victoria, puntaje})`):
 
-- The 9 controllers with `guardarResultadoServidor(victoria)`: akatsuki, arena, hyuga, niebla, nube, roca, sarutobi, uchiha, uzumaki.
-- `MuerteController.mostrarVictoria()` / `tiempoAgotado()` — guarded by `!this.modo2Jugadores`.
-- `OrdenController.mostrarVictoria()` / `perder()`; `js/pares.js terminarPartida(victoria)` (classic script → dynamic `import()` from `document.baseURI`).
-- Guest sessions use `perfil:invitado` and never touch HTTP.
+- Los 9 controllers con `guardarResultadoServidor(victoria)`: akatsuki, arena, hyuga, niebla, nube, roca, sarutobi, uchiha, uzumaki.
+- `MuerteController.mostrarVictoria()` / `tiempoAgotado()` — protegidos por `!this.modo2Jugadores`.
+- `OrdenController.mostrarVictoria()` / `perder()`; `js/pares.js terminarPartida(victoria)` (script clásico → `import()` dinámico desde `document.baseURI`).
+- Las sesiones de invitado usan `perfil:invitado` y nunca tocan HTTP.
 
 ## Testing
 
-- **Backend only** — there are no frontend tests
-- Run from `backend-poderes/` directory: `npm test`
-- Test files: `contratoPartidaRepository.js`, `contratoPoder.test.js`, `poderService.test.js`, `partidaService.test.js`, `partidaRepositorySQL.test.js`, `usuarioService.test.js`, `usuarioPerfil.test.js`, plus one per repository implementation
-- Running tests creates real fixture data under `backend-poderes/data/` only when the file repository is exercised by tests
+- **Solo backend** — no hay tests de frontend
+- Correr desde el directorio `backend-poderes/`: `npm test` (su `pretest` corre `node scripts/db-setup.js --test`, que aplica `sql/esquema.sql` a `memoria_ninja_test`)
+- Las suites de integración `usuarioService.test.js`, `usuarioPerfil.test.js` y `procedimientoService.test.js` corren contra **PostgreSQL** (`memoria_ninja_test`), no SQLite. Comparten `tests/helpers/baseDatosPrueba.js` (`crearDatabasePrueba()` / `limpiarDatabase()` → `TRUNCATE ... CASCADE`) y limpian las 7 tablas entre tests.
+- Los repos son async-safe: los métodos de escritura de `UsuarioRepositorySQL`/`HistorialPartidaRepositorySQL` hacen `return` de la promesa `run()` para que el PostgreSQL (async) sea awaited; esperar el resultado síncrono de SQLite es un no-op, así funcionan ambos motores.
+- `DatabaseSqlite` sigue respaldando solo los tests SQL de partidas (`partidaRepositorySQL.test.js`, `partidaService.test.js`) y el test de migración `DatabaseSqlite.#migrarColumnasPerfil()` (solo SQLite) dentro de `usuarioPerfil.test.js`.
+- `tests/authE2e.test.js` es un test end-to-end real: levanta `server.js` como proceso hijo (en `SERVER_PORT_E2E`, default 3099, `PGDATABASE=PGDATABASE_TEST`, `MAILER=consola`, `RATE_LIMIT_DESACTIVADO=1`), recorre registro→verificación→login/cookie→logout→recuperación por HTTP, y luego mata el servidor. Lee los códigos de verificación del stdout del hijo (`MAILER=consola` imprime `... es: 123456`).
+- `RATE_LIMIT_DESACTIVADO=1` (server.js) hace que ambos rate-limiters hagan `skip` — se usa solo en el test e2e para que corridas repetidas de `npm test` no choquen con 429.
+- Archivos de test: `contratoPartidaRepository.js`, `contratoPoder.test.js`, `poderService.test.js`, `partidaService.test.js`, `partidaRepositorySQL.test.js`, `usuarioService.test.js`, `usuarioPerfil.test.js`, más uno por cada implementación de repositorio
+- Correr los tests crea data fixture real bajo `backend-poderes/data/` solo cuando el repositorio de archivo es ejercitado por los tests
 
-## Installed Skills (Autoskills)
+## Skills instaladas (Autoskills)
 
-Four specialized skills are installed and should be loaded via the `skill` tool when relevant tasks arise:
+Hay cuatro skills especializadas instaladas y se deben cargar vía la tool `skill` cuando surjan tareas relevantes:
 
-| Skill | When to apply |
+| Skill | Cuándo aplicarla |
 |---|---|
-| `nodejs-backend-patterns` | Building or modifying Express routes, controllers, middleware, error handling, or API design in `backend-poderes/` |
-| `nodejs-best-practices` | Architectural decisions in the backend — async patterns, security, module structure, framework choices |
-| `frontend-design` | Creating or redesigning UI components, pages, or visual elements in the frontend (`*.html`, `css/`, `js/` with DOM manipulation) |
-| `accessibility` | Auditing or improving WCAG 2.2 compliance, screen reader support, keyboard navigation, or ARIA usage in any HTML page |
+| `nodejs-backend-patterns` | Construir o modificar rutas Express, controllers, middleware, manejo de errores o diseño de API en `backend-poderes/` |
+| `nodejs-best-practices` | Decisiones de arquitectura en el backend — patrones async, seguridad, estructura de módulos, elección de framework |
+| `frontend-design` | Crear o rediseñar componentes de UI, páginas o elementos visuales en el frontend (`*.html`, `css/`, `js/` con manipulación del DOM) |
+| `accessibility` | Auditar o mejorar el cumplimiento de WCAG 2.2, soporte de lectores de pantalla, navegación por teclado o uso de ARIA en cualquier página HTML |
 
-### Rules
+### Reglas
 
-- Always load the relevant skill **before** starting work on the task, not after.
-- For backend tasks, load **both** `nodejs-backend-patterns` and `nodejs-best-practices` if the task touches architecture *and* implementation.
-- For frontend visual work, load `frontend-design` first; if the page also needs a11y fixes, follow up with `accessibility`.
-- Skills provide context-specific guidance — follow their recommendations over general defaults.
+- Cargá siempre la skill relevante **antes** de empezar el trabajo, no después.
+- Para tareas de backend, cargá **ambas** `nodejs-backend-patterns` y `nodejs-best-practices` si la tarea toca arquitectura *e* implementación.
+- Para trabajo visual de frontend, cargá `frontend-design` primero; si la página también necesita arreglos de a11y, seguí con `accessibility`.
+- Las skills dan guía específica del contexto — seguí sus recomendaciones por encima de los defaults generales.
 
-## Gotchas
+## Cosas a tener en cuenta
 
-- No `package.json` at root — root `package-lock.json` is empty (`"packages": {}`)
-- Frontend has no dev server — open HTML files directly or use a static file server
-- Some JS files use ES modules, some don't — check each file's module style before adding code
-- The backend is connected to the frontend for auth, match creation, history and profile/XP (best-effort HTTP with local fallback); the per-zone game pages (`pares.js`, `uzumaki.js`, `muerte.js`, `arena.js`, etc.) still keep their match state in `localStorage`
-- Variable/function names mix Spanish and English; `verifivacion.html` is a real (misspelled) filename
-- `js/nucleo-GAME ONLI/` folder has a space in its name — quotes/`-LiteralPath` required in shell commands
+- No hay `package.json` en la raíz — el `package-lock.json` de la raíz está vacío (`"packages": {}`)
+- El frontend no tiene dev server — abrí los HTML directamente o usá un servidor de archivos estáticos
+- Algunos archivos JS usan ES modules, otros no — revisá el estilo de módulo de cada archivo antes de agregar código
+- El backend sirve el frontend con `helmet()` → **CSP activo**: no usar `onclick`/`onerror` ni `<script>` inline en las páginas HTML (el navegador los bloquea). Conectar todo con `addEventListener` desde el JS de la página. Único HTML con inline: `Agrupar/facil.html` (legado, no se toca)
+- El backend está conectado al frontend para auth, creación de partidas, historial y perfil/XP (HTTP best-effort con fallback local); las páginas de juego por zona (`pares.js`, `uzumaki.js`, `muerte.js`, `arena.js`, etc.) siguen guardando el estado de su partida en `localStorage`
+- Los nombres de variables/funciones mezclan español e inglés; `verifivacion.html` es un nombre de archivo real (mal escrito)
+- La carpeta `js/nucleo-GAME ONLI/` tiene un espacio en su nombre — se requieren comillas/`-LiteralPath` en comandos de shell

@@ -1,22 +1,34 @@
-const { describe, it } = require("node:test");
+const { describe, it, before, after } = require("node:test");
 const assert = require("node:assert/strict");
-const DatabaseSqlite = require("../src/infraestructura/DatabaseSqlite");
 const PasswordHasher = require("../src/infraestructura/PasswordHasher");
 const UsuarioRepositorySQL = require("../src/repositories/UsuarioRepositorySQL");
 const HistorialPartidaRepositorySQL = require("../src/repositories/HistorialPartidaRepositorySQL");
 const UsuarioService = require("../src/services/UsuarioService");
+const { crearDatabasePrueba, limpiarDatabase } = require("./helpers/baseDatosPrueba");
 
 /**
- * >>> DIP en acción con SQLite <<<
+ * >>> DIP en acción con PostgreSQL <<<
  * Se arma un UsuarioService con repositorios SQL concretos y se prueba
  * el ciclo de vida real: registro -> login -> registro de partida ->
- * historial. Todo persistido en una base en memoria.
+ * historial. Todo persistido en memoria_ninja_test (el MISMO motor que
+ * usa la app). Cada test limpia las tablas para arrancar aislado.
  *
  * Los métodos del Service son async (funcionan igual con SQLite síncrono
  * y con PostgreSQL asíncrono), por eso los tests hacen await.
  */
-function crearServicio() {
-  const database = new DatabaseSqlite(":memory:");
+let database;
+
+before(async () => {
+  database = crearDatabasePrueba();
+  await database.init();
+});
+
+after(async () => {
+  await database.close();
+});
+
+async function crearServicio() {
+  await limpiarDatabase(database);
   const usuarioRepository = new UsuarioRepositorySQL(database);
   const historialRepository = new HistorialPartidaRepositorySQL(database);
   const passwordHasher = new PasswordHasher();
@@ -26,7 +38,7 @@ function crearServicio() {
 
 describe("UsuarioService con repositorios SQL", () => {
   it("registra un usuario y lo devuelve sin exponer el hash", async () => {
-    const { servicio, usuarioRepository } = crearServicio();
+    const { servicio, usuarioRepository } = await crearServicio();
 
     const creado = await servicio.registrar({
       usuario: "naruto",
@@ -48,7 +60,7 @@ describe("UsuarioService con repositorios SQL", () => {
   });
 
   it("rechaza registro con usuario ya existente (formato duplicado)", async () => {
-    const { servicio } = crearServicio();
+    const { servicio } = await crearServicio();
     await servicio.registrar({ usuario: "sasuke", correo: "sasuke@konoha.ni", password: "clave123" });
 
     await assert.rejects(
@@ -58,7 +70,7 @@ describe("UsuarioService con repositorios SQL", () => {
   });
 
   it("rechaza registro con correo ya existente", async () => {
-    const { servicio } = crearServicio();
+    const { servicio } = await crearServicio();
     await servicio.registrar({ usuario: "sakura", correo: "sakura@konoha.ni", password: "clave123" });
 
     await assert.rejects(
@@ -68,7 +80,7 @@ describe("UsuarioService con repositorios SQL", () => {
   });
 
   it("inicia sesión con credenciales correctas y rechaza las incorrectas", async () => {
-    const { servicio } = crearServicio();
+    const { servicio } = await crearServicio();
     await servicio.registrar({ usuario: "hinata", correo: "hinata@konoha.ni", password: "byakugan" });
 
     const sesion = await servicio.iniciarSesion({ usuario: "hinata", password: "byakugan" });
@@ -85,7 +97,7 @@ describe("UsuarioService con repositorios SQL", () => {
   });
 
   it("guarda resultados de partidas y los lista ordenados del más reciente al más antiguo", async () => {
-    const { servicio } = crearServicio();
+    const { servicio } = await crearServicio();
     const { id } = await servicio.registrar({ usuario: "kiba", correo: "kiba@konoha.ni", password: "akamaru" });
 
     await servicio.guardarResultadoPartida({ idUsuario: id, zona: "roca", puntaje: 120, modo: "1", ganador: "kiba" });
@@ -99,7 +111,7 @@ describe("UsuarioService con repositorios SQL", () => {
   });
 
   it("no guarda historial para un usuario inexistente (FK protegida por el Service)", async () => {
-    const { servicio } = crearServicio();
+    const { servicio } = await crearServicio();
     await assert.rejects(
       () => servicio.guardarResultadoPartida({ idUsuario: "uuid-inexistente", zona: "roca", puntaje: 1 }),
       /no existe/
@@ -107,7 +119,7 @@ describe("UsuarioService con repositorios SQL", () => {
   });
 
   it("buscarPorCorreo devuelve el usuario público o null (para el repositorio HTTP del frontend)", async () => {
-    const { servicio } = crearServicio();
+    const { servicio } = await crearServicio();
     await servicio.registrar({ usuario: "rocklee", correo: "lee@konoha.ni", password: "konohaForte" });
 
     const encontrado = await servicio.buscarPorCorreo("lee@konoha.ni");
@@ -118,7 +130,7 @@ describe("UsuarioService con repositorios SQL", () => {
   });
 
   it("obtenerTodos lista usuarios públicos sin exponer hashes", async () => {
-    const { servicio } = crearServicio();
+    const { servicio } = await crearServicio();
     await servicio.registrar({ usuario: "tenten", correo: "tenten@konoha.ni", password: "arma123" });
     await servicio.registrar({ usuario: "neji", correo: "neji@konoha.ni", password: "giro123" });
 

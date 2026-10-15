@@ -13,9 +13,10 @@
   internamente delega según datos.paso — pero hacia afuera
   siempre se ve el mismo contrato.
 
-  DIP + OCP: recibe un IEnviadorCodigo inyectado en vez de
-  hacer alert() directo con el código (igual que
-  VerificacionController).
+  DIP + OCP: recibe el RecuperacionService inyectado (que trabaja
+  contra el backend /api/auth) y un INotificador. Ya no se genera
+  ni se muestra ningún código en el navegador: el código llega al
+  correo de la persona.
 =========================================================*/
 
 import { FormularioControllerBase } from "./FormularioControllerBase.js";
@@ -24,12 +25,10 @@ export class RecuperacionController extends FormularioControllerBase {
   /**
    * @param {import("../servicios/RecuperacionService.js").RecuperacionService} recuperacionService
    * @param {import("../core/interfaces/INotificador.js").INotificador} notificador
-   * @param {import("../core/interfaces/IEnviadorCodigo.js").IEnviadorCodigo} enviadorCodigo
    */
-  constructor(recuperacionService, notificador, enviadorCodigo) {
+  constructor(recuperacionService, notificador) {
     super(notificador);
     this.recuperacionService = recuperacionService;
-    this.enviadorCodigo = enviadorCodigo;
   }
 
   marcarPaso(numeroActual) {
@@ -52,9 +51,9 @@ export class RecuperacionController extends FormularioControllerBase {
    * controladores). datos.paso indica cuál de los 3 pasos del
    * flujo se está manejando.
    * @param {{ paso: "correo"|"codigo"|"password", correo?: string, codigo?: string, nuevaPassword?: string, confirmarPassword?: string }} datos
-   * @returns {boolean}
+   * @returns {Promise<boolean>}
    */
-  manejarEnvio(datos) {
+  async manejarEnvio(datos) {
     switch (datos.paso) {
       case "correo":
         return this.#manejarPasoCorreo(datos.correo);
@@ -67,15 +66,14 @@ export class RecuperacionController extends FormularioControllerBase {
     }
   }
 
-  #manejarPasoCorreo(correo) {
+  async #manejarPasoCorreo(correo) {
     if (this.camposVacios(correo)) {
       this.notificador.mostrar("Ingresa un correo.", "error");
       return false;
     }
 
     try {
-      const codigo = this.recuperacionService.solicitarRecuperacion(correo);
-      this.enviadorCodigo.enviar(correo, codigo);
+      await this.recuperacionService.solicitarRecuperacion(correo);
       this.marcarPaso(2);
       return true;
     } catch (error) {
@@ -84,14 +82,14 @@ export class RecuperacionController extends FormularioControllerBase {
     }
   }
 
-  #manejarPasoCodigo(codigo) {
+  async #manejarPasoCodigo(codigo) {
     if (this.camposVacios(codigo)) {
       this.notificador.mostrar("Ingresa el codigo.", "error");
       return false;
     }
 
     try {
-      this.recuperacionService.verificarCodigo(codigo);
+      await this.recuperacionService.verificarCodigo(codigo);
       this.marcarPaso(3);
       return true;
     } catch (error) {
@@ -100,14 +98,14 @@ export class RecuperacionController extends FormularioControllerBase {
     }
   }
 
-  #manejarPasoPassword(nuevaPassword, confirmarPassword) {
+  async #manejarPasoPassword(nuevaPassword, confirmarPassword) {
     if (this.camposVacios(nuevaPassword, confirmarPassword)) {
       this.notificador.mostrar("Completa todos los campos.", "error");
       return false;
     }
 
     try {
-      this.recuperacionService.cambiarPassword(nuevaPassword, confirmarPassword);
+      await this.recuperacionService.cambiarPassword(nuevaPassword, confirmarPassword);
       this.marcarPaso(4);
       this.notificador.mostrar("Contraseña actualizada correctamente.", "exito");
       setTimeout(() => {

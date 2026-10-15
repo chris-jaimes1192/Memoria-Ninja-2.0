@@ -3,47 +3,55 @@
   CAPA: SERVICIOS (lógica de negocio)
   ARCHIVO: servicios/VerificacionService.js
 
-  SRP: solo se encarga de generar y validar el código de
-  verificación de correo. No sabe nada de temporizadores en
-  pantalla ni de alert()/DOM: eso lo maneja
-  VerificacionController.
+  SRP: media entre la página de verificación y el módulo /api/auth
+  REAL del backend. El código de verificación ya NO se genera en el
+  navegador: lo genera y "envía" el servidor (MAILER=consola lo
+  imprime en la consola del backend; MAILER=ethereal sí lo manda por
+  correo). Esta clase solo orquesta las dos llamadas HTTP.
 
-  DIP: recibe un ICodigoGenerador inyectado. No le importa si
-  el código es alfanumérico, numérico o llega por SMS más
-  adelante: solo llama a generador.generar().
+  DIP: recibe un repositorio de autenticación inyectado (cliente
+  HttpAuthRepositorio). No sabe nada de fetch, ni de DOM, ni de cómo
+  se entrega el código.
 =========================================================*/
 
 export class VerificacionService {
-  #codigoActual = null;
   #correoActual = "";
 
-  /** @param {import("../core/interfaces/ICodigoGenerador.js").ICodigoGenerador} generadorCodigo */
-  constructor(generadorCodigo) {
-    this.generadorCodigo = generadorCodigo;
+  /**
+   * @param {import("../infraestructura/repositorios/HttpAuthRepositorio.js").HttpAuthRepositorio} repositorioAuth
+   */
+  constructor(repositorioAuth) {
+    this.repositorioAuth = repositorioAuth;
   }
 
-  generarNuevoCodigo(correo) {
+  /**
+   * Pide al backend que cree (o reutilice) un código de verificación para
+   * el correo y lo "envíe". El código es inválido para el navegador: es
+   * solo para el correo de la persona.
+   * @returns {Promise<string>} el correo al que se reenvió el código.
+   */
+  async enviarCodigo(correo) {
+    await this.repositorioAuth.enviarCodigoVerificacion({ correo });
     this.#correoActual = correo;
-    this.#codigoActual = this.generadorCodigo.generar();
-    return this.#codigoActual;
+    return this.#correoActual;
   }
 
-  validarCodigo(codigoIngresado) {
-    if (this.#codigoActual === null) {
+  /**
+   * Confirma el código contra el backend (fn_confirmar_codigo ACID: consume
+   * el código y activa el correo del usuario, todo o nada).
+   * @throws {Error} mensaje del servidor si el código no es válido.
+   */
+  async confirmarCodigo(codigo) {
+    if (this.#correoActual === "") {
       throw new Error(
         'Tu código expiró. Pide uno nuevo con "Reenviar código".'
       );
     }
 
-    if (codigoIngresado.trim().toUpperCase() !== this.#codigoActual) {
-      throw new Error("El código no es correcto. Revisa e inténtalo de nuevo.");
-    }
-
-    return true;
-  }
-
-  expirarCodigo() {
-    this.#codigoActual = null;
+    await this.repositorioAuth.confirmarCodigoVerificacion({
+      correo: this.#correoActual,
+      codigo
+    });
   }
 
   get correoActual() {

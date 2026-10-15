@@ -54,10 +54,10 @@ Reglas **puras**, sin HTTP, sin HTML, sin SQL:
 | Contrato de repositorio (interfaz) | `backend-poderes/src/repositories/PartidaRepository.js` |
 | Implementación en memoria | `backend-poderes/src/repositories/PartidaRepositoryMemoria.js` |
 | Implementación en archivos (JSON en disco) | `backend-poderes/src/repositories/PartidaRepositoryArchivo.js` → snapshots en `backend-poderes/data/*.json` (gitignored). `obtener()` consulta el cache y, si falla, **vuelve al disco** y reconstruye la entidad (sobrevive reinicios) |
-| **Implementación real (SQLite + JSON) — producción** | `backend-poderes/src/repositories/PartidaRepositorySQL.js` → estado completo de la partida serializado en la columna `estado_json` de `data/memorice.sqlite` |
-| Usuarios + historial en SQL | `backend-poderes/src/repositories/{UsuarioRepositorySQL,HistorialPartidaRepositorySQL}.js` |
+| **Implementación real (SQL + JSON) — producción** | `backend-poderes/src/repositories/PartidaRepositorySQL.js` → estado completo de la partida serializado en la columna `estado_json` de `memoria_ninja` (PostgreSQL). El repositorio es agnóstico: funciona igual con `DatabasePostgres` (app) y `DatabaseSqlite` (tests) |
+| Usuarios + historial en SQL | `backend-poderes/src/repositories/{UsuarioRepositorySQL,HistorialPartidaRepositorySQL}.js` (+ `CodigoVerificacionRepositorySQL`, `SesionRepositorySQL`, `VistaRepositorySQL`, `ProcedimientoRepositorySQL`) |
 | Persistencia frontend (localStorage) | `js/infraestructura/repositorios/LocalStorageUsuarioRepositorio.js`, `LocalStorageSesionRepositorio.js`, `js/infrastructure/LocalStorageRepository.js`, y los repositorios de clanes avanzados (`js/{hyuga,muerte,orden,sarutobi,uchiha,uzumaki}/repositories/`) |
-| Repositorios HTTP del frontend (JSON por fetch) | `js/infraestructura/repositorios/{HttpUsuarioRepositorio,HttpHistorialRepositorio,RepositorioUsuariosConRespaldo}.js` |
+| Repositorios HTTP del frontend (JSON por fetch) | `js/infraestructura/repositorios/{HttpUsuarioRepositorio,HttpAuthRepositorio,HttpHistorialRepositorio}.js`. La **autenticación es solo servidor** (cookie httpOnly en `/api/auth`), sin respaldo local |
 | Datos simulados (RESPALDO offline del backend real) | `js/mock-server.js` (sala `NINJA-99`, jugadores Naruto/Sasuke). Se usa solo si el backend no responde |
 | Mapa detallado SQL+JSON archivo por archivo | `SQL-JSON-IMPLEMENTACION.md` (raíz) |
 
@@ -156,36 +156,45 @@ Existen **dos jerarquías de poderes independientes** que practican el mismo pat
 | Patrón de poderes | Strategy + hook `puedeSerContrarrestadoPor` | Template Method `activar()` |
 | Factory | `PoderFactory` | `GestorPoderes` |
 | Composition root | `server.js` | `GestorPartida` |
-| Persistencia | 3 repos bajo contrato test (memoria/archivo/**SQLite**), usuarios propios | **`ProveedorDatosServidor` → `POST /api/partida` (SQLite)**; respaldo `MockServer` + localStorage |
+| Persistencia | 3 repos bajo contrato test (memoria/archivo/SQL), usuarios propios | **`ProveedorDatosServidor` → `POST /api/partida` (PostgreSQL)**; respaldo `MockServer` + localStorage |
 | Conectado al juego | SÍ (lo alimenta) | SÍ (lo alimenta) |
 
 > ✅ **AGENTS.md ya no contiene esas afirmaciones falsas**: dice que `game-online.js` es un bootstrap de 19 líneas y que el motor vivo es `js/nucleo-GAME ONLI/`. El refactor SÍ corre en `game-online.html` (línea 253: `<script type="module" src="js/game-online.js">`) y su motor se conecta al backend real por HTTP (ver `SQL-JSON-IMPLEMENTACION.md`).
 
 ---
 
-## 5. Capa de cuentas: ejemplo completo de capas en el frontend
+## 5. Capa de cuentas: ejemplo completo de capas (frontend + backend)
 
-Flujo real (el "mesero → cocina → almacén" del temario, todo en el navegador):
+La autenticación dejó de resolverse en el navegador: hoy los códigos los **emite y valida el servidor**. El frontend conserva las capas SOLID y agrega un adaptador HTTP; el backend tiene su propio módulo en capas.
 
 ```
-verifivacion.html (Presentación)
+verificacion.html (Presentación)
         │
         ▼
 js/verificacion.js ── composition root ──▶ new VerificacionController(...)
         │                                       │
         ▼                                       ▼
-        └─▶ servicios/VerificacionService.js  (lógica pura: valida el código)
-                │   │
-                ├──▶ core/interfaces/ICodigoGenerador.js (abstracción)
-                └──▶ infraestructura/generadores/CodigoNumericoGenerador.js (concreto)
-                     infraestructura/notificadores/* / envios/EnvioCodigoModoPrueba.js (persistencia/envío)
+        └─▶ js/servicios/VerificacionService.js  (lógica async)
+                │
+                └──▶ js/infraestructura/repositorios/HttpAuthRepositorio.js
+                            │  fetch (credentials: "include")
+                            ▼
+                    POST /api/auth/verificacion/{enviar,confirmar}
+                            │
+   backend-poderes:  authRoutes → VerificacionController → VerificacionService
+                            │
+                            └──▶ CodigoVerificacionRepositorySQL + NotificadorCorreo
+                                 (fn_confirmar_codigo en PostgreSQL)
 ```
+
+Login y recuperación siguen el mismo patrón (`HttpUsuarioRepositorio` → `POST /api/auth/login`; `RecuperacionService` → `/api/auth/recuperacion/*`). La sesión real vive en la cookie httpOnly `memoria_ninja_sesion`; en el navegador solo se guarda una copia de identidad para el menú.
 
 Carpetas implicadas (las que mencionó el prompt como "js.ui"):
 - **Presentación/UI:** `js/utils/ModalHelper.js`, `js/utils/TogglePasswordHelper.js`, `js/ui/*` (modales), `js/controladores/*`
 - **Lógica:** `js/servicios/*`, `js/core/entities/Usuario.js`
-- **Abstracciones:** `js/core/interfaces/*` (`IUsuarioLector`, `IUsuarioEscritor`, `ISesionRepositorio`, `INotificador`, `ICodigoGenerador`, `IEnviadorCodigo`)
-- **Persistencia/adapters:** `js/infraestructura/repositorios/*`, `js/infraestructura/generadores/*`, `js/infraestructura/notificadores/*`, `js/infraestructura/envios/*`
+- **Abstracciones:** `js/core/interfaces/*` (`IUsuarioRepositorio`, `ICodigoGenerador`, `INotificador`...)
+- **Persistencia/adapters (frontend):** `js/infraestructura/repositorios/*` (HTTP hacia `/api/auth` y `/api/usuarios`)
+- **Backend (mismo estilo en capas):** `backend-poderes/src/{entities,repositories,services,controllers,routes}` con `AuthService`, `VerificacionService`, `RecuperacionService`
 
 ---
 
@@ -211,7 +220,7 @@ Consultar también: `js/COMO-INTEGRAR-NAVEGACION.md` (refactor de `niveles.js`/`
 3. **`usosPermitidos` definido y nunca aplicado.** `Poder.js` lo guarda, pero ningún service lo cuenta ni limita.
 4. **Repositorios de clanes avanzados = scaffold muerto.** Ningún controller importa sus `repositories/`; solo `muerte` y `orden` tienen `JugadorRepository.js` con contenido.
 5. **Mezcla de idiomas:** capa de cuentas y clanes en español; `js/domain|services|ui|infrastructure` del menú en inglés. `verifivacion.html` es un nombre real (con errata).
-6. **~~El backend no está conectado al frontend~~ → RESUELTO.** Antes el juego usaba `mock-server.js` como motor; hoy `POST /api/partida` crea la partida en SQLite y `POST /api/poder/activar` registra el poder cuando el backend responde. El frontend cae a `MockServer`+localStorage solo si el backend no responde (best-effort). Queda como trabajo futuro (no deuda): las salas **WebSocket** en tiempo real real, citadas en `backend-poderes/README.md`.
+6. **~~El backend no está conectado al frontend~~ → RESUELTO.** Antes el juego usaba `mock-server.js` como motor; hoy `POST /api/partida` crea la partida en PostgreSQL y `POST /api/poder/activar` registra el poder cuando el backend responde. El frontend cae a `MockServer`+localStorage solo si el backend no responde (best-effort). La autenticación, en cambio, es **solo servidor**. Queda como trabajo futuro (no deuda): las salas **WebSocket** en tiempo real, citadas en `backend-poderes/README.md`.
 
 ---
 
@@ -223,7 +232,7 @@ Consultar también: `js/COMO-INTEGRAR-NAVEGACION.md` (refactor de `niveles.js`/`
 | Reglas puras aisladas de HTTP/DOM | `backend-poderes/src/services/PoderService.js`, `js/nucleo-GAME ONLI/poderes/Poder.js` |
 | El ejemplo "saldo/chakra insuficiente" | `backend-poderes/src/services/PoderService.js:38-41` |
 | Composition root | `backend-poderes/server.js`, `js/nucleo-GAME ONLI/GestorPartida.js`, `js/login.js`, `js/app.js` |
-| Prueba de LSP (contrato único, **3 implementaciones**: memoria/archivo/SQLite) | `backend-poderes/tests/` → `npm test` desde `backend-poderes/` (**58 tests / 15 suites**, todos verdes) |
+| Prueba de LSP (contrato único, **3 implementaciones**: memoria/archivo/SQL) + e2e de auth | `backend-poderes/tests/` → `npm test` desde `backend-poderes/` (**98 tests / 22 suites**, todos verdes) |
 | Abstracciones/interfaces | `backend-poderes/src/repositories/PartidaRepository.js`, `js/core/interfaces/`, `js/domain/` |
 | UI / filas "js.ui" | `js/ui/`, `js/utils/ModalHelper.js`, `js/utils/TogglePasswordHelper.js`, `js/controladores/` |
 | Cómo el motor viejo se reorganizó en clases | `js/nucleo-GAME ONLI/COMO-QUEDO-ORGANIZADO.md` |

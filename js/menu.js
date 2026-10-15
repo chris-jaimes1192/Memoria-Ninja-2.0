@@ -124,9 +124,37 @@ document.getElementById('btnFilaItachi')?.addEventListener('click', function() {
 =========================================================*/
 
 function cerrarSesion() {
+  if (window.SesionNinja && window.SesionNinja.cerrarSesion) {
+    window.SesionNinja.cerrarSesion();
+    return;
+  }
   localStorage.removeItem("usuarioActivo");
   window.location.href = "login.html";
 }
+
+// --- Conexión real con el DOM (sin onclick/onerror inline: el CSP los bloquea) ---
+document.getElementById("btnCerrarSesion")?.addEventListener("click", cerrarSesion);
+
+// Respaldo visual cuando falta la imagen del avatar (p. ej. itachi-avatar.png
+// no existe): se reemplaza el <img> roto por un emoji ninja. Un <img> no
+// puede mostrar texto, por eso se sustituye el elemento.
+function mostrarNinjaDeRespaldo(imagen) {
+  const marca = document.createElement("span");
+  marca.textContent = "🥷";
+  marca.className = imagen.className;
+  marca.style.fontSize = "30px";
+  marca.style.display = "flex";
+  marca.style.alignItems = "center";
+  marca.style.justifyContent = "center";
+  imagen.replaceWith(marca);
+}
+
+document.querySelectorAll("img.avatar-img").forEach((imagen) => {
+  imagen.addEventListener("error", () => mostrarNinjaDeRespaldo(imagen));
+  if (imagen.complete && imagen.naturalWidth === 0) {
+    mostrarNinjaDeRespaldo(imagen);
+  }
+});
 
 // === PING EN TIEMPO REAL EN LA BARRA DE ESTADO ===
 const pingValor = document.getElementById('pingValor');

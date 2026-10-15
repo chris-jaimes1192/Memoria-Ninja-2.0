@@ -40,9 +40,10 @@ export class LoginController extends FormularioControllerBase {
 
       this.notificador.mostrar("Acceso concedido ⚡", "exito");
 
-      if (recordar) {
-        this.sesionService.guardarSesion(usuarioValido);
-      }
+      // La sesión real vive en la cookie httpOnly que fijó el servidor.
+      // Igualmente se guarda una copia del usuario en localStorage para
+      // que el menú y el perfil sepan QUIÉN está jugando (mismo-origen).
+      this.sesionService.guardarSesion(usuarioValido);
 
       setTimeout(() => {
         window.location.href = "menu.html";

@@ -1,6 +1,5 @@
-const { describe, it } = require("node:test");
+const { describe, it, before, after } = require("node:test");
 const assert = require("node:assert/strict");
-const DatabaseSqlite = require("../src/infraestructura/DatabaseSqlite");
 const PasswordHasher = require("../src/infraestructura/PasswordHasher");
 const UsuarioRepositorySQL = require("../src/repositories/UsuarioRepositorySQL");
 const HistorialPartidaRepositorySQL = require("../src/repositories/HistorialPartidaRepositorySQL");
@@ -8,17 +7,29 @@ const ProcedimientoRepositorySQL = require("../src/repositories/ProcedimientoRep
 const VistaRepositorySQL = require("../src/repositories/VistaRepositorySQL");
 const UsuarioService = require("../src/services/UsuarioService");
 const ProcedimientoService = require("../src/services/ProcedimientoService");
+const { crearDatabasePrueba, limpiarDatabase } = require("./helpers/baseDatosPrueba");
 
 /**
- * >>> Procedimiento almacenado en ambos motores <<<
+ * >>> Procedimiento almacenado en PostgreSQL <<<
  *
- * Con PostgreSQL el repositorio hace `CALL sp_registrar_partida(...)`.
- * Con SQLite (que no tiene procedimientos) ejecuta el MISMO INSERT como
- * equivalente directo. Este test verifica la rama SQLite y que la fila
- * quede visible en la vista vw_historial_detallado.
+ * El repositorio hace `CALL sp_registrar_partida(...)` y este test
+ * verifica el resultado real: el historial queda registrado y la fila se
+ * ve en la vista vw_historial_detallado con el nombre del usuario.
+ * Corre contra memoria_ninja_test (el MISMO motor que usa la app).
  */
-function montar() {
-  const database = new DatabaseSqlite(":memory:");
+let database;
+
+before(async () => {
+  database = crearDatabasePrueba();
+  await database.init();
+});
+
+after(async () => {
+  await database.close();
+});
+
+async function montar() {
+  await limpiarDatabase(database);
   const usuarioRepository = new UsuarioRepositorySQL(database);
   const historialRepository = new HistorialPartidaRepositorySQL(database);
   const usuarioService = new UsuarioService(usuarioRepository, historialRepository, new PasswordHasher());
@@ -29,7 +40,7 @@ function montar() {
 
 describe("Procedimiento almacenado sp_registrar_partida", () => {
   it("registra un resultado y la vista vw_historial_detallado lo refleja con el nombre de usuario", async () => {
-    const { usuarioService, procedimientoService, vistaRepository } = montar();
+    const { usuarioService, procedimientoService, vistaRepository } = await montar();
 
     const { id } = await usuarioService.registrar({
       usuario: "shikamaru",
@@ -56,7 +67,7 @@ describe("Procedimiento almacenado sp_registrar_partida", () => {
   });
 
   it("valida los parámetros antes de llegar a la BD", async () => {
-    const { procedimientoService } = montar();
+    const { procedimientoService } = await montar();
 
     await assert.rejects(
       () => procedimientoService.registrarResultado({ puntaje: 10 }),
@@ -69,7 +80,7 @@ describe("Procedimiento almacenado sp_registrar_partida", () => {
   });
 
   it("rechaza registrar un usuario que no existe (FK de historial_partidas)", async () => {
-    const { procedimientoService } = montar();
+    const { procedimientoService } = await montar();
 
     await assert.rejects(
       () =>
@@ -78,7 +89,11 @@ describe("Procedimiento almacenado sp_registrar_partida", () => {
           zona: "roca",
           puntaje: 50,
         }),
-      /insert or update|FOREIGN KEY|foreign key/i
+      // SQLSTATE 23503 = foreign_key_violation (independiente del idioma
+      // del servidor, que aquí responde en español: "llave foránea").
+      (error) =>
+        error.code === "23503" ||
+        /foreign key|llave for[aá]nea|insert or update|inserci[oó]n o actualizaci[oó]n/i.test(error.message)
     );
   });
 });

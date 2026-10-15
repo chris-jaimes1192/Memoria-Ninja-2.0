@@ -30,7 +30,7 @@
     <label class="check-label">
         <input type="checkbox" id="aceptaTerminos">
         He leído y acepto los
-        <span class="link-modal" onclick="abrirModal('modalTerminos')" role="button" tabindex="0" aria-label="Ver términos y condiciones">
+        <span class="link-modal" data-modal="modalTerminos" role="button" tabindex="0" aria-label="Ver términos y condiciones">
             Términos y Condiciones
         </span>
     </label>
@@ -38,14 +38,14 @@
     <label class="check-label">
         <input type="checkbox" id="aceptaPolitica">
         He leído y acepto la
-        <span class="link-modal" onclick="abrirModal('modalPolitica')" role="button" tabindex="0" aria-label="Ver política de privacidad">
+        <span class="link-modal" data-modal="modalPolitica" role="button" tabindex="0" aria-label="Ver política de privacidad">
             Política de Privacidad
         </span>
     </label>
 
 </div>
 
-<button onclick="registrar()">Crear Cuenta</button>
+<button id="btnRegistrar">Crear Cuenta</button>
         <p id="msg"></p>
 
         <p style="margin-top: 15px;">
@@ -61,7 +61,7 @@
 
     <div class="modal-contenido">
 
-        <span class="cerrar" onclick="cerrarModal('modalTerminos')" role="button" tabindex="0" aria-label="Cerrar términos">&times;</span>
+        <span class="cerrar" data-cerrar="modalTerminos" role="button" tabindex="0" aria-label="Cerrar términos">&times;</span>
 
         <h2>Términos y Condiciones</h2>
 
@@ -98,7 +98,7 @@
 
     <div class="modal-contenido">
 
-        <span class="cerrar" onclick="cerrarModal('modalPolitica')" role="button" tabindex="0" aria-label="Cerrar política">&times;</span>
+        <span class="cerrar" data-cerrar="modalPolitica" role="button" tabindex="0" aria-label="Cerrar política">&times;</span>
 
         <h2>Política de Privacidad</h2>
 

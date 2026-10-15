@@ -25,26 +25,22 @@ En `niveles.html` y `pre-partida.html`:
 <script type="module" src="js/pre-partida.js"></script>
 ```
 
-## ⚠️ Además, sacar el `onclick` hardcodeado del botón INICIAR JUEGO
+## ⚠️ Sin `onclick` inline (CSP activo)
 
-Tu `pre-partida.html` actual tiene:
-```html
-<button id="btn-iniciar" ... onclick="window.location.href='game.html'">INICIAR JUEGO</button>
-```
-Ese `onclick` apunta a `game.html`, que no existe, y le gana de mano
-a la navegación real. Hay que dejarlo así, SIN el `onclick`:
-```html
-<button id="btn-iniciar" class="btn-start" style="display: none;">INICIAR JUEGO</button>
-```
-`PrePartidaController` ya se encarga de mandarlo al HTML correcto de
-cada aldea (`arena.html`, `sarutobi.html`, etc.) según el nivel que se
-haya elegido en el mapa.
+El backend sirve con `helmet()` (CSP `script-src-attr 'none'`), así que los
+`onclick` inline NO se ejecutan. `pre-partida.html` ya no los usa: los botones
+se conectan por `addEventListener` desde `pre-partida.js`.
 
-## El `onclick="confirmarNivel()"` sigue funcionando
-
-`pre-partida.html` tiene `onclick="confirmarNivel()"` en el botón
-CONFIRMAR — se sigue exponiendo con `window.confirmarNivel = ...`, no
-hace falta tocar ese botón en el HTML.
+- `#btn-iniciar` lo maneja `PrePartidaController` (manda al HTML correcto de
+  cada aldea: `arena.html`, `sarutobi.html`, etc., según `nivelActual`).
+- `#btn-confirmar` (CONFIRMAR) tiene listener en `pre-partida.js` (antes era
+  un `onclick="confirmarNivel()"`). `window.confirmarNivel` se mantiene solo
+  por compatibilidad.
+- `#btnVolverMenu` (← VOLVER AL MENU) usa un listener en vez de
+  `onclick="window.location.href='menu.html'"`.
+- El simulador (cajas de clan) usa `data-clan` + listener que llama a
+  `prePartidaController.seleccionarClan(...)` (antes `actualizarClan(...)`,
+  que ni existía).
 
 ## Comportamiento verificado igual al original
 - El mapa se sigue escalando y reposicionando igual al resizar.

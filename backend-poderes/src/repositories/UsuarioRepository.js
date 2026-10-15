@@ -31,6 +31,27 @@ class UsuarioRepository {
   actualizarPerfil(id, perfil) {
     throw new Error("actualizarPerfil() no implementado");
   }
+
+  // ------ Seguridad de cuenta (módulo de autenticación real) ------
+  markCorreoVerificado(id) {
+    throw new Error("marcarCorreoVerificado() no implementado");
+  }
+
+  sumarIntentoFallido(id) {
+    throw new Error("sumarIntentoFallido() no implementado");
+  }
+
+  marcarBloqueado(id, hasta) {
+    throw new Error("marcarBloqueado() no implementado");
+  }
+
+  limpiarIntentosFallidos(id) {
+    throw new Error("limpiarIntentosFallidos() no implementado");
+  }
+
+  actualizarPassword(id, nuevoHash) {
+    throw new Error("actualizarPassword() no implementado");
+  }
 }
 
 module.exports = UsuarioRepository;

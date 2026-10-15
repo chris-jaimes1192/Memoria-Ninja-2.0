@@ -13,6 +13,10 @@ export class GameSessionService extends IGameSessionService {
   }
 
   cerrarSesion() {
+    if (window.SesionNinja && window.SesionNinja.cerrarSesion) {
+      window.SesionNinja.cerrarSesion();
+      return;
+    }
     this.storage.removeItem('usuarioActivo');
     window.location.href = "login.html";
   }
