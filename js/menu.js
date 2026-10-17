@@ -4,54 +4,13 @@ const inputJugador2 = document.getElementById('playerName2');
 const gameModeSelect = document.getElementById('gameMode');
 const levelSelect = document.getElementById('difficulty');
 const botonIniciar = document.getElementById('startBtn');
-const listaRegistros = document.getElementById('recordsList');
 const botonNivel = document.getElementById('levelBtn');
 
-// === HISTORIAL (lista lateral) ===
-// Primero intenta leer del backend (SQLite). Si no hay sesión activa o
-// el servidor no responde, cae al historial local de localStorage.
-async function actualizarHistorial() {
-  if (!listaRegistros) return; // Evita errores si no existe en el DOM actual
-
-  const sesionActiva = JSON.parse(localStorage.getItem('usuarioActivo')) || null;
-
-  if (sesionActiva && sesionActiva.id) {
-    try {
-      const { historialApi } = await import('./infraestructura/repositorios/HttpHistorialRepositorio.js');
-      const historialServer = await historialApi.obtener(sesionActiva.id);
-      if (historialServer.length > 0) {
-        renderHistorial(historialServer.map(r => ({
-          nombre: r.ganador || r.zona || 'Partida',
-          tiempo: r.jugada_en || '',
-          puntaje: r.puntaje,
-          puntajeJugador1: r.modo === '2' ? r.puntaje : undefined,
-          puntajeJugador2: r.modo === '2' ? 0 : undefined,
-          modo: r.modo
-        })));
-        return;
-      }
-    } catch {
-      // Backend caído -> caer al historial local.
-    }
-  }
-
-  const historial = JSON.parse(localStorage.getItem('registros')) || [];
-  renderHistorial(historial.length === 0 ? null : historial);
-}
-
-function renderHistorial(historial) {
-  if (!listaRegistros) return;
-  if (!historial || historial.length === 0) {
-    listaRegistros.textContent = 'No hay partidas guardadas.';
-    return;
-  }
-  listaRegistros.innerHTML = historial.map(r => {
-    if (r.puntajeJugador1 !== undefined) {
-      return `<p>${r.nombre} — ${r.tiempo} — ${r.puntajeJugador1} | ${r.puntajeJugador2}</p>`;
-    }
-    return `<p>${r.nombre} — ${r.tiempo} — ${r.puntaje}</p>`;
-  }).join('');
-}
+// === HISTORIAL ===
+// (Parte 3: se eliminó el mecanismo muerto del historial lateral `#recordsList`
+//  + `actualizarHistorial()` + `renderHistorial()`: ese contenedor NO existe en
+//  menu.html, así que el código retornaba temprano siempre. El historial REAL
+//  vive en js/ui/HistoryModal.js y lee del backend /api/usuarios/:id/historial.)
 
 // === INICIAR JUEGO ===
 if (botonIniciar) {
@@ -78,9 +37,6 @@ if (botonNivel) {
   });
 }
 
-// === CARGAR HISTORIAL ===
-actualizarHistorial();
-
 // === MÚSICA MENÚ ===
 const musicaMenu = document.getElementById("musicaMenu");
 
@@ -95,26 +51,10 @@ function iniciarMusica() {
 // La música inicia en el primer click
 document.addEventListener("click", iniciarMusica);
 
-// === ACCIÓN COMPLEMENTARIA: SELECCIONAR UNA SALA DE LA LISTA ===
-const filasSalas = document.querySelectorAll('.sala-row');
-filasSalas.forEach(fila => {
-  fila.addEventListener('click', () => {
-    const creador = fila.querySelector('.sala-creador').textContent;
-    const slots = fila.querySelector('.sala-slots').textContent;
-
-    if (slots === "2/2") {
-      alert(`La sala de ${creador} está llena.`);
-    } else {
-      console.log(`Uniéndose a la sala de: ${creador}`);
-      localStorage.setItem('salaActualOnline', creador);
-    }
-  });
-});
-
-// Redirección exclusiva al presionar la fila de Itachi969
-document.getElementById('btnFilaItachi')?.addEventListener('click', function() {
-  window.location.href = 'game-online.html';
-});
+// (Parte 3: se eliminaron las salas FALSAS del multijugador — "Itachi969",
+//  "Sasukexd", etc. — y la redirección hardcodeada a game-online.html.
+//  El multijugador online REAL llega en la Parte 5; por eso el modal ahora
+//  muestra un estado vacío honesto en lugar de salas inventadas.)
 
 /*=========================================================
     MEMORIA NINJA
@@ -157,33 +97,37 @@ document.querySelectorAll("img.avatar-img").forEach((imagen) => {
 });
 
 // === PING EN TIEMPO REAL EN LA BARRA DE ESTADO ===
+// Sin mocks: si el servidor no responde se muestra "--" (no un número falso).
 const pingValor = document.getElementById('pingValor');
-let pingSimulado = 45;
-
-function simularPing() {
-  const deriva = Math.round((Math.random() - 0.5) * 12);
-  pingSimulado = Math.min(140, Math.max(12, pingSimulado + deriva));
-  return pingSimulado;
-}
+const estadoConexion = document.getElementById('estadoConexion');
+const estadoServidor = document.getElementById('estadoServidor');
 
 async function medirPingReal() {
   const inicio = performance.now();
   try {
-    await fetch(`http://localhost:3000/api/estado?t=${Date.now()}`, {
-      mode: 'no-cors',
-      cache: 'no-store'
-    });
+    await fetch(`/api/estado?t=${Date.now()}`, { cache: 'no-store' });
     return Math.max(1, Math.round(performance.now() - inicio));
   } catch {
     return null; // Servidor no disponible
   }
 }
 
+function pintarEstado(ms) {
+  if (!pingValor) return;
+  if (ms === null) {
+    pingValor.textContent = '--';
+    if (estadoConexion) estadoConexion.textContent = '🔴 Sin conexión';
+    if (estadoServidor) estadoServidor.textContent = 'Servidor offline';
+    return;
+  }
+  pingValor.textContent = `${ms}ms`;
+  if (estadoConexion) estadoConexion.textContent = '🟢 Conectado';
+  if (estadoServidor) estadoServidor.textContent = 'Servidor Online';
+}
+
 async function actualizarPing() {
   if (!pingValor) return;
-  const ms = await medirPingReal();
-  const valor = ms ?? simularPing();
-  pingValor.textContent = `${valor}ms`;
+  pintarEstado(await medirPingReal());
 }
 
 setInterval(actualizarPing, 2000);

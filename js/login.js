@@ -44,6 +44,26 @@ function togglePassword(idInput, icono) {
   alternarVisibilidadPassword(idInput, icono);
 }
 
+// --- Entrar como INVITADO (sin cuenta) ---
+// El modo invitado ya existía "por dentro": js/sesion-guard.js marca
+// estadoSesion="invitado" cuando /api/auth/me responde 401 y el menú limita
+// perfil/ranking/historial. Solo faltaba la PUERTA DE ENTRADA.
+// Cerramos cualquier sesión previa (best-effort) para que el invitado sea
+// real y vamos al menú; si el servidor no responde, igual entramos (el guard
+// lo marcará como "offline" y el juego sigue jugable).
+async function jugarComoInvitado() {
+  try {
+    await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+  } catch (e) {
+    // Sin servidor: seguimos igual, el guard marcará "offline".
+  }
+  try {
+    sesionRepositorio.eliminar();
+    localStorage.setItem("estadoSesion", "invitado");
+  } catch (e) {}
+  window.location.href = "menu.html";
+}
+
 window.login = login;
 window.togglePassword = togglePassword;
 
@@ -52,3 +72,4 @@ document.getElementById("btnLogin")?.addEventListener("click", login);
 document.getElementById("ojoPass")?.addEventListener("click", (evento) =>
   togglePassword("pass", evento.currentTarget)
 );
+document.getElementById("btnInvitado")?.addEventListener("click", jugarComoInvitado);

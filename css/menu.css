@@ -1177,6 +1177,19 @@ button,
     color: #00ff99;
 }
 
+/* Parte 3: estado vacío honesto del multijugador (sin salas falsas) */
+.salas-vacio {
+    text-align: center;
+    padding: 30px 10px;
+    margin: 0;
+    color: #9ad9bd;
+    font-size: 13px;
+    line-height: 1.6;
+    border: 1px dashed #005f37;
+    border-radius: 20px;
+    background: rgba(0, 0, 0, 0.3);
+}
+
 /* Botón Salir específico */
 .color-verde-btn {
     color: #00ffaa !important;
@@ -1248,6 +1261,14 @@ button,
 
 .tabla-ranking-container::-webkit-scrollbar { width: 5px; }
 .tabla-ranking-container::-webkit-scrollbar-thumb { background: #bc25ff; border-radius: 4px; }
+
+/* Parte 3: contenedor de las filas reales del ranking (las llena RankingModal).
+   Mantiene el mismo layout en columna que el contenedor padre. */
+#rankingBody {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
 
 /* Distribución en Grid de las Filas */
 .ranking-row-header, .ranking-row {

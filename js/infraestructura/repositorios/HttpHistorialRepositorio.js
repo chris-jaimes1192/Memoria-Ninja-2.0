@@ -18,7 +18,9 @@
   );
 =========================================================*/
 
-const URL_BASE = "http://localhost:3000/api";
+// Ruta RELATIVA (mismo origen): funciona servido desde cualquier host/puerto,
+// no solo desde localhost:3000. El backend sirve el frontend en el mismo origen.
+const URL_BASE = "/api";
 
 export class HttpHistorialRepositorio {
   /**

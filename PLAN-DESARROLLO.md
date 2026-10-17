@@ -23,10 +23,14 @@ Toda parte sigue estos 5 pasos; no se implementa nada sin cerrar el paso 1.
 ---
 
 ## Estado base (ya hecho antes de este plan)
-- [x] Backend PostgreSQL (7 tablas, 6 vistas, 5 triggers, 90 funcs) + `sql/esquema.sql`.
+- [x] Backend PostgreSQL (7 tablas, 6 vistas, 5 triggers, 8 objetos propios: 5 funciones + 3 procedimientos) + `sql/esquema.sql`.
+  > Nota (2026-10-17): el resumen de `npm run db:setup` imprime `funciones_procs: 90` porque cuenta
+  > TODO `pg_proc` de `public`: incluye 68 funciones de extensiones (`pgcrypto`, `citext`) y 14
+  > built-ins de PostgreSQL 18 (`regexp_*`, `replace`, `split_part`…). Los objetos REALES del
+  > proyecto son **8** (5 funciones + 3 procedimientos), tal como aparecen en `sql/esquema.sql`.
 - [x] Auth real: registro, login (cookie httpOnly), verificación, recuperación (scrypt/sha256).
 - [x] Seed demo (`npm run seed:demo`) + `sql/datos-simulados.sql` + `sql/consultas-demo.sql`.
-- [x] pgAdmin reparado. Docs en español. Tests: 91/91 verdes.
+- [x] pgAdmin reparado. Docs en español. Tests: 98/98 verdes (22 suites).
 
 ---
 
@@ -55,7 +59,7 @@ Toda parte sigue estos 5 pasos; no se implementa nada sin cerrar el paso 1.
 **Pendiente de seguridad:** rotar la contraseña de aplicación (quedó expuesta en el chat).
 **Mejora futura:** usar un Gmail propio del juego o un proveedor transaccional (Resend/Brevo).
 
-## Parte 2 — Sesión real + "web normal" · Estado: EN VERIFICACIÓN (código listo; falta prueba manual en navegador)
+## Parte 2 — Sesión real + "web normal" · Estado: COMPLETA ✅
 **Objetivo:** que la sesión se valide de verdad contra el servidor y el logout sea real.
 **Modelo de 3 estados (decidido con el usuario):**
 - **200 (sesión válida):** modo normal (acceso completo).
@@ -74,24 +78,113 @@ Toda parte sigue estos 5 pasos; no se implementa nada sin cerrar el paso 1.
 - [x] Cartel de invitado en el menú ("Inicia sesión para guardar tu progreso y ver el ranking").
 - [x] Limitar perfil/ranking/historial en modo invitado/offline.
 - [x] Logout real vía `POST /api/auth/logout` (menu.js y GameSessionService).
+- [x] Botón **"Jugar como invitado"** en `login.html`: faltaba la PUERTA DE ENTRADA al estado invitado
+  (el guard ya sabía marcar `estadoSesion="invitado"` con 401, pero no había forma de elegirlo desde el login).
+  Cierra cualquier sesión previa (best-effort), marca `estadoSesion="invitado"` y va al menú.
+  Archivos: `login.html` (botón), `js/login.js` (`jugarComoInvitado`), `css/style.css` (`.btn-invitado`).
 **Bloqueo detectado (prueba en navegador):** el CSP por defecto de `helmet()` (`script-src-attr 'none'`) bloqueaba los `onclick` inline → login/registro/recuperar/logout no respondían al servir desde el backend.
 **Resuelto (Opción A):** se quitaron todos los `onclick`/`onerror` inline del frontend y se conectaron por `addEventListener` (login, registro, recuperar, pre-partida, menu). El simulador de `pre-partida` ya no llama a `actualizarClan` (no existía) y ahora usa el controller; el `<script>` inline de `objetos-postgresql-final.html` se movió a `js/objetos-postgresql-final.js`. Solo queda `Agrupar/facil.html` con inline (legado, no se toca).
-**Verificación:** logueado → menú completo; logout → cookie revocada (`/auth/me` 401); sin sesión → juego sí, menú limitado; servidor apagado → offline jugable.
+**Verificación (2026-10-17, navegador real + PostgreSQL):** el usuario registró una cuenta, recibió y confirmó el **código por correo real (Gmail)**, inició sesión y cerró sesión. Comprobado además por HTTP:
+login demo (`kakashi`/`clave123`) → **200** con perfil; `GET /api/auth/me` con cookie → **200**; sin cookie → **401** (estado `invitado`); `POST /api/auth/logout` → **200** y `me` → **401**; `/api/vistas/ranking` → datos reales.
+Backend servido en `http://localhost:3000` (Live Server de VS Code **apagado**, que era la causa del "error en el servidor" al registrar). Tests 98/98.
+**Pendiente menor:** el usuario aún debe probar los escenarios visuales de invitado (con el nuevo botón) y offline (apagar el servidor y recargar).
 **Depende de:** nada. **Habilita:** Parte 3 (ranking/historial reales).
 
-## Parte 3 — Datos reales · Estado: PENDIENTE
+## Parte 3 — Datos reales · Estado: EN PROGRESO 🚧
 **Objetivo:** ranking, historial y perfil con datos del backend; sin mocks ni rutas absolutas.
-**Revisión previa:**
-- [ ] Revisar endpoints `/api/vistas/*` (existen, nadie los usa) y su forma de respuesta.
-- [ ] Identificar TODOS los hardcodeos (ranking, "Itachi969", ping "45ms", `mod.html`).
-- [ ] Listar URLs absolutas `http://localhost:3000` a cambiar.
+
+### Revisión previa (auditoría — paso 1) · 2026-10-17
+
+**Qué EXISTE (verificado en el código):**
+- **Endpoints de vistas ya implementados y probados** (nadie los usa desde el frontend):
+  `backend-poderes/src/routes/vistaRoutes.js:14-17` → `VistaController` → `VistaService` → `VistaRepositorySQL`.
+  Formas de respuesta (`VistaController.js:13-46`):
+  - `GET /api/vistas/ranking` → `{ exito, ranking: [{ id_usuario, usuario, mejor_puntaje, total_partidas, ultima_jugada }] }`
+  - `GET /api/vistas/historial-detallado` → `{ exito, historial: [{ id, id_usuario, usuario, id_partida, zona, puntaje, modo, ganador, jugada_en }] }`
+  - `GET /api/vistas/partidas-recientes` → `{ exito, partidas: [...] }`
+  - `GET /api/vistas/usuarios-resumen` → `{ exito, usuarios: [...] }`
+- **Historial por usuario ya implementado y usado**: `GET/POST /api/usuarios/:id/historial`
+  (consumido por `js/infraestructura/repositorios/HttpHistorialRepositorio.js:37-71`, instancia `historialApi`).
+- **Perfil XP ya real**: `GET/POST /api/usuarios/:id/perfil` + `js/services/progresoService.js` (Parte 2).
+- **Modales de UI ya cableados** en `js/app.js:35-60` e instanciados por `js/ui/MenuController.js`.
+- **Vistas SQL** (`sql/esquema.sql:372-401`): `vw_ranking_mejor_puntaje` (usuario, mejor_puntaje, total_partidas,
+  ultima_jugada — **no** trae xp ni nivel) y `vw_historial_detallado` (zona, puntaje, modo, ganador, jugada_en).
+
+**Qué FALTA (el objetivo real de esta parte):**
+- `js/ui/RankingModal.js:8-11` es un **stub**: `cargarRanking()` solo abre el modal, NO hace `fetch`.
+  El ranking del menú está **hardcodeado** en `menu.html:243-318` (7 filas: Itachi 3250 … Gaara 2200, con NIVEL/XP inventados).
+- `js/ui/HistoryModal.js:8-17` tiene **datos falsos hardcodeados** en el constructor
+  (`this.partidas.normales` con 4 filas del 12/05/2024); NO consulta el backend.
+- `js/menu.js:7,82` usa `#recordsList` / `actualizarHistorial()` con `historialApi`, pero `#recordsList`
+  **no existe** en `menu.html` → retorno temprano: **código muerto**.
+- **Ping**: `js/menu.js:161,163-167` (`pingSimulado`/`simularPing()` = mock) y `menu.html:589` (texto fijo `45ms`).
+- **Multijugador**: salas hardcodeadas en `menu.html:161-208` ("Itachi969", "Sasukexd"…) y
+  `js/menu.js:114-117` redirige `#btnFilaItachi` a `game-online.html` (hardcode).
+- **URLs absolutas** `http://localhost:3000/api` en **4 archivos**:
+  `js/infraestructura/repositorios/HttpHistorialRepositorio.js:21`,
+  `js/infraestructura/repositorios/HttpPerfilRepositorio.js:24`,
+  `js/nucleo-GAME ONLI/datos/ProveedorDatosServidor.js:3`,
+  `js/menu.js:172`.
+- `mod.html` (huérfana) tiene ping `45ms` fijo.
+- **Merge invitado→cuenta**: no existe nada (ni endpoint de "enlazar" ni lógica en el login).
+
+**Qué NO se tuvo en cuenta (hallazgos):**
+1. La vista de ranking **no trae xp ni nivel**, pero la tabla del menú tiene columnas NIVEL y XP. Hay que
+   decidir el mapeo (ver decisiones abajo).
+2. Hay **dos** mecanismos de historial: el muerto (`menu.js` + `#recordsList`) y el real (`HistoryModal`
+   + `#historialBody`). Se usará `HistoryModal` y se eliminará el código muerto.
+3. El botón de ranking llama a `estaBloqueado('ver el ranking')` (`MenuController.js:63-66`), así que
+   en invitado/offline el modal ni se abre: el ranking real solo aplica a sesión activa (correcto).
+4. **No hay tests de frontend** (regla del proyecto) → la verificación de esta parte es HTTP + manual.
+5. "Merge invitado→cuenta" es una **funcionalidad nueva y grande** (formato del historial local del
+   invitado + endpoint de enlace). El `AGENTS.md` la sitúa entre Partes 3 y 7. Se implementa aparte,
+   como sub-parte 3.5, para no mezclarla con lo visual.
+
+### Plan de aplicación (paso 2) — archivos y líneas exactas
+
+1. **URLs relativas** (4 archivos, 1 línea cada uno → `/api`):
+   - `js/infraestructura/repositorios/HttpHistorialRepositorio.js:21`
+   - `js/infraestructura/repositorios/HttpPerfilRepositorio.js:24`
+   - `js/nucleo-GAME ONLI/datos/ProveedorDatosServidor.js:3`
+   - `js/menu.js:172` (dentro de `medirPingReal`)
+2. **Ranking real**:
+   - `menu.html:243-318`: envolver las 7 filas en `<div id="rankingBody">` (el header `:236-241` se mantiene).
+   - `js/ui/RankingModal.js`: `cargarRanking()` → `fetch('/api/vistas/ranking')`; render dinámico en `#rankingBody`;
+     estado "cargando"/vacío/error. Mapeo de columnas decidido: **# = posición**, **JUGADOR = usuario**,
+     **NIVEL → "PARTIDAS" = total_partidas**, **XP → "MEJOR PUNTAJE" = mejor_puntaje** (cabeceras `menu.html:239-240`
+     renombradas). Podio (oro/plata/bronce) reutiliza `.badge-rank`.
+3. **Historial real**:
+   - `js/ui/HistoryModal.js`: quitar `this.partidas` hardcodeado; en `abrir()` leer
+     `historialApi.obtener(idUsuario)` de `localStorage['usuarioActivo']`; mapear a
+     `{resultado (ganador===usuario ? victoria : derrota), modo, puntaje, fecha, hora}` y reusar `renderTabla`.
+     Tabs "online"/"sala" quedan vacíos reales (Parte 5). Invitado/offline → mensaje "inicia sesión".
+   - `js/menu.js:7,13-54,82`: eliminar el mecanismo muerto `#recordsList`/`actualizarHistorial`/`renderHistorial`.
+4. **Quitar hardcodeos / mocks**:
+   - Ping: `menu.html:589` → `Ping: <span id="pingValor">--</span>`; `js/menu.js:161-167,182-187` →
+     sin `simularPing`; si el server no responde mostrar `--` (no un número falso). `menu.js:172` ya queda relativo.
+   - Multijugador: `menu.html:161-208` → reemplazar las 7 salas falsas por un estado real
+     ("No hay salas disponibles — el multijugador online llega en la Parte 5"). Quitar `menu.js:114-117`
+     (`#btnFilaItachi`) y `js/menu.js:99-112` (listener de salas falsas).
+   - `mod.html`: se deja como huérfana documentada (se trata en la Parte 6); no se toca aquí.
+5. **Sub-parte 3.5 — Merge invitado→cuenta** (por separado, requiere endpoint nuevo): marcar como
+   pendiente explícita con su propia revisión previa antes de tocar código.
+
+**Verificación:** tests 98/98 verdes + prueba HTTP de `/api/vistas/ranking` y `/api/usuarios/:id/historial`
++ prueba manual en `http://localhost:3000/menu.html` con sesión demo (`kakashi`/`clave123`).
+
 **Tareas:**
-- [ ] Ranking con `/api/vistas/ranking`.
-- [ ] Historial desde backend.
-- [ ] Quitar hardcodeos/mocks (ranking, "Itachi969", ping "45ms", `mod.html`).
-- [ ] URLs relativas `/api` en los 4 archivos detectados.
-- [ ] **Merge invitado→cuenta**: al primer login, pasar el historial local del invitado a su cuenta (patrón "enlazar cuenta").
-**Verificación:** funciona servido desde cualquier host y refleja la base real.
+- [x] URLs relativas `/api` en los 4 archivos detectados.
+      (`HttpHistorialRepositorio.js`, `HttpPerfilRepositorio.js`, `ProveedorDatosServidor.js`, `menu.js:172`.)
+- [x] Ranking con `/api/vistas/ranking`. (`RankingModal.js` real + `#rankingBody` + cabeceras PARTIDAS/MEJOR PUNTAJE.)
+- [x] Historial desde backend. (`HistoryModal.js` lee `/api/usuarios/:id/historial` vía `historialApi`.)
+- [x] Quitar hardcodeos/mocks (ranking hardcodeado, salas "Itachi969" → estado vacío,
+      ping "45ms" → real/`--`, `simularPing` eliminado, código muerto `#recordsList` eliminado).
+      `mod.html` queda como huérfana para la Parte 6 (documentado).
+- [ ] **Sub-parte 3.5 — Merge invitado→cuenta** (apartado propio, pendiente).
+**Verificación (2026-10-17):** tests 98/98 ✅; `GET /api/estado` y `GET /api/vistas/ranking` devuelven
+datos reales; frontend servido confirma las nuevas marcas (`rankingBody`, `PARTIDAS`, `salas-vacio`,
+`/api/estado` relativo, sin `localhost:3000`/`simularPing`/`Itachi969`). Falta prueba visual del usuario
+en `http://localhost:3000/menu.html` con sesión demo (`kakashi`/`clave123`).
 
 ## Parte 4 — Endurecer backend · Estado: PENDIENTE
 **Objetivo:** proteger endpoints y preparar para producción.
@@ -121,7 +214,9 @@ Toda parte sigue estos 5 pasos; no se implementa nada sin cerrar el paso 1.
 
 ## Parte 6 — Pulido y despliegue · Estado: PENDIENTE
 **Revisión previa:**
-- [ ] Confirmar navegación rota: `game.html` (`pre-partida.html:69`, `menu.js:71`), `#levelBtn` ausente.
+- [ ] Confirmar navegación rota: `menu.js:71` → `game.html` (no existe) y `#levelBtn` ausente en `menu.html`.
+  > Corregido (2026-10-17): `pre-partida.html:69` es el `<nav class="bottom-nav">` y **NO** apunta a `game.html`;
+  > `js/pre-partida.js:69` va a `menu.html` (correcto).
 - [ ] Listar páginas huérfanas (`loading.html`, `mod.html`).
 - [ ] Decidir hosting/dominio (para HTTPS y `MAILER` real).
 **Tareas:**
@@ -150,9 +245,9 @@ Toda parte sigue estos 5 pasos; no se implementa nada sin cerrar el paso 1.
 ## Registro de avance (actualizar al cerrar cada parte)
 | Parte | Estado | Fecha | Notas |
 |---|---|---|---|
-| 1. Correo SMTP | Completada | 2026-10-12 | SMTP Gmail funcionando + tests 98/98. Pendiente rotar app password / cuenta propia |
-| 2. Sesión real | En verificación | 2026-10-12 | Implementado (guard 3 estados + logout real + cartel). Refactor CSP (onclick inline → addEventListener). Tests 98/98. Falta prueba manual en navegador |
-| 3. Datos reales | Pendiente | | |
+| 1. Correo SMTP | Completada | 2026-10-12 | SMTP Gmail funcionando + tests 98/98. Reverificado con correo real el 2026-10-17 (app password nueva). Pendiente: cuenta/proveedor propio |
+| 2. Sesión real | Completada | 2026-10-17 | Verificado en navegador real: registro + verificación por correo Gmail real + login + logout contra PostgreSQL. Añadido botón "Jugar como invitado". Tests 98/98 |
+| 3. Datos reales | En progreso (4/5) | 2026-10-17 | Ranking/historial reales, URLs relativas y mocks eliminados. Tests 98/98. Pendiente: merge invitado→cuenta (sub-parte 3.5) y prueba visual |
 | 4. Endurecer backend | Pendiente | | |
 | 5. Multijugador online | Pendiente | | |
 | 6. Pulido/despliegue | Pendiente | | |
