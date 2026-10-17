@@ -158,54 +158,11 @@
 
         <div class="lista-salas-container">
             
-            <div class="sala-row" id="btnFilaItachi" style="cursor: pointer;">
-                <span class="sala-creador">Itachi969</span>
-                <span class="sala-mapa">Mapa</span>
-                <span class="sala-badge">🌀</span>
-                <span class="sala-slots">1/2</span>
-            </div>
-
-            <div class="sala-row">
-                <span class="sala-creador">Sasukexd</span>
-                <span class="sala-mapa">Mapa</span>
-                <span class="sala-badge">🔴</span>
-                <span class="sala-slots">2/2</span>
-            </div>
-
-            <div class="sala-row">
-                <span class="sala-creador">Bebecitaprr</span>
-                <span class="sala-mapa">Mapa</span>
-                <span class="sala-badge">🔥</span>
-                <span class="sala-slots">1/2</span>
-            </div>
-
-            <div class="sala-row">
-                <span class="sala-creador">Neji2008</span>
-                <span class="sala-mapa">Mapa</span>
-                <span class="sala-badge">🦅</span>
-                <span class="sala-slots">0/2</span>
-            </div>
-
-            <div class="sala-row">
-                <span class="sala-creador">Tralaleritos67</span>
-                <span class="sala-mapa">Mapa</span>
-                <span class="sala-badge">⛰️</span>
-                <span class="sala-slots">1/2</span>
-            </div>
-
-            <div class="sala-row">
-                <span class="sala-creador">Narutoo</span>
-                <span class="sala-mapa">Mapa</span>
-                <span class="sala-badge">⏳</span>
-                <span class="sala-slots">2/2</span>
-            </div>
-
-            <div class="sala-row">
-                <span class="sala-creador">Sakuratrash</span>
-                <span class="sala-mapa">Mapa</span>
-                <span class="sala-badge">🌊</span>
-                <span class="sala-slots">1/2</span>
-            </div>
+            <!-- Parte 3: sin salas falsas. El multijugador online real (WebSockets) llega en la Parte 5. -->
+            <p class="salas-vacio">
+                Aún no hay salas disponibles.<br>
+                El multijugador online en tiempo real llegará en una próxima versión.
+            </p>
 
         </div>
 
@@ -236,85 +193,18 @@
             <div class="ranking-row-header">
                 <span class="col-pos">#</span>
                 <span class="col-jugador">JUGADOR</span>
-                <span class="col-nivel">NIVEL</span>
-                <span class="col-xp">XP</span>
+                <span class="col-nivel">PARTIDAS</span>
+                <span class="col-xp">MEJOR PUNTAJE</span>
             </div>
 
-            <!-- Puesto 1 (Oro) -->
-            <div class="ranking-row">
-                <div class="col-pos"><span class="badge-rank oro">1</span></div>
-                <div class="col-jugador">
-                    <div class="avatar-table"><img src="assets/img/itachi-avatar.png" alt="Itachi" class="avatar-img"></div>
-                    <span class="nombre-jugador">Itachi</span>
+            <!-- Filas reales: las llena js/ui/RankingModal.js desde /api/vistas/ranking -->
+            <div id="rankingBody">
+                <div class="ranking-row">
+                    <div class="col-pos"><span class="num-rank">…</span></div>
+                    <div class="col-jugador"><span class="nombre-jugador">Cargando ranking…</span></div>
+                    <div class="col-nivel">—</div>
+                    <div class="col-xp">—</div>
                 </div>
-                <div class="col-nivel"><span class="punto-online">🟢</span> 25</div>
-                <div class="col-xp txt-oro">3250</div>
-            </div>
-
-            <!-- Puesto 2 (Plata) -->
-            <div class="ranking-row">
-                <div class="col-pos"><span class="badge-rank plata">2</span></div>
-                <div class="col-jugador">
-                    <div class="avatar-table">🦊</div>
-                    <span class="nombre-jugador">Naruto</span>
-                </div>
-                <div class="col-nivel"><span class="punto-online">🟢</span> 24</div>
-                <div class="col-xp">3100</div>
-            </div>
-
-            <!-- Puesto 3 (Bronce) -->
-            <div class="ranking-row">
-                <div class="col-pos"><span class="badge-rank bronce">3</span></div>
-                <div class="col-jugador">
-                    <div class="avatar-table">⚡</div>
-                    <span class="nombre-jugador">Sasuke</span>
-                </div>
-                <div class="col-nivel"><span class="punto-online">🟢</span> 23</div>
-                <div class="col-xp">2980</div>
-            </div>
-
-            <!-- Puesto 4 -->
-            <div class="ranking-row">
-                <div class="col-pos"><span class="num-rank">4</span></div>
-                <div class="col-jugador">
-                    <div class="avatar-table">🍃</div>
-                    <span class="nombre-jugador">Minato</span>
-                </div>
-                <div class="col-nivel"><span class="punto-online">🟢</span> 22</div>
-                <div class="col-xp">2800</div>
-            </div>
-
-            <!-- Puesto 5 -->
-            <div class="ranking-row">
-                <div class="col-pos"><span class="num-rank">5</span></div>
-                <div class="col-jugador">
-                    <div class="avatar-table">👁️</div>
-                    <span class="nombre-jugador">Madara</span>
-                </div>
-                <div class="col-nivel"><span class="punto-online">🟢</span> 21</div>
-                <div class="col-xp">2600</div>
-            </div>
-
-            <!-- Puesto 6 -->
-            <div class="ranking-row">
-                <div class="col-pos"><span class="num-rank">6</span></div>
-                <div class="col-jugador">
-                    <div class="avatar-table">🐕</div>
-                    <span class="nombre-jugador">Kakashi</span>
-                </div>
-                <div class="col-nivel"><span class="punto-online">🟢</span> 21</div>
-                <div class="col-xp">2400</div>
-            </div>
-
-            <!-- Puesto 7 -->
-            <div class="ranking-row">
-                <div class="col-pos"><span class="num-rank">7</span></div>
-                <div class="col-jugador">
-                    <div class="avatar-table">⏳</div>
-                    <span class="nombre-jugador">Gaara</span>
-                </div>
-                <div class="col-nivel"><span class="punto-online">🟢</span> 20</div>
-                <div class="col-xp">2200</div>
             </div>
 
         </div>
@@ -584,9 +474,9 @@
 
         <!-- ESTADO -->
         <div class="estado">
-            <span>🟢 Conectado</span>
-            <span>Servidor Online</span>
-            <span>Ping: <span id="pingValor">45ms</span></span>
+            <span id="estadoConexion">⚪ Verificando…</span>
+            <span id="estadoServidor">Comprobando servidor…</span>
+            <span>Ping: <span id="pingValor">--</span></span>
             <span>Versión 1.0</span>
         </div>
 
