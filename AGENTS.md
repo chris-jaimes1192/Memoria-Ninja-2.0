@@ -51,7 +51,7 @@ La sesión real vive en la cookie httpOnly `memoria_ninja_sesion`. El frontend e
 - **`invitado`** (401): online pero sin sesión; se puede jugar, el menú muestra un cartel ("inicia sesión para guardar tu progreso y aparecer en el ranking") y perfil/ranking/historial piden login (`MenuController.estaBloqueado`).
 - **`offline`** (el servidor no responde): igual que invitado, jugable con guardado local.
 
-El **logout es real**: `window.SesionNinja.cerrarSesion()` (usado por `js/menu.js` y `js/services/GameSessionService.js`) hace `POST /api/auth/logout` (revoca la cookie en el servidor), limpia `localStorage` y vuelve a `login.html`. No se fuerza el login: `login.html` no redirige. Trabajo futuro: modo offline con sincronización y merge invitado→cuenta (Partes 3 y 7 de `PLAN-DESARROLLO.md`).
+El **logout es real**: `window.SesionNinja.cerrarSesion()` (usado por `js/menu.js` y `js/services/GameSessionService.js`) hace `POST /api/auth/logout` (revoca la cookie en el servidor), limpia `localStorage` y vuelve a `login.html`. No se fuerza el login: `login.html` no redirige. Trabajo futuro: reintento automático al reconectar la cola offline (Parte 7 de `PLAN-DESARROLLO.md`) — la cola local `historialPendiente` y el merge invitado→cuenta (`POST /api/usuarios/:id/importar`, sub-parte 3.5) ya están implementados: lo jugado como invitado se encola y se sube al iniciar sesión.
 
 ## Backend (`backend-poderes/`)
 
@@ -59,7 +59,7 @@ El **logout es real**: `window.SesionNinja.cerrarSesion()` (usado por `js/menu.j
 cd backend-poderes
 npm install
 npm start          # corre en http://localhost:3000
-npm test           # runner de tests nativo de Node (--test): 98 tests, 22 suites, todas verdes
+npm test           # runner de tests nativo de Node (--test): 104 tests, 23 suites, todas verdes
 npm run seed:demo  # llena PGDATABASE con datos demo (7 cuentas @demo.ninja / clave123)
 ```
 
@@ -69,7 +69,7 @@ npm run seed:demo  # llena PGDATABASE con datos demo (7 cuentas @demo.ninja / cl
 
 - Arquitectura: en capas (entities → factories → repositories → services → controllers → routes)
 - `server.js` es la **raíz de composición** — único lugar donde se instancian implementaciones concretas con `new`
-- 6 poderes: byakugan, sustitucion, robo, genjutsu, sello, bomba. Endpoints: `POST /api/poder/activar`, `POST /api/partida` (crea + persiste una partida, PostgreSQL), `POST /api/partida/prueba` (demo legado), y los endpoints de usuario/historial/perfil bajo `/api/usuarios` (register/login/list/search/history/`GET|POST :id/perfil`)
+- 6 poderes: byakugan, sustitucion, robo, genjutsu, sello, bomba. Endpoints: `POST /api/poder/activar`, `POST /api/partida` (crea + persiste una partida, PostgreSQL), `POST /api/partida/prueba` (demo legado), y los endpoints de usuario/historial/perfil bajo `/api/usuarios` (register/login/list/search/history/`GET|POST :id/perfil`) — más `POST :id/importar` (merge invitado→cuenta, mini-guard de cookie propio hasta la Parte 4)
 - Tres implementaciones de repositorio: `PartidaRepositoryMemoria` (en memoria), `PartidaRepositoryArchivo` (en archivo) y `PartidaRepositorySQL` (PostgreSQL, default en producción) — todas pasan los mismos tests de contrato (prueba de LSP)
 - Los tests son basados en contratos: la misma batería corre contra varias implementaciones
 - `PartidaRepositoryArchivo` escribe un snapshot JSON por partida en `backend-poderes/data/` (ignorado por git vía `data/*.json`). `obtener()` revisa primero el caché en memoria y, si falla, **relee el archivo JSON del disco** y reconstruye la entidad `Partida` (igual que el repo SQL) — las partidas sobreviven un reinicio del servidor. Verificado por los tests de "persistencia REAL en disco"
@@ -108,12 +108,12 @@ Hooks (12 páginas, todas llaman a `progresoService.registrarFinPartida({victori
 
 - **Solo backend** — no hay tests de frontend
 - Correr desde el directorio `backend-poderes/`: `npm test` (su `pretest` corre `node scripts/db-setup.js --test`, que aplica `sql/esquema.sql` a `memoria_ninja_test`)
-- Las suites de integración `usuarioService.test.js`, `usuarioPerfil.test.js` y `procedimientoService.test.js` corren contra **PostgreSQL** (`memoria_ninja_test`), no SQLite. Comparten `tests/helpers/baseDatosPrueba.js` (`crearDatabasePrueba()` / `limpiarDatabase()` → `TRUNCATE ... CASCADE`) y limpian las 7 tablas entre tests.
+- Las suites de integración `usuarioService.test.js`, `usuarioPerfil.test.js`, `procedimientoService.test.js` e `importarProgreso.test.js` corren contra **PostgreSQL** (`memoria_ninja_test`), no SQLite. Comparten `tests/helpers/baseDatosPrueba.js` (`crearDatabasePrueba()` / `limpiarDatabase()` → `TRUNCATE ... CASCADE`) y limpian las 7 tablas entre tests.
 - Los repos son async-safe: los métodos de escritura de `UsuarioRepositorySQL`/`HistorialPartidaRepositorySQL` hacen `return` de la promesa `run()` para que el PostgreSQL (async) sea awaited; esperar el resultado síncrono de SQLite es un no-op, así funcionan ambos motores.
 - `DatabaseSqlite` sigue respaldando solo los tests SQL de partidas (`partidaRepositorySQL.test.js`, `partidaService.test.js`) y el test de migración `DatabaseSqlite.#migrarColumnasPerfil()` (solo SQLite) dentro de `usuarioPerfil.test.js`.
 - `tests/authE2e.test.js` es un test end-to-end real: levanta `server.js` como proceso hijo (en `SERVER_PORT_E2E`, default 3099, `PGDATABASE=PGDATABASE_TEST`, `MAILER=consola`, `RATE_LIMIT_DESACTIVADO=1`), recorre registro→verificación→login/cookie→logout→recuperación por HTTP, y luego mata el servidor. Lee los códigos de verificación del stdout del hijo (`MAILER=consola` imprime `... es: 123456`).
 - `RATE_LIMIT_DESACTIVADO=1` (server.js) hace que ambos rate-limiters hagan `skip` — se usa solo en el test e2e para que corridas repetidas de `npm test` no choquen con 429.
-- Archivos de test: `contratoPartidaRepository.js`, `contratoPoder.test.js`, `poderService.test.js`, `partidaService.test.js`, `partidaRepositorySQL.test.js`, `usuarioService.test.js`, `usuarioPerfil.test.js`, más uno por cada implementación de repositorio
+- Archivos de test: `contratoPartidaRepository.js`, `contratoPoder.test.js`, `poderService.test.js`, `partidaService.test.js`, `partidaRepositorySQL.test.js`, `usuarioService.test.js`, `usuarioPerfil.test.js`, `importarProgreso.test.js` (merge invitado→cuenta), más uno por cada implementación de repositorio
 - Correr los tests crea data fixture real bajo `backend-poderes/data/` solo cuando el repositorio de archivo es ejercitado por los tests
 
 ## Skills instaladas (Autoskills)

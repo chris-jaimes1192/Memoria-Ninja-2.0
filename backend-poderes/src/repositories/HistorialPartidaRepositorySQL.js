@@ -45,6 +45,38 @@ class HistorialPartidaRepositorySQL {
     );
   }
 
+  /**
+   * Inserta un resultado usando la conexión `db` que se le pase: por
+   * defecto la del pool, o el `dbCliente` de Database.transaccion()
+   * para que el INSERT quede dentro de una transacción ACID (sub-parte 3.5).
+   */
+  async registrarEn(db, { id, idUsuario, idPartida, zona, puntaje, modo, ganador }) {
+    const sentencia = db.prepare(`
+      INSERT INTO historial_partidas
+        (id, id_usuario, id_partida, zona, puntaje, modo, ganador)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `);
+    return sentencia.run(
+      id,
+      idUsuario,
+      idPartida ?? null,
+      zona ?? null,
+      puntaje ?? null,
+      modo ?? null,
+      ganador ?? null
+    );
+  }
+
+  /** ids de partida ya registrados para un usuario (dedup del merge invitado). */
+  async idPartidasDe(idUsuario, db = this.database.db) {
+    const sentencia = db.prepare(`
+      SELECT id_partida FROM historial_partidas
+      WHERE id_usuario = ? AND id_partida IS NOT NULL
+    `);
+    const filas = await sentencia.all(idUsuario);
+    return new Set(filas.map((fila) => fila.id_partida));
+  }
+
   async porUsuario(idUsuario) {
     return this.#consultaPorUsuario.all(idUsuario);
   }

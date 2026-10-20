@@ -38,8 +38,10 @@ Toda parte sigue estos 5 pasos; no se implementa nada sin cerrar el paso 1.
 **Objetivo:** que los códigos lleguen a correos reales.
 **Revisión previa (qué revisar antes de empezar):**
 - [x] Confirmado `nodemailer` ^10.1.0 instalado e interfaz `enviar({para, asunto, texto, html})`.
-- [x] Revisado quién llama al notificador (VerificacionService:51, RecuperacionService:48).
-- [x] Revisado `server.js` (:21-22 import, :74-78 selección) y `authE2e.test.js` (MAILER=consola → texto `es: 123456` intacto).
+- [x] Revisado quién llama al notificador (VerificacionService:52, RecuperacionService:49 — `notificador.enviar`).
+- [x] Revisado `server.js` (:21-23 imports, :79-94 selección con fail-fast) y `authE2e.test.js` (MAILER=consola → texto `es: 123456` intacto).
+  > Auditoría 2026-10-19: las líneas originales del plan estaban desfasadas (off-by-one en los
+  > servicios; ~15 líneas en `server.js` por los checks de PostgreSQL añadidos arriba). Corregidas.
 - [x] Decisiones: se soporta 465 (`secure:true`) y 587; `SMTP_SERVICE=gmail` opcional; `SMTP_FROM` configurable.
 - [x] Pre-requisito usuario: 2FA + App Password de Gmail (creada "Memoria Ninja").
 **Cómo se aplicará:**
@@ -88,9 +90,12 @@ Toda parte sigue estos 5 pasos; no se implementa nada sin cerrar el paso 1.
 login demo (`kakashi`/`clave123`) → **200** con perfil; `GET /api/auth/me` con cookie → **200**; sin cookie → **401** (estado `invitado`); `POST /api/auth/logout` → **200** y `me` → **401**; `/api/vistas/ranking` → datos reales.
 Backend servido en `http://localhost:3000` (Live Server de VS Code **apagado**, que era la causa del "error en el servidor" al registrar). Tests 98/98.
 **Pendiente menor:** el usuario aún debe probar los escenarios visuales de invitado (con el nuevo botón) y offline (apagar el servidor y recargar).
+**Matices (auditoría 2026-10-19):** `sesion-guard.js:90` tiene un fallback que redirige a `login.html` si
+`avisarInvitado()` se invoca en una página sin `#avisoInvitado` (no ocurre en la práctica: solo lo usa
+`MenuController`, que sí tiene el cartel); `loading.html` no incluye el guard (es solo pantalla de carga).
 **Depende de:** nada. **Habilita:** Parte 3 (ranking/historial reales).
 
-## Parte 3 — Datos reales · Estado: EN PROGRESO 🚧
+## Parte 3 — Datos reales · Estado: COMPLETADA ✅ (5/5)
 **Objetivo:** ranking, historial y perfil con datos del backend; sin mocks ni rutas absolutas.
 
 ### Revisión previa (auditoría — paso 1) · 2026-10-17
@@ -180,11 +185,32 @@ Backend servido en `http://localhost:3000` (Live Server de VS Code **apagado**, 
 - [x] Quitar hardcodeos/mocks (ranking hardcodeado, salas "Itachi969" → estado vacío,
       ping "45ms" → real/`--`, `simularPing` eliminado, código muerto `#recordsList` eliminado).
       `mod.html` queda como huérfana para la Parte 6 (documentado).
-- [ ] **Sub-parte 3.5 — Merge invitado→cuenta** (apartado propio, pendiente).
+- [x] **Sub-parte 3.5 — Merge invitado→cuenta** (cerrada 2026-10-19, Opción A: cola local + merge).
+      Backend: `POST /api/usuarios/:idUsuario/importar` con mini-guard `soloPropietario` (cookie
+      `memoria_ninja_sesion` → 401), `UsuarioService.importarProgresoInvitado` con transacción ACID,
+      dedup por `idPartida`, `xp` solo lo ganado por encima de los 500 base, `racha`/`puntajeMax` con
+      máximo, `TOPE_IMPORTACION=200`. Frontend: `HttpHistorialRepositorio.guardar()` encola en
+      `historialPendiente` (cap 200) si no hay sesión o falla; `SincronizacionInvitadoService.sincronizar()`
+      sube cola + `perfil:invitado` al hacer login y limpia solo si el servidor confirma.
+      `LoginController.js` lo engancha tras `guardarSesion`.
+- [x] **Pendiente (auditoría 2026-10-19):** los 3 mensajes con "localhost:3000" como texto
+      (`HttpPerfilRepositorio.js:38`, `HttpUsuarioRepositorio.js:62`, `HttpAuthRepositorio.js:51`)
+      limpios el 2026-10-19 → copy genérico "No se pudo conectar con el servidor[...]. Verifica que
+      el backend esté corriendo." (solo quedan `localhost:3000` en comentarios de código).
+- [x] **Adelanto de Parte 6 (2026-10-19):** `menu.html` → módulo NIVELES con `id="levelBtn"` +
+      `cursor:pointer` (el handler `menu.js:34-38` por fin se engancha) y `Gamemodemodal.js` →
+      `btnEncontrarPares` apunta a `niveles.html` (ENCONTRAR PARES pasa por el mapa → pre-partida).
+      Queda documentado para la Parte 6: `pares.html` quedó **sin ninguna entrada** (huérfana).
 **Verificación (2026-10-17):** tests 98/98 ✅; `GET /api/estado` y `GET /api/vistas/ranking` devuelven
 datos reales; frontend servido confirma las nuevas marcas (`rankingBody`, `PARTIDAS`, `salas-vacio`,
 `/api/estado` relativo, sin `localhost:3000`/`simularPing`/`Itachi969`). Falta prueba visual del usuario
 en `http://localhost:3000/menu.html` con sesión demo (`kakashi`/`clave123`).
+**Verificación (2026-10-19, cierre):** `npm test` → **104/104** ✅ (98 originales + 6 nuevos de
+`tests/importarProgreso.test.js`). Verificación HTTP real del merge (instancia aislada en :3210 contra
+la BD de test, 9/9): importar sin cookie → **401**; registro→verificación→login→`auth/me` → id OK;
+`POST /importar` → `importados:2`, `perfil.xp:800` (500 base + 300 ganados); re-importar →
+`importados:0, omitidos:2` (idempotente, sin duplicar XP); cuenta ajena con cookie propia → **401**;
+frontend servido entrega `SincronizacionInvitadoService.js`.
 
 ## Parte 4 — Endurecer backend · Estado: PENDIENTE
 **Objetivo:** proteger endpoints y preparar para producción.
@@ -214,14 +240,17 @@ en `http://localhost:3000/menu.html` con sesión demo (`kakashi`/`clave123`).
 
 ## Parte 6 — Pulido y despliegue · Estado: PENDIENTE
 **Revisión previa:**
-- [ ] Confirmar navegación rota: `menu.js:71` → `game.html` (no existe) y `#levelBtn` ausente en `menu.html`.
+- [ ] Confirmar navegación rota: `menu.js:30` → `game.html` (no existe; el plan decía :71, corrección
+  auditoría 2026-10-19) y `#levelBtn` ausente en `menu.html` (el handler `menu.js:34-38` nunca se engancha).
   > Corregido (2026-10-17): `pre-partida.html:69` es el `<nav class="bottom-nav">` y **NO** apunta a `game.html`;
   > `js/pre-partida.js:69` va a `menu.html` (correcto).
-- [ ] Listar páginas huérfanas (`loading.html`, `mod.html`).
+- [ ] Listar páginas huérfanas (`loading.html`, `mod.html`, `pares.html` — esta última quedó sin
+  entrada el 2026-10-19: `btnEncontrarPares` ahora va a `niveles.html`).
 - [ ] Decidir hosting/dominio (para HTTPS y `MAILER` real).
 **Tareas:**
-- [ ] Arreglar navegación rota y botón NIVELES.
-- [ ] Páginas huérfanas (`loading.html`, `mod.html`).
+- [x] Botón NIVELES enganchado (`#levelBtn` en `menu.html` + `cursor:pointer`) — adelantado 2026-10-19.
+      Queda pendiente aquí `menu.js:30` → `game.html` (no existe; ver revisión previa).
+- [ ] Páginas huérfanas (`loading.html`, `mod.html`, `pares.html`).
 - [ ] Afinar qué ve el invitado en el menú (UX fina).
 - [ ] Accesibilidad (WCAG 2.2).
 - [ ] Desplegar el juego.
@@ -233,11 +262,14 @@ en `http://localhost:3000/menu.html` con sesión demo (`kakashi`/`clave123`).
 - [ ] Definir una cola local de resultados pendientes (por usuario/dispositivo).
 - [ ] Ver qué datos hacen falta para reconciliar sin duplicar (id de partida, fecha).
 **Tareas:**
-- [ ] Cola local de partidas/puntos no enviados.
-- [ ] Reintento/sincronización automática al volver la conexión.
-- [ ] Evitar duplicados al sincronizar.
+- [x] Cola local de partidas/puntos no enviados. (Hecha en la sub-parte 3.5: `historialPendiente`
+  en `HttpHistorialRepositorio.js`, cap 200.)
+- [ ] Reintento/sincronización automática al volver la conexión. (Hoy la cola solo sube al hacer
+  login — `SincronizacionInvitadoService`; falta reintento por evento `online`/`offline`.)
+- [x] Evitar duplicados al sincronizar. (Hecho en 3.5: dedup servidor por `idPartida`, transaccional.)
 **Verificación:** jugar offline, reconectar y ver los resultados reflejados en el ranking/historial.
-**Nota:** marcado como mejora futura por el usuario; va al final.
+**Nota:** marcado como mejora futura por el usuario; va al final. La cola y el merge ya existen
+desde la sub-parte 3.5 (2026-10-19); queda el reintento automático.
 **Depende de:** Partes 2 y 3.
 
 ---
@@ -247,7 +279,7 @@ en `http://localhost:3000/menu.html` con sesión demo (`kakashi`/`clave123`).
 |---|---|---|---|
 | 1. Correo SMTP | Completada | 2026-10-12 | SMTP Gmail funcionando + tests 98/98. Reverificado con correo real el 2026-10-17 (app password nueva). Pendiente: cuenta/proveedor propio |
 | 2. Sesión real | Completada | 2026-10-17 | Verificado en navegador real: registro + verificación por correo Gmail real + login + logout contra PostgreSQL. Añadido botón "Jugar como invitado". Tests 98/98 |
-| 3. Datos reales | En progreso (4/5) | 2026-10-17 | Ranking/historial reales, URLs relativas y mocks eliminados. Tests 98/98. Pendiente: merge invitado→cuenta (sub-parte 3.5) y prueba visual |
+| 3. Datos reales | Completada (5/5) | 2026-10-19 | Ranking/historial reales, URLs relativas y mocks eliminados. Sub-parte 3.5: merge invitado→cuenta (cola local `historialPendiente` + `POST /importar` transaccional, dedup por idPartida, XP sobre base 500). Tests **104/104**. Verificación HTTP 9/9 (401 sin cookie/ajena, import/idempotencia). Adelantos Parte 6: NIVELES enganchado y ENCONTRAR PARES → mapa (deja `pares.html` huérfana). Falta prueba visual del usuario en `menu.html` |
 | 4. Endurecer backend | Pendiente | | |
 | 5. Multijugador online | Pendiente | | |
 | 6. Pulido/despliegue | Pendiente | | |

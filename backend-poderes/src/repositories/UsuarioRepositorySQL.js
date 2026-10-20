@@ -162,6 +162,34 @@ class UsuarioRepositorySQL extends UsuarioRepository {
     );
   }
 
+  /**
+   * Fusiona el progreso del invitado en la cuenta usando la conexión `db`
+   * (la del pool, o el dbCliente de Database.transaccion()): suma XP y
+   * estadísticas; racha y puntajeMax se quedan con el MÁXIMO de los dos.
+   * CASE WHEN en vez de GREATEST para que funcione en PostgreSQL y SQLite.
+   */
+  async fusionarPerfilEn(db, id, suma) {
+    const sentencia = db.prepare(`
+      UPDATE usuarios
+      SET xp = xp + ?,
+          victorias = victorias + ?,
+          derrotas = derrotas + ?,
+          racha = CASE WHEN racha < ? THEN ? ELSE racha END,
+          puntaje_max = CASE WHEN puntaje_max < ? THEN ? ELSE puntaje_max END
+      WHERE id = ?
+    `);
+    return sentencia.run(
+      suma.xp,
+      suma.victorias,
+      suma.derrotas,
+      suma.racha,
+      suma.racha,
+      suma.puntajeMax,
+      suma.puntajeMax,
+      id
+    );
+  }
+
   // ------ Seguridad de cuenta --------------------------------------------------
   async marcarCorreoVerificado(id) {
     return this.#marcaCorreoVerificado.run(id);

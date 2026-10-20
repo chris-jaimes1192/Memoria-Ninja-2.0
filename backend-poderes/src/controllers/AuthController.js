@@ -67,7 +67,9 @@ class AuthController {
     return {
       httpOnly: true,
       sameSite: "lax",
-      secure: false, // en produccion con https: true (viene de .env si hace falta)
+      // Parte 4: solo producción con HTTPS (COOKIE_SECURE=1 en .env); en
+      // local (http) false, o el navegador ni siquiera guarda la cookie.
+      secure: process.env.COOKIE_SECURE === "1",
       path: "/",
       maxAge: this.duracionSesionMin * 60 * 1000,
     };

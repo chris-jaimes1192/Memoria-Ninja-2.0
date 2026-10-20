@@ -18,6 +18,7 @@
 =========================================================*/
 
 import { FormularioControllerBase } from "./FormularioControllerBase.js";
+import { sincronizacionInvitado } from "../services/SincronizacionInvitadoService.js";
 
 export class LoginController extends FormularioControllerBase {
   constructor(autenticacionService, sesionService, notificador) {
@@ -44,6 +45,11 @@ export class LoginController extends FormularioControllerBase {
       // Igualmente se guarda una copia del usuario en localStorage para
       // que el menú y el perfil sepan QUIÉN está jugando (mismo-origen).
       this.sesionService.guardarSesion(usuarioValido);
+
+      // SUB-PARTE 3.5: si vino de jugar como invitado, sube la cola local
+      // y el perfil del invitado a esta cuenta (best-effort, nunca lanza
+      // y no retrasa la navegación de forma perceptible).
+      await sincronizacionInvitado.sincronizar(usuarioValido.id);
 
       setTimeout(() => {
         window.location.href = "menu.html";

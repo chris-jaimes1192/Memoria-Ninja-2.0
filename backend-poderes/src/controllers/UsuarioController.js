@@ -59,6 +59,23 @@ class UsuarioController {
     }
   };
 
+  // SUB-PARTE 3.5: el guard de la ruta ya validó que la cookie de sesión
+  // corresponde a :idUsuario; acá solo se traduce HTTP <-> Service.
+  importarProgreso = async (req, res) => {
+    try {
+      const { idUsuario } = req.params;
+      const { historial, perfil } = req.body;
+      const resultado = await this.usuarioService.importarProgresoInvitado({
+        idUsuario,
+        historial,
+        perfil,
+      });
+      res.status(201).json({ exito: true, ...resultado });
+    } catch (error) {
+      res.status(400).json({ exito: false, error: error.message });
+    }
+  };
+
   obtenerPerfil = async (req, res) => {
     try {
       const { idUsuario } = req.params;

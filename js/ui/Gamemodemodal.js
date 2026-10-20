@@ -7,7 +7,10 @@ export class GameModeModal extends BaseModal {
 
   inicializarOpciones() {
     const rutas = {
-      btnEncontrarPares: { subModoJuego: 'pares', href: 'pares.html' },
+      // ENCONTRAR PARES pasa por el mapa de zonas (niveles.html); al elegir
+      // zona, niveles.js guarda nivelActual y va a pre-partida.html, que
+      // deriva al juego de esa aldea. (pares.html quedó sin entrada: Parte 6.)
+      btnEncontrarPares: { subModoJuego: 'pares', href: 'niveles.html' },
       btnMemoria: { subModoJuego: 'memoria', href: 'orden.html', sesion: { iniciarMusica: 'si' } },
       btnCarpetas: { subModoJuego: 'carpetas', href: 'Agrupar/facil.html' },
       btnMuerte: { subModoJuego: 'muerte', href: 'muerte.html' }

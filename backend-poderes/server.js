@@ -47,6 +47,7 @@ const ProcedimientoRepositorySQL = require("./src/repositories/ProcedimientoRepo
 const ProcedimientoService = require("./src/services/ProcedimientoService");
 const ProcedimientoController = require("./src/controllers/ProcedimientoController");
 const crearRutasProcedimientos = require("./src/routes/procedimientoRoutes");
+const crearMiddlewaresDeAutorizacion = require("./src/middlewares/AutorizacionMiddleware");
 const EstadoController = require("./src/controllers/EstadoController");
 const crearRutasEstado = require("./src/routes/estadoRoutes");
 
@@ -107,7 +108,7 @@ const historialRepository = new HistorialPartidaRepositorySQL(database);
 const codigoVerificacionRepository = new CodigoVerificacionRepositorySQL(database);
 const sesionRepository = new SesionRepositorySQL(database);
 
-const usuarioService = new UsuarioService(usuarioRepository, historialRepository, passwordHasher);
+const usuarioService = new UsuarioService(usuarioRepository, historialRepository, passwordHasher, database);
 const authService = new AuthService(
   usuarioRepository,
   codigoVerificacionRepository,
@@ -118,6 +119,9 @@ const authService = new AuthService(
   notificador,
   duracionSesionMin
 );
+// Parte 4: middlewares de autorización con el authService real; se inyectan
+// a los routers igual que cualquier otra dependencia.
+const autorizacion = crearMiddlewaresDeAutorizacion(authService);
 const verificacionService = new VerificacionService(
   usuarioRepository,
   codigoVerificacionRepository,
@@ -175,27 +179,48 @@ const limitadorAuth = rateLimit({
 
 const app = express();
 app.use(helmet());
-// Mismo origen para el frontend versionado (login.html, verificacion.html...).
-app.use(cors({ origin: true, credentials: true }));
+// Parte 4: CORS con ALLOWLIST en vez de reflejar cualquier origen.
+// El frontend servido por este mismo backend va SIEMPRE en mismo origen
+// (páginas y API en el mismo puerto -> sin CORS); la lista es solo para
+// desarrollo externo (Live Server, etc.). Un origen no listado no recibe
+// cabeceras CORS -> el navegador lo bloquea -> el frontend cae en su
+// fallback local (ya existe para powers/partida/mock).
+// En LAN (celulares/tablets abriendo http://IP:3000) tampoco aplica: es
+// mismo origen. configurable con CORS_ORIGINS en .env (coma-separado).
+const origenesPermitidos = (
+  process.env.CORS_ORIGINS || "http://localhost:3000,http://127.0.0.1:3000"
+)
+  .split(",")
+  .map((origen) => origen.trim())
+  .filter(Boolean);
+app.use(
+  cors({
+    origin(origen, callback) {
+      callback(null, !origen || origenesPermitidos.includes(origen));
+    },
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(cookieParser());
 app.use("/api", limitadorGeneral);
 app.use("/api/auth", limitadorAuth);
 
 app.use("/api", crearRutasEstado(estadoController));
-app.use("/api", crearRutasPoderes(poderController));
-app.use("/api", crearRutasUsuarios(usuarioController));
+app.use("/api", crearRutasPoderes(poderController, autorizacion));
+app.use("/api", crearRutasUsuarios(usuarioController, autorizacion));
 app.use("/api", crearRutasAuth(authController, verificacionController, recuperacionController));
-app.use("/api", crearRutasPartidas(partidaController));
-app.use("/api", crearRutasVistas(vistaController));
-app.use("/api", crearRutasProcedimientos(procedimientoController));
+app.use("/api", crearRutasPartidas(partidaController, autorizacion));
+app.use("/api", crearRutasVistas(vistaController, autorizacion));
+app.use("/api", crearRutasProcedimientos(procedimientoController, autorizacion));
 
 // El backend también sirve el frontend (mismo origen -> cookies httpOnly OK).
 app.use(express.static(path.join(__dirname, "..")));
 
 // Ruta de prueba: crea una partida de ejemplo con 2 jugadores y 50 de chakra
 // cada uno, para poder probar /api/poder/activar sin armar todo el flujo.
-app.post("/api/partida/prueba", async (req, res) => {
+// Parte 4: escribe en la BD -> exige sesión.
+app.post("/api/partida/prueba", autorizacion.requiereSesion, async (req, res) => {
   const jugador1 = new Jugador("naruto", "Naruto");
   const jugador2 = new Jugador("sasuke", "Sasuke");
   jugador1.ganarChakra(50);

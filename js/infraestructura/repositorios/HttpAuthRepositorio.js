@@ -48,7 +48,7 @@ export class HttpAuthRepositorio {
       });
     } catch {
       throw new ErrorDeConexion(
-        "No se pudo conectar con el servidor. Verifica que el backend esté corriendo en localhost:3000."
+        "No se pudo conectar con el servidor. Verifica que el backend esté corriendo."
       );
     }
 

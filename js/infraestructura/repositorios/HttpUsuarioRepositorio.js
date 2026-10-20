@@ -59,7 +59,7 @@ export class HttpUsuarioRepositorio extends IUsuarioLector {
       });
     } catch {
       throw new ErrorDeConexion(
-        "No se pudo conectar con el servidor de datos. Verifica que el backend esté corriendo en localhost:3000."
+        "No se pudo conectar con el servidor de datos. Verifica que el backend esté corriendo."
       );
     }
 
