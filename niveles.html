@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Mapa Ninja</title>
+
+    <link rel="stylesheet" href="css/niveles.css">
+
+    <!-- GUARD DE SESIÓN (valida contra el servidor; nunca redirige) -->
+    <script src="js/sesion-guard.js"></script>
+</head>
+
+<body>
+
+<div class="mapa-container">
+
+    <video id="mapaVideo" autoplay muted loop playsinline>
+
+        <source src="assets/mapa1.mp4" type="video/mp4">
+
+    </video>
+
+    <div id="overlay">
+
+        <!-- KONOHA -->
+
+        <button id="sarutobi" class="zona sarutobi"></button>
+
+        <button id="hyuga" class="zona hyuga"></button>
+
+        <button id="uzumaki" class="zona uzumaki"></button>
+
+        <button id="uchiha" class="zona uchiha"></button>
+
+        <!-- ALDEAS -->
+
+        <button id="arena" class="zona arena"></button>
+
+        <button id="roca" class="zona roca"></button>
+
+        <button id="niebla" class="zona niebla"></button>
+
+        <button id="nube" class="zona nube"></button>
+
+        <!-- FINAL -->
+
+        <button id="akatsuki" class="zona akatsuki"></button>
+
+    </div>
+
+</div>
+
+<script type="module" src="js/niveles.js"></script>
+</body>
+
+</html>

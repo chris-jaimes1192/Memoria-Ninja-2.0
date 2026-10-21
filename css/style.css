@@ -1,0 +1,249 @@
+body {
+  font-family: "Fredoka", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-style: normal;
+  font-variation-settings:
+    "wdth" 100;
+
+  background-size: cover;
+  background-position: center;
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+#videofondo{
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  transform: translate(-50%, -50%);
+  object-fit: cover;
+  z-index: -1;
+}
+
+.login-contenedor {
+  margin: auto;
+  text-align: center;
+  padding: 80px;
+  border-radius: 10px;
+  width: 300px;
+  color: white;
+  box-shadow: 0 0 12px rgba(255,255,255,0.1);
+}
+
+.login-contenedor.registro {
+  transform: scale(0.9) translateY(-40px);
+}
+
+h1 {
+  font-family: "Fredoka", sans-serif;
+  font-size: 40px;
+  text-shadow: 
+  -2px -2px 0 black,
+     2px -2px 0 black,
+    -2px  2px 0 black,
+     2px  2px 0 black,
+    -3px  0px 0 black,
+     3px  0px 0 black,
+     0px -3px 0 black,
+     0px  3px 0 black;
+
+}
+
+input {
+  width: 90%;
+  padding: 15px;
+  margin: 10px 0;
+
+  border: none;
+  border-radius: 10px;
+
+  background: rgba(0, 0, 0, 0.4); /* 🔥 color oscuro transparente */
+  color: rgba(255,255,255,0.7);
+}
+input::placeholder {
+  color: rgba(255,255,255,0.7);
+}
+input:focus {
+  outline: none;
+  box-shadow: 0 0 8px #00aaff;
+}
+
+button {
+  font-family: "Fredoka", sans-serif;
+  font-size: 15px;
+  width: 95%;
+  padding: 15px;
+  margin-top: 15px;
+  background: linear-gradient(to right, #ff1f1f, #ff7918, #0062ff);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+/* Botón secundario: entrar como invitado (sin cuenta) */
+.btn-invitado {
+  background: rgba(0, 0, 0, 0.45);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  color: #fff;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.btn-invitado:hover,
+.btn-invitado:focus-visible {
+  background: rgba(0, 0, 0, 0.65);
+  border-color: #00aaff;
+  outline: none;
+}
+
+.input-pass {
+  position: relative;
+  width: 90%;
+  margin: 10px 0;
+}
+
+.input-pass input {
+  width: 90%;
+  padding: 15px;
+  padding-right: 45px; /* espacio para el sharingan */
+  margin: 0; /* quitamos el margin del input original aquí */
+}
+
+/* Sharingan PNG */
+.ojo {
+  position: absolute;
+  right: -22px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+
+  opacity: 0.5;
+  transition: 0.3s;
+}
+
+/* efecto al pasar el mouse */
+.ojo:hover {
+  transform: translateY(-50%) scale(1.15);
+}
+
+/* cuando está activo */
+.ojo.activo {
+  opacity: 1; 
+}
+
+.ojo {
+  animation: girar 3s linear infinite;
+}
+
+@keyframes girar {
+  from { transform: translateY(-50%) rotate(0deg); }
+  to { transform: translateY(-50%) rotate(360deg); }
+}
+/* ===========================
+   TÉRMINOS Y POLÍTICA
+=========================== */
+
+.aceptacion{
+    margin-top:15px;
+    text-align:left;
+    color:white;
+    font-size:14px;
+}
+
+.check-label{
+    display:block;
+    margin-bottom:10px;
+    line-height:1.5;
+}
+
+.check-label input{
+    width:auto;
+    margin-right:8px;
+    transform:scale(1.1);
+}
+
+.link-modal{
+    color:#4db8ff;
+    cursor:pointer;
+    font-weight:bold;
+    transition:.3s;
+}
+
+.link-modal:hover{
+    color:#ffd700;
+    text-decoration:underline;
+}
+
+/* ===========================
+   MODAL
+=========================== */
+
+.modal{
+    display:none;
+    position:fixed;
+    left:0;
+    top:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,.75);
+    justify-content:center;
+    align-items:center;
+    z-index:9999;
+}
+
+.modal-contenido{
+
+    width:700px;
+    max-width:90%;
+
+    max-height:80vh;
+    overflow-y:auto;
+
+    padding:30px;
+
+    border-radius:15px;
+
+    background:rgba(20,20,35,.95);
+
+    color:white;
+
+    box-shadow:0 0 30px rgba(0,0,0,.5);
+
+}
+
+.modal-contenido h2{
+
+    margin-top:0;
+    text-align:center;
+    color:#ffd700;
+
+}
+
+.modal-contenido p{
+
+    line-height:1.7;
+    text-align:justify;
+
+}
+
+.cerrar{
+
+    float:right;
+    font-size:30px;
+    cursor:pointer;
+    color:white;
+
+}
+
+.cerrar:hover{
+
+    color:red;
+
+}

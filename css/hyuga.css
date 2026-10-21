@@ -1,0 +1,821 @@
+/* =====================================================
+   ⚪ FONDO
+   TEMÁTICA CLAN HYUGA
+===================================================== */
+
+body {
+  font-family: Arial, sans-serif;
+
+  background-color: rgb(18, 24, 35);
+
+  color: #f4f8ff;
+
+  text-align: center;
+
+  padding: 20px;
+
+  margin: 0;
+}
+
+
+/* =====================================================
+   🌌 FONDO DE VIDEO
+===================================================== */
+
+video {
+  position: fixed;
+
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  z-index: -1;
+}
+
+
+/* =====================================================
+   👁️ ENCABEZADO
+===================================================== */
+
+.game-header {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  gap: 12px;
+
+  max-width: 980px;
+
+  margin: 0 auto 10px;
+}
+
+.player-info {
+  text-align: left;
+}
+
+.turn-info {
+  font-weight: 700;
+
+  color: #dcecff;
+
+  text-shadow:
+    0 0 8px #8fc7ff;
+}
+
+.stats span {
+  margin-left: 12px;
+
+  color: #b9d5ef;
+}
+
+
+/* =====================================================
+   👁️ MARCO DEL TABLERO
+===================================================== */
+
+#boardFrame {
+  display: flex;
+
+  justify-content: center;
+
+  margin: 24px auto;
+
+  padding: 18px;
+
+  width: max-content;
+
+  background:
+    linear-gradient(
+      180deg,
+      #303846,
+      #1b222d
+    );
+
+  border-radius: 14px;
+
+  border:
+    8px solid #a9b9c9;
+
+  box-shadow:
+    0 18px 60px rgba(0, 0, 0, 0.7),
+    0 0 25px rgba(160, 210, 255, 0.2);
+}
+
+
+/* =====================================================
+   🃏 TABLERO
+===================================================== */
+
+#board {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, 100px);
+
+  gap: 30px;
+
+  padding: 30px;
+
+  background:
+    #151a21;
+
+  border-radius: 10px;
+
+  box-shadow:
+    inset 0 0 25px rgba(180, 220, 255, 0.08);
+}
+
+
+/* =====================================================
+   👁️ CARTA 3D
+===================================================== */
+
+.card {
+  width: 100px;
+
+  height: 140px;
+
+  position: relative;
+
+  transform-style: preserve-3d;
+
+  transition:
+    transform 0.45s ease;
+
+  cursor: pointer;
+
+  border-radius: 8px;
+
+  perspective: 900px;
+}
+
+
+/* =====================================================
+   🔄 CARTA VOLTEADA
+===================================================== */
+
+.card.flipped {
+  transform:
+    rotateY(180deg);
+}
+
+
+/* =====================================================
+   🖼️ IMÁGENES DE LAS CARTAS
+===================================================== */
+
+.card img {
+  width: 100%;
+
+  height: 100%;
+
+  position: absolute;
+
+  left: 0;
+
+  top: 0;
+
+  border-radius: 8px;
+
+  object-fit: fill;
+
+  backface-visibility: hidden;
+
+  -webkit-backface-visibility: hidden;
+}
+
+
+/* =====================================================
+   ⚫ PARTE TRASERA
+===================================================== */
+
+.back {
+  transform:
+    rotateY(0deg);
+}
+
+
+/* =====================================================
+   ⚪ PARTE FRONTAL
+===================================================== */
+
+.front {
+  transform:
+    rotateY(180deg);
+}
+
+
+/* =====================================================
+   👁️ CARTA ENCONTRADA
+===================================================== */
+
+.card.found {
+  pointer-events: none;
+
+  animation:
+    desaparecerCarta
+    0.7s
+    ease
+    forwards;
+}
+
+
+/* =====================================================
+   ❌ MODAL DE DERROTA
+===================================================== */
+
+#modal {
+  position: fixed;
+
+  inset: 0;
+
+  background:
+    rgba(5, 10, 18, 0.75);
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+
+  z-index: 10000;
+}
+
+
+/* =====================================================
+   PANEL DE DERROTA
+===================================================== */
+
+.panel {
+  background:
+    linear-gradient(
+      145deg,
+      #202b38,
+      #10161e
+    );
+
+  color: #eef7ff;
+
+  padding: 20px;
+
+  border-radius: 10px;
+
+  width: 320px;
+
+  text-align: center;
+
+  border:
+    2px solid #8fa8bf;
+
+  box-shadow:
+    0 0 25px rgba(150, 200, 255, 0.25);
+}
+
+
+/* =====================================================
+   👁️ OCULTAR
+===================================================== */
+
+.hidden {
+  display: none !important;
+}
+
+
+/* =====================================================
+   📜 HISTORIAL
+===================================================== */
+
+.history {
+  max-width: 980px;
+
+  margin: 10px auto;
+
+  color: #c7d9eb;
+
+  text-align: left;
+}
+
+#recordsList p {
+  background:
+    rgba(180, 220, 255, 0.04);
+
+  padding: 8px;
+
+  border-radius: 8px;
+
+  margin: 6px 0;
+
+  border-left:
+    3px solid #9ebbd5;
+}
+
+
+/* =====================================================
+   👁️ CARTA EMPAREJADA
+===================================================== */
+
+.card.emparejada {
+  position: relative;
+
+  overflow: hidden;
+
+  transform-style: preserve-3d;
+
+  perspective: 800px;
+
+  animation:
+    carta-fade-3d
+    2s
+    ease-in
+    forwards;
+}
+
+
+/* =====================================================
+   🔙 BOTÓN VOLVER
+===================================================== */
+
+.boton {
+  display: inline-block;
+
+  padding: 12px 25px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #536b82,
+      #91abc2
+    );
+
+  color: white;
+
+  text-decoration: none;
+
+  border-radius: 10px;
+
+  border:
+    2px solid #c8e5ff;
+
+  font-size: 18px;
+
+  font-weight: bold;
+
+  transition: 0.3s;
+
+  box-shadow:
+    0 0 10px rgba(170, 215, 255, 0.35);
+}
+
+.boton:hover {
+  background:
+    linear-gradient(
+      135deg,
+      #7896b0,
+      #c8e5ff
+    );
+
+  color: #17202a;
+
+  transform:
+    scale(1.05);
+
+  box-shadow:
+    0 0 15px #b8ddff,
+    0 0 30px rgba(150, 210, 255, 0.5);
+}
+
+
+/* =====================================================
+   👁️ MODAL DE VICTORIA
+   CLAN HYUGA
+===================================================== */
+
+#victoryModal {
+  position: fixed;
+
+  inset: 0;
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(220, 240, 255, 0.30),
+      rgba(95, 130, 170, 0.35),
+      rgba(5, 12, 22, 0.95)
+    );
+
+  z-index: 15000;
+}
+
+
+/* =====================================================
+   👁️ OCULTAR MODAL DE VICTORIA
+===================================================== */
+
+#victoryModal.hidden {
+  display: none !important;
+}
+
+
+/* =====================================================
+   ⚪ PANEL DE VICTORIA HYUGA
+===================================================== */
+
+.victory-panel {
+  width: 420px;
+
+  max-width: 90%;
+
+  padding: 30px;
+
+  text-align: center;
+
+  background:
+    linear-gradient(
+      145deg,
+      #101923,
+      #34495e,
+      #667f96,
+      #263746,
+      #0d141c
+    );
+
+  border:
+    3px solid #d9f0ff;
+
+  border-radius: 18px;
+
+  box-shadow:
+    0 0 15px rgba(215, 240, 255, 0.9),
+
+    0 0 35px rgba(150, 205, 255, 0.65),
+
+    0 0 70px rgba(120, 170, 220, 0.35),
+
+    inset 0 0 25px rgba(220, 240, 255, 0.15);
+
+  animation:
+    victoriaHyugaAparecer
+    0.5s
+    ease;
+}
+
+
+/* =====================================================
+   👁️ ICONO DE VICTORIA
+===================================================== */
+
+.victory-icon {
+  font-size: 65px;
+
+  margin-bottom: 5px;
+
+  text-shadow:
+    0 0 5px #ffffff,
+    0 0 12px #e7f6ff,
+    0 0 25px #b9ddff,
+    0 0 40px #8ebde6;
+
+  animation:
+    byakuganMovimiento
+    2s
+    ease-in-out
+    infinite
+    alternate;
+}
+
+
+/* =====================================================
+   ⚪ TÍTULO DE VICTORIA
+===================================================== */
+
+.victory-panel h2 {
+  margin: 5px 0;
+
+  color: #f7fcff;
+
+  font-size: 34px;
+
+  text-shadow:
+    0 0 5px #ffffff,
+    0 0 12px #d9f0ff,
+    0 0 25px #9ed1f5,
+    0 0 35px #709bc2;
+}
+
+
+/* =====================================================
+   👁️ LÍNEA BYAKUGAN
+===================================================== */
+
+.victory-line {
+  width: 80%;
+
+  height: 4px;
+
+  margin: 15px auto;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+
+      #718ba3,
+
+      #ccecff,
+
+      #ffffff,
+
+      #ccecff,
+
+      #718ba3,
+
+      transparent
+    );
+
+  box-shadow:
+    0 0 8px #ccecff,
+
+    0 0 18px #91c8ed;
+}
+
+
+/* =====================================================
+   🌙 MENSAJE DE VICTORIA
+===================================================== */
+
+.victory-message {
+  color: #e5f3ff;
+
+  font-size: 16px;
+
+  margin: 8px 0;
+
+  text-shadow:
+    0 0 5px rgba(190, 225, 255, 0.5);
+}
+
+
+/* =====================================================
+   📊 ESTADÍSTICAS DE VICTORIA
+===================================================== */
+
+.victory-stats {
+  margin: 20px 0;
+
+  padding: 12px;
+
+  background:
+    rgba(8, 17, 27, 0.78);
+
+  border:
+    1px solid #b9dcf5;
+
+  border-radius: 10px;
+
+  color: #d9efff;
+
+  font-size: 17px;
+
+  font-weight: bold;
+
+  line-height: 1.7;
+
+  box-shadow:
+    inset 0 0 15px rgba(180, 220, 255, 0.12),
+
+    0 0 10px rgba(130, 190, 235, 0.35);
+}
+
+
+/* =====================================================
+   ⚪ BOTONES DE VICTORIA
+===================================================== */
+
+.victory-buttons {
+  display: flex;
+
+  justify-content: center;
+
+  gap: 12px;
+
+  margin-top: 20px;
+}
+
+
+.victory-buttons button {
+  padding: 12px 18px;
+
+  border:
+    2px solid #d9f0ff;
+
+  border-radius: 9px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #40576d,
+      #6f8ba2,
+      #9dbbd1
+    );
+
+  color: #ffffff;
+
+  font-size: 15px;
+
+  font-weight: bold;
+
+  cursor: pointer;
+
+  transition: 0.25s;
+
+  box-shadow:
+    0 0 8px rgba(190, 225, 255, 0.55);
+}
+
+
+/* =====================================================
+   👁️ HOVER DE BOTONES
+===================================================== */
+
+.victory-buttons button:hover {
+
+  background:
+    linear-gradient(
+      135deg,
+      #8eabc1,
+      #c5e5fa,
+      #ffffff
+    );
+
+  color: #1c2b38;
+
+  transform:
+    scale(1.05);
+
+  box-shadow:
+    0 0 12px #e5f7ff,
+
+    0 0 25px #a8d7f5,
+
+    0 0 40px rgba(130, 190, 235, 0.8);
+}
+
+
+/* =====================================================
+   👁️ ANIMACIÓN MODAL HYUGA
+===================================================== */
+
+@keyframes victoriaHyugaAparecer {
+
+  from {
+    opacity: 0;
+
+    transform:
+      scale(0.7)
+      translateY(30px);
+
+    filter:
+      blur(6px);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      scale(1)
+      translateY(0);
+
+    filter:
+      blur(0);
+  }
+}
+
+
+/* =====================================================
+   👁️ MOVIMIENTO BYAKUGAN
+===================================================== */
+
+@keyframes byakuganMovimiento {
+
+  0% {
+    transform:
+      translateY(0)
+      scale(1);
+
+    filter:
+      brightness(1);
+  }
+
+  50% {
+    transform:
+      translateY(-5px)
+      scale(1.04);
+
+    filter:
+      brightness(1.25);
+  }
+
+  100% {
+    transform:
+      translateY(-10px)
+      scale(1.08);
+
+    filter:
+      brightness(1.5);
+  }
+}
+
+
+/* =====================================================
+   🃏 ANIMACIÓN CARTA DESAPARECIENDO
+===================================================== */
+
+@keyframes desaparecerCarta {
+
+  0% {
+    opacity: 1;
+
+    transform:
+      rotateY(180deg)
+      scale(1);
+  }
+
+  40% {
+    opacity: 1;
+
+    transform:
+      rotateY(180deg)
+      scale(1.08);
+  }
+
+  100% {
+    opacity: 0;
+
+    transform:
+      rotateY(180deg)
+      scale(0.4);
+  }
+}
+
+
+/* =====================================================
+   📱 RESPONSIVE
+===================================================== */
+
+@media (max-width: 600px) {
+
+  #board {
+    grid-template-columns:
+      repeat(2, 120px);
+
+    gap: 20px;
+  }
+
+  .card {
+    width: 120px;
+
+    height: 160px;
+  }
+
+  .victory-buttons {
+    flex-direction: column;
+  }
+
+  .victory-panel {
+    width: 85%;
+
+    padding:
+      25px 15px;
+  }
+}
+
+
+/* =====================================================
+   📱 RESPONSIVE PEQUEÑO
+===================================================== */
+
+@media (max-width: 520px) {
+
+  #board {
+    grid-template-columns:
+      repeat(2, 120px);
+  }
+
+  .card {
+    width: 120px;
+
+    height: 160px;
+  }
+}

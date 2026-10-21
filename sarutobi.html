@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Juego — Memorice Duel</title>
+
+    <link rel="stylesheet" href="css/sarutobi.css">
+    <!-- GUARD DE SESIÓN (valida contra el servidor; nunca redirige) -->
+    <script src="js/sesion-guard.js"></script>
+</head>
+
+<body>
+
+    <!-- ================= MÚSICA ================= -->
+
+    <audio id="gameMusic" loop>
+        <source src="assets/game music.mp3" type="audio/mpeg">
+    </audio>
+
+
+    <!-- ================= VIDEO DE FONDO ================= -->
+
+    <video autoplay muted loop playsinline id="videofondo">
+        <source src="assets/fondo.mp4" type="video/mp4">
+    </video>
+
+
+    <!-- ================= ESTADÍSTICAS ================= -->
+
+    <div id="stats" class="stats">
+
+        <span>
+            Tiempo:
+            <span id="timer">00:00</span>
+        </span>
+
+        <span>
+            Movimientos:
+            <span id="moves">0</span>
+        </span>
+
+        <span>
+            Puntaje:
+            <span id="score">0</span>
+        </span>
+
+    </div>
+
+
+    <!-- ================= TABLERO ================= -->
+
+    <div id="boardFrame">
+
+        <div id="board"></div>
+
+    </div>
+
+
+    <!-- ================= MODAL DE DERROTA ================= -->
+
+    <div id="modal" class="hidden">
+
+        <div class="panel">
+
+            <h2>💀 ¡DERROTA!</h2>
+
+            <h2>
+                No pudiste completar el desafío
+            </h2>
+
+            <p id="finalStats"></p>
+
+            <div class="botones-modal">
+
+                <button id="restartGame">
+                    🔄 Intentar de nuevo
+                </button>
+
+                <button id="closeModal">
+                    Volver al menú
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= MODAL DE VICTORIA ================= -->
+
+    <div id="victoryModal" class="hidden">
+
+        <div class="victory-panel">
+
+            <div class="victory-icon">
+                🏆
+            </div>
+
+            <h2>
+                ¡VICTORIA!
+            </h2>
+
+            <div class="victory-line"></div>
+
+            <p class="victory-message">
+                ¡Has completado el desafío del clan Sarutobi!
+            </p>
+
+            <p class="victory-message">
+            llevas el espiritu de fuego de los Sarutobi, buen trabajo ninja</p>
+
+            <p id="victoryStats" class="victory-stats"></p>
+
+            <div class="victory-buttons">
+
+                <button id="victoryRestart">
+                    🔄 Jugar de nuevo
+                </button>
+
+                <button id="victoryClose">
+                    Volver al menú
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= BOTÓN VOLVER ================= -->
+
+    <a href="menu.html" class="boton">
+        volver
+    </a>
+
+
+ 
+
+    <script type="module" src="js/sarutobi/Sarutobi.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,754 @@
+/* =====================================================
+   🔴 FONDO
+===================================================== */
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: rgb(52, 33, 65);
+  color: #f0f6ff;
+  text-align: center;
+  padding: 20px;
+  margin: 0;
+}
+
+
+/* =====================================================
+   🎥 FONDO DE VIDEO
+===================================================== */
+
+video {
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  z-index: -1;
+}
+
+
+/* =====================================================
+   🎮 ENCABEZADO
+===================================================== */
+
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  gap: 12px;
+
+  max-width: 980px;
+
+  margin: 0 auto 10px;
+}
+
+.player-info {
+  text-align: left;
+}
+
+.turn-info {
+  font-weight: 700;
+  color: #ffd166;
+}
+
+.stats span {
+  margin-left: 12px;
+  color: #bcd3ff;
+}
+
+
+/* =====================================================
+   🏜️ MARCO DEL TABLERO
+   SE MANTIENE ORIGINAL
+===================================================== */
+
+#boardFrame {
+  display: flex;
+
+  justify-content: center;
+
+  margin: 24px auto;
+
+  padding: 18px;
+
+  width: max-content;
+
+  background:
+    linear-gradient(
+      180deg,
+      #3b2f20,
+      #2d2418
+    );
+
+  border-radius: 14px;
+
+  border: 8px solid #b8843b;
+
+  box-shadow:
+    0 18px 60px rgba(0, 0, 0, 0.6);
+}
+
+
+/* =====================================================
+   🃏 TABLERO
+   SE MANTIENE ORIGINAL
+===================================================== */
+
+#board {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, 100px);
+
+  gap: 30px;
+
+  padding: 30px;
+
+  background: #1b1b1b;
+
+  border-radius: 10px;
+}
+
+
+/* =====================================================
+   🃏 CARTA 3D
+===================================================== */
+
+.card {
+  width: 100px;
+
+  height: 140px;
+
+  position: relative;
+
+  transform-style: preserve-3d;
+
+  transition:
+    transform 0.45s ease;
+
+  cursor: pointer;
+
+  border-radius: 8px;
+
+  perspective: 900px;
+}
+
+
+/* =====================================================
+   🔄 CARTA VOLTEADA
+===================================================== */
+
+.card.flipped {
+  transform:
+    rotateY(180deg);
+}
+
+
+/* =====================================================
+   🖼️ IMÁGENES DE LAS CARTAS
+===================================================== */
+
+.card img {
+  width: 100%;
+
+  height: 100%;
+
+  position: absolute;
+
+  left: 0;
+
+  top: 0;
+
+  border-radius: 8px;
+
+  object-fit: fill;
+
+  backface-visibility: hidden;
+
+  -webkit-backface-visibility: hidden;
+}
+
+
+/* =====================================================
+   🖤 PARTE TRASERA
+===================================================== */
+
+.back {
+  transform:
+    rotateY(0deg);
+}
+
+
+/* =====================================================
+   🔴 PARTE FRONTAL
+===================================================== */
+
+.front {
+  transform:
+    rotateY(180deg);
+}
+
+
+/* =====================================================
+   🃏 CARTA ENCONTRADA
+===================================================== */
+
+.card.found {
+  pointer-events: none;
+
+  animation:
+    desaparecerCarta
+    0.7s
+    ease
+    forwards;
+}
+
+
+/* =====================================================
+   ❌ MODAL DE DERROTA
+===================================================== */
+
+#modal {
+  position: fixed;
+
+  inset: 0;
+
+  background:
+    rgba(0, 0, 0, 0.5);
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+}
+
+
+/* =====================================================
+   PANEL DE DERROTA
+===================================================== */
+
+.panel {
+  background: white;
+
+  color: #111;
+
+  padding: 20px;
+
+  border-radius: 10px;
+
+  width: 320px;
+
+  text-align: center;
+}
+
+
+/* =====================================================
+   👁️ OCULTAR
+===================================================== */
+
+.hidden {
+  display: none !important;
+}
+
+
+/* =====================================================
+   📜 HISTORIAL
+===================================================== */
+
+.history {
+  max-width: 980px;
+
+  margin: 10px auto;
+
+  color: #cfe4ff;
+
+  text-align: left;
+}
+
+#recordsList p {
+  background:
+    rgba(255, 255, 255, 0.03);
+
+  padding: 8px;
+
+  border-radius: 8px;
+
+  margin: 6px 0;
+}
+
+
+/* =====================================================
+   🖤 CANDELA NEGRA
+   CARTA ENCONTRADA
+===================================================== */
+
+.card.emparejada {
+  position: relative;
+
+  overflow: hidden;
+
+  transform-style: preserve-3d;
+
+  perspective: 800px;
+
+  animation:
+    carta-fade-3d
+    2s
+    ease-in
+    forwards;
+}
+
+
+/* =====================================================
+   🔙 BOTÓN VOLVER
+===================================================== */
+
+.boton {
+  display: inline-block;
+
+  padding: 12px 25px;
+
+  background-color: #7300f7;
+
+  color: white;
+
+  text-decoration: none;
+
+  border-radius: 10px;
+
+  font-size: 18px;
+
+  font-weight: bold;
+
+  transition: 0.3s;
+}
+
+.boton:hover {
+  background-color: #7300f7;
+
+  transform:
+    scale(1.05);
+}
+
+
+/* =====================================================
+   🌀 MODAL DE VICTORIA
+   CLAN UZUMAKI + NARUTO
+===================================================== */
+
+#victoryModal {
+  position: fixed;
+
+  inset: 0;
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(255, 122, 0, 0.30),
+      rgba(181, 18, 27, 0.35),
+      rgba(20, 3, 0, 0.94)
+    );
+
+  z-index: 15000;
+}
+
+
+/* =====================================================
+   👁️ OCULTAR MODAL DE VICTORIA
+===================================================== */
+
+#victoryModal.hidden {
+  display: none !important;
+}
+
+
+/* =====================================================
+   🌀 PANEL DE VICTORIA
+===================================================== */
+
+.victory-panel {
+  width: 420px;
+
+  max-width: 90%;
+
+  padding: 30px;
+
+  text-align: center;
+
+  background:
+    linear-gradient(
+      145deg,
+      #260400,
+      #8f1118,
+      #d95300,
+      #7a0d12,
+      #260400
+    );
+
+  border:
+    3px solid #ff7a00;
+
+  border-radius: 18px;
+
+  box-shadow:
+    0 0 15px rgba(255, 122, 0, 0.9),
+    0 0 35px rgba(227, 38, 27, 0.7),
+    0 0 70px rgba(181, 18, 27, 0.45),
+    inset 0 0 25px rgba(255, 181, 46, 0.15);
+
+  animation:
+    victoriaUzumakiAparecer
+    0.5s
+    ease;
+}
+
+
+/* =====================================================
+   🌀 ICONO DE VICTORIA
+===================================================== */
+
+.victory-icon {
+  font-size: 65px;
+
+  margin-bottom: 5px;
+
+  text-shadow:
+    0 0 5px #ffffff,
+    0 0 12px #ffb52e,
+    0 0 25px #ff7a00,
+    0 0 40px #e3261b;
+
+  animation:
+    uzumakiMovimiento
+    2s
+    ease-in-out
+    infinite
+    alternate;
+}
+
+
+/* =====================================================
+   🔥 TÍTULO DE VICTORIA
+===================================================== */
+
+.victory-panel h2 {
+  margin: 5px 0;
+
+  color: #fff4e6;
+
+  font-size: 34px;
+
+  text-shadow:
+    0 0 5px #ffffff,
+    0 0 12px #ffb52e,
+    0 0 25px #ff7a00,
+    0 0 35px #e3261b;
+}
+
+
+/* =====================================================
+   🌀 LÍNEA UZUMAKI + NARUTO
+===================================================== */
+
+.victory-line {
+  width: 80%;
+
+  height: 4px;
+
+  margin: 15px auto;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      #b5121b,
+      #e3261b,
+      #ff7a00,
+      #ffb52e,
+      #ff7a00,
+      #e3261b,
+      #b5121b,
+      transparent
+    );
+
+  box-shadow:
+    0 0 8px #ff7a00,
+    0 0 18px #e3261b;
+}
+
+
+/* =====================================================
+   🔥 MENSAJE DE VICTORIA
+===================================================== */
+
+.victory-message {
+  color: #ffe8d2;
+
+  font-size: 16px;
+
+  margin: 8px 0;
+
+  text-shadow:
+    0 0 5px rgba(255, 122, 0, 0.5);
+}
+
+
+/* =====================================================
+   📊 ESTADÍSTICAS DE VICTORIA
+===================================================== */
+
+.victory-stats {
+  margin: 20px 0;
+
+  padding: 12px;
+
+  background:
+    rgba(30, 4, 0, 0.78);
+
+  border:
+    1px solid #ff7a00;
+
+  border-radius: 10px;
+
+  color: #ffb52e;
+
+  font-size: 17px;
+
+  font-weight: bold;
+
+  line-height: 1.7;
+
+  box-shadow:
+    inset 0 0 15px rgba(255, 122, 0, 0.12),
+    0 0 10px rgba(255, 60, 20, 0.4);
+}
+
+
+/* =====================================================
+   🔴🟠 BOTONES DE VICTORIA
+===================================================== */
+
+.victory-buttons {
+  display: flex;
+
+  justify-content: center;
+
+  gap: 12px;
+
+  margin-top: 20px;
+}
+
+
+.victory-buttons button {
+  padding: 12px 18px;
+
+  border:
+    2px solid #ffb52e;
+
+  border-radius: 9px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #8f1118,
+      #e3261b,
+      #ff7a00
+    );
+
+  color: #ffffff;
+
+  font-size: 15px;
+
+  font-weight: bold;
+
+  cursor: pointer;
+
+  transition: 0.25s;
+
+  box-shadow:
+    0 0 8px rgba(255, 122, 0, 0.55);
+}
+
+
+/* =====================================================
+   🔥 HOVER DE BOTONES
+===================================================== */
+
+.victory-buttons button:hover {
+  background:
+    linear-gradient(
+      135deg,
+      #e3261b,
+      #ff7a00,
+      #ffb52e
+    );
+
+  color: #ffffff;
+
+  transform:
+    scale(1.05);
+
+  box-shadow:
+    0 0 12px #ffb52e,
+    0 0 25px #ff7a00,
+    0 0 40px #e3261b;
+}
+
+
+/* =====================================================
+   🌀 ANIMACIÓN MODAL DE VICTORIA
+===================================================== */
+
+@keyframes victoriaUzumakiAparecer {
+
+  from {
+    opacity: 0;
+
+    transform:
+      scale(0.7)
+      translateY(30px);
+
+    filter:
+      blur(6px);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      scale(1)
+      translateY(0);
+
+    filter:
+      blur(0);
+  }
+}
+
+
+/* =====================================================
+   🌀 MOVIMIENTO DEL ICONO
+===================================================== */
+
+@keyframes uzumakiMovimiento {
+
+  0% {
+    transform:
+      translateY(0)
+      rotate(-2deg);
+
+    filter:
+      brightness(1);
+  }
+
+  50% {
+    transform:
+      translateY(-5px)
+      rotate(2deg);
+
+    filter:
+      brightness(1.25);
+  }
+
+  100% {
+    transform:
+      translateY(-10px)
+      rotate(-2deg);
+
+    filter:
+      brightness(1.5);
+  }
+}
+
+
+/* =====================================================
+   🃏 ANIMACIÓN CARTA DESAPARECIENDO
+===================================================== */
+
+@keyframes desaparecerCarta {
+
+  0% {
+    opacity: 1;
+
+    transform:
+      rotateY(180deg)
+      scale(1);
+  }
+
+  40% {
+    opacity: 1;
+
+    transform:
+      rotateY(180deg)
+      scale(1.08);
+  }
+
+  100% {
+    opacity: 0;
+
+    transform:
+      rotateY(180deg)
+      scale(0.4);
+  }
+}
+
+
+/* =====================================================
+   📱 RESPONSIVE
+===================================================== */
+
+@media (max-width: 600px) {
+
+  #board {
+    grid-template-columns:
+      repeat(2, 120px);
+
+    gap: 20px;
+  }
+
+  .card {
+    width: 120px;
+
+    height: 160px;
+  }
+
+  .victory-buttons {
+    flex-direction: column;
+  }
+
+  .victory-panel {
+    width: 85%;
+
+    padding:
+      25px 15px;
+  }
+}
+
+
+/* =====================================================
+   📱 RESPONSIVE PEQUEÑO
+===================================================== */
+
+@media (max-width: 520px) {
+
+  #board {
+    grid-template-columns:
+      repeat(2, 120px);
+  }
+
+  .card {
+    width: 120px;
+
+    height: 160px;
+  }
+}

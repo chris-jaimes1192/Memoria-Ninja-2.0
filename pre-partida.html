@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Memorice Duel</title>
+    <link rel="stylesheet" href="css/pre-partida.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Fredoka:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+    <!-- GUARD DE SESIÓN (valida contra el servidor; nunca redirige) -->
+    <script src="js/sesion-guard.js"></script>
+</head>
+
+<body>
+<!-- El video debe estar fuera del game-container -->
+    <video class="video-bg" autoplay muted loop playsinline>
+        <source src="assets/naruto vs sasuke.mp4" type="video/mp4">
+    </video>
+
+    <div class="game-container">
+
+        <div class="header-container">
+            <h1 class="main-page-title">MEMORICE DUEL</h1>
+            <p class="subtitle">SELECCIONA TU NIVEL</p>
+        </div>
+
+        <main id="panel-principal" class="panel-selection">
+            <p class="pre-title">¿JUGAR ESTE NIVEL?</p>
+            <h2 id="clan-title" class="clan-name">CLAN UZUMAKI</h2>
+            <div class="stats-grid">
+                <div><span>DIFICULTAD</span>
+                    <p id="dificultad">★★★★☆</p>
+                </div>
+                <div><span>ENEMIGOS</span>
+                    <p>6</p>
+                </div>
+                <div><span>RECOMPENSA</span>
+                    <p id="recompensa" class="xp">500 XP</p>
+                </div>
+            </div>
+            <p id="desc-text" class="desc-text">Domina el poder del chakra sellado...</p>
+
+            <div class="action-buttons">
+                <button class="btn-secondary">CAMBIAR NIVEL</button>
+                <button id="btn-confirmar" class="btn-primary">CONFIRMAR</button>
+            </div>
+        </main>
+
+        <footer id="panel-inferior" class="panel-details">
+            <div class="bar-content">
+                <img id="bar-logo" src="" alt="Logo Clan" class="bar-logo-img">
+                <div class="bar-info-wrapper">
+                    <h3 id="bar-title">CLAN UZUMAKI</h3>
+                    <p class="bar-subtitle">Dificultad: <b id="bar-diff">Media</b></p>
+                    <p id="bar-desc" class="desc-larga"></p>
+                </div>
+                <div class="bar-stats-group">
+                    <div class="stat-item"><span class="stat-label">ENEMIGOS</span>
+                        <p>👥 6</p>
+                    </div>
+                    <div class="stat-item"><span class="stat-label">RECOMPENSA</span>
+                        <p class="xp">⭐ <span id="bar-xp">500 XP</span></p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+        <nav class="bottom-nav">
+            <button class="btn-back" id="btnVolverMenu">← VOLVER AL MENU</button>
+<button id="btn-iniciar" class="btn-start" style="display: none;">INICIAR JUEGO</button>        </nav>
+    </div>
+
+    <div
+        style="position: fixed; top: 10px; left: 10px; z-index: 9999; background: rgba(0,0,0,0.8); padding: 15px; border-radius: 10px; border: 1px solid #FF8C00;">
+        <h4 style="color: white; margin-bottom: 10px;">SIMULADOR</h4>
+        <button data-clan="uzumaki">Uzumaki</button>
+        <button data-clan="uchiha">Uchiha</button>
+        <button data-clan="akatsuki">Akatsuki</button>
+        <button data-clan="arena">Arena</button>
+        <button data-clan="roca">Roca</button>
+    </div>
+
+<script type="module" src="js/pre-partida.js"></script></body>
+
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Cargando — Memorice Duel</title>
+  <link rel="stylesheet" href="css/loading.css">
+</head>
+
+<body>
+
+  <!-- FONDO ANIMADO PROTAGONISTA -->
+  <section class="container-loader">
+    <aside class="loader">
+      <div class="aro" style="--s:0"></div>
+      <div class="aro" style="--s:1"></div>
+      <div class="aro" style="--s:2"></div>
+      <div class="aro" style="--s:3"></div>
+      <div class="aro" style="--s:4"></div>
+      <div class="aro" style="--s:5"></div>
+      <div class="aro" style="--s:6"></div>
+      <div class="aro" style="--s:7"></div>
+      <div class="aro" style="--s:8"></div>
+      <div class="aro" style="--s:9"></div>
+      <div class="aro" style="--s:10"></div>
+      <div class="aro" style="--s:11"></div>
+      <div class="aro" style="--s:12"></div>
+      <div class="aro" style="--s:13"></div>
+      <div class="aro" style="--s:14"></div>
+    </aside>
+  </section>
+
+  <!-- CAPA DE INTERFAZ -->
+  <main class="ui-layer">
+
+    <!-- BIENVENIDA -->
+    <div class="loading-box">
+      <img id="avatarPreview" class="avatarPreview" alt="Avatar">
+      <h2 id="welcome">Iniciando sesión...</h2>
+      <p id="status"></p>
+    </div>
+
+    <!-- SHARINGAN SEPARADO -->
+    <div class="sharingan-wrapper">
+      <div class="sharingan">
+        <div class="ring">
+          <span class="tomoe"></span>
+          <span class="tomoe"></span>
+          <span class="tomoe"></span>
+          <span class="center"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MENSAJE -->
+    <p id="mensaje-carga"></p>
+
+  </main>
+
+  <script src="js/loading.js"></script>
+</body>
+</html>
