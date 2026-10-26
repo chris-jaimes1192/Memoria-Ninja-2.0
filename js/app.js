@@ -42,9 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
     dosJugadoresModal: crearModalSiExiste('twoPlayersModal', () =>
       new TwoPlayersModal('twoPlayersModal', salaService)
     ),
-    multijugadorModal: crearModalSiExiste('multiplayerModal', () =>
-      new BaseModal('multiplayerModal')
-    ),
     rankingModal: crearModalSiExiste('rankingModal', () =>
       new RankingModal('rankingModal')
     ),

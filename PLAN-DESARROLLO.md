@@ -212,31 +212,67 @@ la BD de test, 9/9): importar sin cookie → **401**; registro→verificación�
 `importados:0, omitidos:2` (idempotente, sin duplicar XP); cuenta ajena con cookie propia → **401**;
 frontend servido entrega `SincronizacionInvitadoService.js`.
 
-## Parte 4 — Endurecer backend · Estado: PENDIENTE
+## Parte 4 — Endurecer backend · Estado: COMPLETA ✅
 **Objetivo:** proteger endpoints y preparar para producción.
 **Revisión previa:**
 - [x] Los `onclick`/`onerror` inline ya se eliminaron (Parte 2) → el CSP de `helmet()` ya no rompe la UI.
-- [ ] Revisar qué endpoints son públicos y cuáles deberían exigir sesión.
-- [ ] Confirmar que hoy NO hay middleware de auth (`router.use` no existe).
-- [ ] Ver CORS (refleja cualquier origen) y cookie `secure:false`.
+- [x] Revisados endpoints públicos vs protegidos.
+- [x] Implementado middleware de auth (`AutorizacionMiddleware` con `requiereSesion` + `esPropietario`).
+- [x] CORS con allowlist (`CORS_ORIGINS`) y cookie `secure` configurable por `COOKIE_SECURE` en producción.
 **Tareas:**
-- [ ] Middleware de autenticación + proteger `/api/usuarios/:id/*` y `/api/poder/activar`.
-- [ ] CORS restringido.
-- [ ] Cookie `secure` en producción + HTTPS.
-**Verificación:** endpoints protegidos → 401 sin sesión; tests actualizados.
-**Riesgos:** puede romper tests/flujo frontend → revisar antes de aplicar.
+- [x] Middleware de autenticación + proteger `/api/usuarios/:id/*` y `/api/poder/activar`.
+- [x] CORS restringido con allowlist.
+- [x] Cookie `secure` en producción + HTTPS (configurable).
+- [x] Proteger `/api/partida/prueba` y rutas sensibles.
+- [x] Tests e2e de autorización (`autorizacionE2e.test.js`).
+**Verificación:** endpoints protegidos → 401 sin sesión, cuenta ajena → 403, dueño → OK; CORS allowlist; tests **124/124** verdes.
+**Cierre:** 2026-10-24. Formalmente completada siguiendo el protocolo del plan.
 
-## Parte 5 — Multijugador online real (WebSockets) · Estado: PENDIENTE
+## Parte 5 — Multijugador online real (WebSockets) · Estado: COMPLETA ✅
 **Objetivo:** dos jugadores en tiempo real (hoy es simulación local).
-**Revisión previa:**
-- [ ] Revisar `js/nucleo-GAME ONLI/datos/ProveedorDatosServidor.js` y su fallback simulado.
-- [ ] Decidir Socket.io vs WebSocket nativo; ver si hace falta persistir salas en la BD.
-- [ ] Ver `TwoPlayersModal.js` (crear/unir sala por código) para reutilizar la UI.
+**Revisión previa (2026-10-25):**
+- [x] Revisado `ProveedorDatosServidor` y su fallback: las partidas online de 2 jugadores NO pasan por
+  `/api/partida` ni por XP/perfil (eso sigue siendo exclusivo del modo de 1 jugador). El online usa su propio
+  motor de sala en el servidor.
+- [x] Decidido **Socket.io 4.8.4** (ya estaba en `package.json`): reconexión y rooms incluidos. Las salas viven
+  en memoria (no en PostgreSQL): una partida online es efímera y no se recupera tras reiniciar el backend.
+- [x] Reutilizada la UI de `TwoPlayersModal.js` (crear/unirse por código, contraseña, partida rápida). El panel
+  verde MULTIJUGADOR y el morado DOS JUGADORES abren el mismo lobby real; se eliminó el modal stub
+  `multiplayerModal`.
+- [x] CSP de `helmet` resuelta importando el cliente ESM same-origin
+  `/socket.io/socket.io.esm.min.js` y ampliando `connect-src` con `ws:`/`wss:`.
+- [x] Identidad online decidida: token estable por pestaña en `sessionStorage["memoriaNinjaTokenJugador"]`
+  (no `socket.id`), enviado en `handshake.auth.token`; permite reconectar y reincorporarse a la sala.
 **Tareas:**
-- [ ] Servidor de salas + WebSockets.
-- [ ] Sincronización de turnos/estado entre dos clientes.
-**Verificación:** dos PCs juegan la misma partida.
-**Riesgos:** es la parte más grande; "proyecto aparte".
+- [x] Servidor de salas + WebSockets: `backend-poderes/src/servicios/online/GestorSalas.js` — crear/unir por
+  código, contraseña, listado de salas públicas, matchmaking (`buscar-partida`), inicio automático con 2
+  jugadores, `marcar-listo`, abandono y limpieza de salas a los 30 s.
+- [x] Sincronización de turnos/estado: solo el jugador del turno puede voltear; acierto suma pareja y conserva
+  turno; fallo bloquea 800 ms y cambia turno; `partida-terminada` con ganador por parejas (o empate `null`).
+- [x] Reconexión: 15 s de gracia; `reincorporarse-sala` reasocia el socket al token y devuelve el estado
+  (mazo, cartas volteadas, parejas, turno). Si expira en partida → abandono del rival.
+- [x] Anti-trampa del mazo: el servidor nunca envía `valor/aldea` de cartas no descubiertas (`mazoPublico`);
+  `parId` y la comprobación de pareja quedan solo en el servidor.
+- [x] Cliente real: `js/multijugador/ClienteMultijugador.js` (import dinámico de Socket.io, ack con timeout,
+  eventos window `desconectado`/`reconectado`) y `js/multijugador/GestorSalaCliente.js` (estado de sala,
+  nombres, marcadores, turno, bloqueo del tablero, rejoin).
+- [x] Tablero online en `js/board-manager.js`: modo online, revelado remoto, cartas ocultas sin filtrar, bloqueo
+  por turno y ocultado tras fallo. Se eliminó el `await` ilegal que rompía el script.
+- [x] `GestorPartida.js`: rama online vs local (`?codigo=`), rejoin antes de renderizar, modal final online con
+  parejas y motivo de abandono, sin `fetch('/api/partida')` ni IDs inexistentes.
+- [x] Poderes online deshabilitados de forma honesta: `Poder.activar()` avisa que todavía no existen online (el
+  sistema de poderes sigue siendo del modo 1 jugador).
+- [x] Corregidas las rutas de aldeas del mazo online (`konoha/hyuga|sarutobi|uchiha|uzumaki`, `akatsuki`) para
+  que todas las imágenes existan en `assets/img/cards/aldeas/`.
+**Verificación (2026-10-25):**
+- `npm test` → **137/137** (124 previos + 13 nuevos de `tests/gestorSalas.test.js`).
+- E2E real headless (Edge + CDP + 2 clientes Socket.io contra el servidor): crear sala, unirse, inicio
+  automático, 16 cartas, nombres reales en ambos paneles, turno correcto y click que revela la imagen; cero
+  excepciones JS.
+- Partida local headless: el tablero renderiza 16 cartas (sin errores de módulos).
+**Limitaciones conocidas:** salas en memoria; poderes no disponibles online; reconexión limitada a 15 s; dos
+pestañas del mismo navegador comparten `sessionStorage` (usar navegadores/perfiles distintos para 2 jugadores).
+**Cierre:** 2026-10-25. Formalmente completada siguiendo el protocolo del plan.
 
 ## Parte 6 — Pulido y despliegue · Estado: PENDIENTE
 **Revisión previa:**
@@ -250,7 +286,7 @@ frontend servido entrega `SincronizacionInvitadoService.js`.
 **Tareas:**
 - [x] Botón NIVELES enganchado (`#levelBtn` en `menu.html` + `cursor:pointer`) — adelantado 2026-10-19.
       Queda pendiente aquí `menu.js:30` → `game.html` (no existe; ver revisión previa).
-- [ ] Páginas huérfanas (`loading.html`, `mod.html`, `pares.html`).
+- [x] Páginas huérfanas (`loading.html`, `mod.html`, `pares.html`) eliminadas.
 - [ ] Afinar qué ve el invitado en el menú (UX fina).
 - [ ] Accesibilidad (WCAG 2.2).
 - [ ] Desplegar el juego.
@@ -280,7 +316,7 @@ desde la sub-parte 3.5 (2026-10-19); queda el reintento automático.
 | 1. Correo SMTP | Completada | 2026-10-12 | SMTP Gmail funcionando + tests 98/98. Reverificado con correo real el 2026-10-17 (app password nueva). Pendiente: cuenta/proveedor propio |
 | 2. Sesión real | Completada | 2026-10-17 | Verificado en navegador real: registro + verificación por correo Gmail real + login + logout contra PostgreSQL. Añadido botón "Jugar como invitado". Tests 98/98 |
 | 3. Datos reales | Completada (5/5) | 2026-10-19 | Ranking/historial reales, URLs relativas y mocks eliminados. Sub-parte 3.5: merge invitado→cuenta (cola local `historialPendiente` + `POST /importar` transaccional, dedup por idPartida, XP sobre base 500). Tests **104/104**. Verificación HTTP 9/9 (401 sin cookie/ajena, import/idempotencia). Adelantos Parte 6: NIVELES enganchado y ENCONTRAR PARES → mapa (deja `pares.html` huérfana). Falta prueba visual del usuario en `menu.html` |
-| 4. Endurecer backend | Pendiente | | |
-| 5. Multijugador online | Pendiente | | |
-| 6. Pulido/despliegue | Pendiente | | |
+| 4. Endurecer backend | Completada | 2026-10-24 | Middlewares auth/owner, CORS allowlist, cookies seguras configurables, rutas protegidas. Tests 124/124 + autorizacionE2e. |
+| 5. Multijugador online | Completada | 2026-10-25 | Socket.io real + salas en memoria, matchmaking, turnos, reconexión 15 s y abandono. Lobby verde/morado unificado y stub eliminado. Poderes online deshabilitados explícitamente. Tests **137/137** (13 nuevos `gestorSalas.test.js`) + E2E headless con 2 clientes. |
+| 6. Pulido/despliegue | En progreso | 2026-10-23 | Corregido menu.js:30 -> niveles.html. Eliminadas loading.html, mod.html, pares.html + CSS/JS asociados. Añadido soporte teclado/ARIA, focus visible, reduced-motion, meta descriptions, skip link, main landmark. Mejorado UX invitado con cartel. BaseModal con foco trap mejorado. |
 | 7. Offline/sincronización | Pendiente | | Mejora futura (offline-first + merge invitado) |
