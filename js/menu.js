@@ -27,7 +27,7 @@ if (botonIniciar) {
     localStorage.setItem('modo2Jugadores', modoJuego === '2');
 
     // IR AL JUEGO
-    window.location.href = 'game.html';
+    window.location.href = 'niveles.html';
   });
 }
 

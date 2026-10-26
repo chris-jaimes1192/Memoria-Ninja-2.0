@@ -32,6 +32,12 @@ const MI_PERSONAJE_ES_SASUKE = true;
  */
 export class GestorPartida {
     constructor() {
+        const params = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+        this.esSalaOnline = !!params?.get("codigo");
+        this.mazoOnline = null;
+        this.gestorSala = null;
+        this.iniciado = false;
+
         this.jugador = new Personaje({ nombre: "SASUKE", nivel: 18, chakraInicial: 70 });
         this.rival = new Personaje({ nombre: "NARUTO", nivel: 20, chakraInicial: 65 });
 
@@ -56,6 +62,7 @@ export class GestorPartida {
         this.partidaFinalizada = false;
 
         const contexto = {
+            esOnline: this.esSalaOnline,
             esMiTurno: () => this.gestorTurno.esMiTurno(),
             esTurnoDeSasuke: () => this.gestorTurno.esTurnoDeSasuke(),
             jugadorActivo: () => (this.gestorTurno.esTurnoDeSasuke() ? this.jugador : this.rival),
@@ -82,13 +89,56 @@ export class GestorPartida {
         });
     }
 
-    /** Reemplaza a los dos "window.onload" separados que había antes — ahora es uno solo. */
-    async iniciar() {
+    async iniciar(opciones = {}) {
+        if (this.iniciado) return;
+        this.iniciado = true;
+
+        const esSalaOnline = opciones.esSalaOnline ?? this.esSalaOnline;
+        this.esSalaOnline = esSalaOnline;
+        let estadoInicial = null;
+
+        if (esSalaOnline) {
+            this.activarEventosOnline();
+            try {
+                const mod = await import('../multijugador/GestorSalaCliente.js');
+                this.gestorSala = mod.gestorSalaCliente;
+                estadoInicial = await this.gestorSala.iniciar({ codigoSala: opciones.codigoSala });
+            } catch (error) {
+                this.mostrarErrorConexion(error.message);
+                return;
+            }
+            if (!estadoInicial) return;
+            this.mazoOnline = estadoInicial.mazo;
+        }
+
         BoardManager.renderBoard(
-            (esAcierto, puntajeTotal) => this.procesarResultado(esAcierto, puntajeTotal),
-            (movimientos, puntaje) => this.mostrarModalFinal(movimientos, puntaje),
-            () => this.gestorTurno.esMiTurno()
+            (esAcierto, puntajeTotal) => {
+                if (esSalaOnline) return;
+                this.procesarResultado(esAcierto, puntajeTotal);
+            },
+            (movimientos, puntaje) => {
+                if (esSalaOnline) return;
+                this.mostrarModalFinal(movimientos, puntaje);
+            },
+            () => {
+                if (esSalaOnline && this.gestorSala) return this.gestorSala.esMiTurno;
+                return this.gestorTurno.esMiTurno();
+            },
+            esSalaOnline ? this.mazoOnline : opciones.mazo || this.mazoExterno
         );
+
+        if (esSalaOnline) {
+            BoardManager.habilitarModoOnline({
+                alVoltear: (index) => this.gestorSala?.voltearCarta(index),
+            });
+            this.vista.cargarPanelSuperior();
+            this.gestorSala.refrescarUI();
+            this.vista.bindBotonesModal();
+            document.querySelector('a.boton[href="menu.html"]')
+                ?.addEventListener('click', () => this.gestorSala?.abandonar());
+            console.log(`Partida online iniciada en la sala ${this.gestorSala.codigoSala}.`);
+            return;
+        }
 
         try {
             const data = await this.proveedorDatos.obtenerDatos();
@@ -115,6 +165,39 @@ export class GestorPartida {
         this.vista.renderVida(this.jugador, this.rival);
 
         console.log("Motor de partida iniciado correctamente.");
+    }
+
+    activarEventosOnline() {
+        if (this.eventosOnlineActivos) return;
+        this.eventosOnlineActivos = true;
+
+        window.addEventListener('partida-terminada-online', (ev) => {
+            this.mostrarModalFinalOnline(ev.detail || {});
+        });
+
+        window.addEventListener('jugador-desconectado-online', (ev) => {
+            const detalle = ev.detail || {};
+            const espera = detalle.segundos ? `${detalle.segundos}s` : "unos segundos";
+            const quien = detalle.jugadorId === this.gestorSala?.miId ? "Tu conexión" : `${detalle.nombre || "El rival"}`;
+            this.vista.mostrarAvisoRapido(`${quien} se desconectó. Esperando ${espera}...`);
+            BoardManager.bloquearTablero(true);
+        });
+
+        window.addEventListener('jugador-reconectado-online', (ev) => {
+            this.vista.mostrarAvisoRapido(`${ev.detail?.nombre || "El rival"} se reconectó.`);
+        });
+
+        window.addEventListener('sala-error-online', (ev) => {
+            this.mostrarErrorConexion(ev.detail?.mensaje);
+        });
+    }
+
+    mostrarErrorConexion(mensaje) {
+        const texto = mensaje || "No se pudo conectar con la sala.";
+        document.getElementById("onlineEstado")?.removeAttribute("hidden");
+        const estado = document.getElementById("onlineEstado");
+        if (estado) estado.textContent = `ERROR DE SALA · ${texto}`;
+        this.vista.mostrarAvisoRapido(texto);
     }
 
     procesarResultado(esAcierto, puntajeTotal) {
@@ -163,11 +246,49 @@ export class GestorPartida {
     }
 
     mostrarModalFinal(movimientosFinales, puntajeFinal) {
+        if (this.partidaFinalizada) return;
         this.partidaFinalizada = true;
-        this.gestorTiempo.detener();
+        try { this.gestorTiempo.detener(); } catch (e) {}
         this.vista.mostrarModalFinal(
             movimientosFinales, puntajeFinal, this.jugador, this.rival,
             GestorTiempo.formatear, this.gestorTiempo.tiempoSasuke, this.gestorTiempo.tiempoNaruto
         );
+    }
+
+    mostrarModalFinalOnline(datos = {}) {
+        if (this.partidaFinalizada) return;
+        this.partidaFinalizada = true;
+        try { this.gestorTiempo.detener(); } catch (e) {}
+        BoardManager.bloquearTablero(true);
+
+        const miId = this.gestorSala?.miId;
+        const empate = !datos.ganadorId;
+        const soyGanador = datos.ganadorId === miId;
+        const resultado = empate ? "EMPATE" : soyGanador ? "¡VICTORIA!" : "DERROTA";
+        const motivo = datos.motivo === "abandono" ? " (por abandono del rival)" : "";
+
+        const parejas = datos.parejas || {};
+        const misParejas = parejas[miId] || 0;
+        const rivalId = this.gestorSala?.rivalId();
+        const parejasRival = rivalId ? parejas[rivalId] || 0 : 0;
+
+        if (this.vista.finalStats) {
+            const fuerte = document.createElement("strong");
+            fuerte.textContent = `${resultado}${motivo}`;
+            const detalle = [
+                `${this.gestorSala?.miNombre || "Jugador"}: ${misParejas} parejas`,
+                `${this.gestorSala?.rivalNombre || "Rival"}: ${parejasRival} parejas`,
+                `Movimientos: ${datos.movimientos ?? 0}`,
+                `Sala: ${datos.codigo || this.gestorSala?.codigoSala || "--"}`,
+            ];
+            const fragmento = document.createDocumentFragment();
+            fragmento.appendChild(fuerte);
+            for (const linea of detalle) {
+                fragmento.appendChild(document.createElement("br"));
+                fragmento.appendChild(document.createTextNode(linea));
+            }
+            this.vista.finalStats.replaceChildren(fragmento);
+        }
+        if (this.vista.modal) this.vista.modal.classList.remove("hidden");
     }
 }

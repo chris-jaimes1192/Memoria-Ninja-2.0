@@ -19,9 +19,9 @@ Sin build system, sin bundler, sin linter, sin CI — frontend vanilla HTML/CSS/
 - El estado se guarda en `localStorage` (sesión de usuario, nombres de jugadores, historial de partidas, nivel de dificultad), con sincronización best-effort al backend por HTTP
 - `js/sesion-guard.js` (script clásico) valida la sesión contra `GET /api/auth/me` en cada página protegida (menu + páginas de juego), refresca la copia local del usuario y deja el estado en `localStorage["estadoSesion"]` (`activa`/`invitado`/`offline`). **Nunca redirige**: el juego es jugable como invitado/offline
 - `js/mock-server.js` provee datos falsos del juego; `js/nucleo-GAME ONLI/datos/ProveedorDatosServidor.js` es el proveedor REAL (POST `/api/partida`, PostgreSQL) que cae al mock cuando el servidor no responde
-- Las imágenes de cartas están en `assets/img/cards/aldeas/{village}/` — nombres de aldea: arena, konoha (hyuga, sarutobi, uchiha, uzumaki), niebla, nube, roca, otros
-- `js/board-manager.js` tiene la lógica central de render del tablero; la variable `ALDEA` de arriba controla qué cartas de aldea se muestran
-- `js/game-online.js` es un bootstrap chico de ES module (`new GestorPartida().iniciar()`). El motor vivo real está en `js/nucleo-GAME ONLI/` (ver abajo)
+- Las imágenes de cartas están en `assets/img/cards/aldeas/{village}/` — carpetas reales: `akatsuki`, `arena`, `konoha/{hyuga,sarutobi,uchiha,uzumaki}`, `niebla`, `nube`, `roca`. En el lobby online los alias `hyuga|sarutobi|uchiha|uzumaki` se mapean a `konoha/*`, `konoha` → `konoha/uchiha` y `otros` → `akatsuki`
+- `js/board-manager.js` tiene la lógica central de render del tablero; la variable `ALDEA` de arriba controla qué cartas de aldea se muestran en modo local (el online usa el mazo del servidor)
+- `js/game-online.js` es un bootstrap chico de ES module (`new GestorPartida().iniciar()`). El motor vivo real está en `js/nucleo-GAME ONLI/` (ver abajo). Con `game-online.html?codigo=XXXX` arranca en modo sala online
 
 ### Módulos en capas de `js/` (auth + flujos de cuenta)
 
@@ -39,9 +39,18 @@ Algunos archivos son ES modules (`import`/`export`); `require` estilo CommonJS p
 
 - El nombre de la carpeta **contiene espacios**: `js/nucleo-GAME ONLI/` — usá comillas o `-LiteralPath` en comandos de shell. Las rutas de import también usan el espacio (funciona en la resolución de módulos del navegador, pero los glob del shell necesitan comillas).
 - **Este ES el motor vivo.** `game-online.js` es un bootstrap delgado; el motor real: `GestorPartida.js` (raíz de composición), `GestorTurno.js`, `GestorTiempo.js`, `entidades/Personaje.js`, `poderes/Poder.js` (Template Method) + las 6 clases de poderes + `GestorPoderes.js`, `datos/ProveedorDatos*.js`, `vista/VistaPartida.js`
-- Conexión de datos + persistencia: `ProveedorDatosServidor` crea la partida en el backend (`POST /api/partida` → PostgreSQL) y `Poder.activar()` notifica `POST /api/poder/activar` best-effort; ambos caen silenciosamente a la lógica simulada local cuando el servidor no responde, así el juego funciona offline también.
+- Conexión de datos + persistencia: `ProveedorDatosServidor` crea la partida en el backend (`POST /api/partida` → PostgreSQL) y `Poder.activar()` notifica `POST /api/poder/activar` best-effort; ambos caen silenciosamente a la lógica simulada local cuando el servidor no responde, así el juego funciona offline también. **En partidas online de 2 jugadores no se usa el proveedor ni XP**: `Poder.activar()` corta con un aviso de que los poderes online todavía no existen.
 - `COMO-QUEDO-ORGANIZADO.md` dentro de la carpeta mapea el código viejo de `game-online.js` a las clases nuevas.
 - Hay un archivo basura de 0 bytes `{entidades,poderes,datos,vista}` en la carpeta (brace-expansion roto), ignorarlo sin problema.
+
+### Multijugador online real (Socket.io)
+
+- Backend: `backend-poderes/src/servicios/online/GestorSalas.js`, montado por `server.js` sobre el mismo HTTP server (Socket.io 4.8.4). Salas **en memoria** (no PostgreSQL): efímeras, se pierden al reiniciar.
+- Eventos: `crear-sala`, `unirse-sala` (auto-start con 2), `marcar-listo`, `listar-salas`, `buscar-sala-por-codigo`, `buscar-partida` (matchmaking), `cancelar-busqueda`, `reincorporarse-sala`, `voltear-carta`, `abandonar-sala`. El servidor emite `partida-iniciada`, `sala-actualizada`, `carta-volteada`, `acierto`, `fallo`, `turno-cambiado`, `partida-terminada`, `jugador-desconectado|reconectado`, `error-sesion`.
+- Identidad: token estable por pestaña en `sessionStorage["memoriaNinjaTokenJugador"]` (no `socket.id`), enviado en `handshake.auth.token`; permite reincorporarse tras recargar. Gracia de reconexión: **15 s**; si expira en partida → abandono del rival. Salas se limpian 30 s después de terminar.
+- Reglas: solo el jugador del turno puede voltear; acierto suma pareja y conserva turno; fallo bloquea 800 ms y cambia turno; el mazo no filtra `valor/aldea` de cartas no descubiertas. Empate posible (`ganadorId: null`).
+- Frontend: `js/multijugador/ClienteMultijugador.js` (import dinámico same-origin `/socket.io/socket.io.esm.min.js`, acks con timeout) + `js/multijugador/GestorSalaCliente.js` (estado, nombres, marcadores, turno, `#onlineEstado`, rejoin). `GestorPartida.js` decide local vs online por `?codigo`.
+- Lobby: el panel verde MULTIJUGADOR y el morado DOS JUGADORES abren `twoPlayersModal` (`TwoPlayersModal.js`); el stub `multiplayerModal` ya no existe. La CSP de `helmet` incluye `connect-src ws: wss:` (configurado en `server.js`).
 
 ## Sesión (frontend): 3 estados
 
@@ -59,7 +68,7 @@ El **logout es real**: `window.SesionNinja.cerrarSesion()` (usado por `js/menu.j
 cd backend-poderes
 npm install
 npm start          # corre en http://localhost:3000
-npm test           # runner de tests nativo de Node (--test): 104 tests, 23 suites, todas verdes
+npm test           # runner nativo de Node (--test): 137 tests, 25 suites, todas verdes
 npm run seed:demo  # llena PGDATABASE con datos demo (7 cuentas @demo.ninja / clave123)
 ```
 
@@ -69,6 +78,7 @@ npm run seed:demo  # llena PGDATABASE con datos demo (7 cuentas @demo.ninja / cl
 
 - Arquitectura: en capas (entities → factories → repositories → services → controllers → routes)
 - `server.js` es la **raíz de composición** — único lugar donde se instancian implementaciones concretas con `new`
+- `src/servicios/online/GestorSalas.js` maneja el multijugador en tiempo real (Socket.io); sus tests usan `socket.io-client` y un servidor HTTP en puerto 0, sin tocar PostgreSQL
 - 6 poderes: byakugan, sustitucion, robo, genjutsu, sello, bomba. Endpoints: `POST /api/poder/activar`, `POST /api/partida` (crea + persiste una partida, PostgreSQL), `POST /api/partida/prueba` (demo legado), y los endpoints de usuario/historial/perfil bajo `/api/usuarios` (register/login/list/search/history/`GET|POST :id/perfil`) — más `POST :id/importar` (merge invitado→cuenta, mini-guard de cookie propio hasta la Parte 4)
 - Tres implementaciones de repositorio: `PartidaRepositoryMemoria` (en memoria), `PartidaRepositoryArchivo` (en archivo) y `PartidaRepositorySQL` (PostgreSQL, default en producción) — todas pasan los mismos tests de contrato (prueba de LSP)
 - Los tests son basados en contratos: la misma batería corre contra varias implementaciones
@@ -113,7 +123,7 @@ Hooks (12 páginas, todas llaman a `progresoService.registrarFinPartida({victori
 - `DatabaseSqlite` sigue respaldando solo los tests SQL de partidas (`partidaRepositorySQL.test.js`, `partidaService.test.js`) y el test de migración `DatabaseSqlite.#migrarColumnasPerfil()` (solo SQLite) dentro de `usuarioPerfil.test.js`.
 - `tests/authE2e.test.js` es un test end-to-end real: levanta `server.js` como proceso hijo (en `SERVER_PORT_E2E`, default 3099, `PGDATABASE=PGDATABASE_TEST`, `MAILER=consola`, `RATE_LIMIT_DESACTIVADO=1`), recorre registro→verificación→login/cookie→logout→recuperación por HTTP, y luego mata el servidor. Lee los códigos de verificación del stdout del hijo (`MAILER=consola` imprime `... es: 123456`).
 - `RATE_LIMIT_DESACTIVADO=1` (server.js) hace que ambos rate-limiters hagan `skip` — se usa solo en el test e2e para que corridas repetidas de `npm test` no choquen con 429.
-- Archivos de test: `contratoPartidaRepository.js`, `contratoPoder.test.js`, `poderService.test.js`, `partidaService.test.js`, `partidaRepositorySQL.test.js`, `usuarioService.test.js`, `usuarioPerfil.test.js`, `importarProgreso.test.js` (merge invitado→cuenta), más uno por cada implementación de repositorio
+- Archivos de test: `contratoPartidaRepository.js`, `contratoPoder.test.js`, `poderService.test.js`, `partidaService.test.js`, `partidaRepositorySQL.test.js`, `usuarioService.test.js`, `usuarioPerfil.test.js`, `importarProgreso.test.js` (merge invitado→cuenta), `gestorSalas.test.js` (Socket.io, 13 tests), más uno por cada implementación de repositorio
 - Correr los tests crea data fixture real bajo `backend-poderes/data/` solo cuando el repositorio de archivo es ejercitado por los tests
 
 ## Skills instaladas (Autoskills)

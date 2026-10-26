@@ -178,7 +178,14 @@ const limitadorAuth = rateLimit({
 });
 
 const app = express();
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+      "connect-src": ["'self'", "ws:", "wss:"],
+    },
+  },
+}));
 // Parte 4: CORS con ALLOWLIST en vez de reflejar cualquier origen.
 // El frontend servido por este mismo backend va SIEMPRE en mismo origen
 // (páginas y API en el mismo puerto -> sin CORS); la lista es solo para
@@ -233,6 +240,8 @@ app.post("/api/partida/prueba", autorizacion.requiereSesion, async (req, res) =>
 });
 
 const PUERTO = Number(process.env.SERVER_PORT || 3000);
+const http = require("http");
+const GestorSalas = require("./src/servicios/online/GestorSalas");
 
 async function iniciar() {
   // PostgreSQL: aplica sql/esquema.sql (idempotente) si hace falta.
@@ -240,10 +249,14 @@ async function iniciar() {
     await database.init();
   }
 
-  app.listen(PUERTO, () => {
+  const servidorHttp = http.createServer(app);
+  const gestorSalas = new GestorSalas(servidorHttp);
+  
+  servidorHttp.listen(PUERTO, () => {
     console.log(`Backend de poderes escuchando en http://localhost:${PUERTO}`);
     console.log(`Motor de base de datos: postgres (${process.env.PGPORT || 5432}/${process.env.PGDATABASE})`);
     console.log(`Frontend servido en el mismo puerto (mismo origen)`);
+    console.log(`WebSocket activo para multijugador online`);
   });
 }
 

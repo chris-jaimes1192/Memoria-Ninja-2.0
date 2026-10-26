@@ -8,7 +8,6 @@
 body {
   font-family: 'Permanent Marker', Arial, sans-serif;  /* activa la fuente Permanent Marker cargada desde el HTML */
   background-color: rgb(52, 33, 65);
-  background-image: url(assets/fondo.mp4);
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center top;
@@ -1903,4 +1902,22 @@ video {
     35%  { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
     80%  { opacity: 1; }
     100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+}
+.online-estado {
+  margin: 8px auto 0;
+  width: max-content;
+  max-width: 92%;
+  padding: 7px 16px;
+  border-radius: 8px;
+  border: 1.5px solid #35d07f;
+  background: rgba(6, 30, 18, .85);
+  color: #b8ffdc;
+  font-size: .9rem;
+  letter-spacing: .5px;
+  text-align: center;
+}
+
+#board.bloqueado-turno {
+  pointer-events: none;
+  filter: brightness(.72) saturate(.8);
 }
