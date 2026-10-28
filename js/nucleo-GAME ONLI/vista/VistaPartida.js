@@ -50,6 +50,19 @@ export class VistaPartida {
         this.estadoPartida = document.getElementById("matchStatus");
         this.modal = document.getElementById("modal");
         this.finalStats = document.getElementById("finalStats");
+        this.modalFinal = document.getElementById("modalFinal");
+        this.modalFinalPanel = this.modalFinal?.querySelector(".modal-final-panel");
+        this.finalTitulo = document.getElementById("finalTitulo");
+        this.finalSubtitulo = document.getElementById("finalSubtitulo");
+        this.finalIcono = document.getElementById("finalIcon");
+        this.finalMarcador = document.getElementById("finalMarcador");
+        this.finalConfig = document.getElementById("finalConfig");
+        this.finalPares = document.getElementById("finalPares");
+        this.finalMezclar = document.getElementById("finalMezclarAldeas");
+        this.finalError = document.getElementById("finalError");
+        this.finalEspera = document.getElementById("finalEspera");
+        this.btnRevancha = document.getElementById("btnRevanchaFinal");
+        this.btnVolverMenu = document.getElementById("btnVolverMenuFinal");
     }
 
     cargarPanelSuperior() {
@@ -190,6 +203,111 @@ export class VistaPartida {
                 `NARUTO — Aciertos: ${rival.aciertos} / Errores: ${rival.errores} / Tiempo restante: ${formatearTiempo(tiempoNaruto)}`;
         }
         if (this.modal) this.modal.classList.remove("hidden");
+    }
+
+    mostrarModalFinalOnline({ tipo, titulo, subtitulo, icono, marcador, stats, config, esAnfitrion, revanchaDisponible }) {
+        if (!this.modalFinal) return;
+        this.modalFinalPanel?.classList.remove("es-victoria", "es-derrota", "es-empate");
+        this.modalFinalPanel?.classList.add(`es-${tipo}`);
+        if (this.finalIcono) this.finalIcono.textContent = icono;
+        if (this.finalTitulo) this.finalTitulo.textContent = titulo;
+        if (this.finalSubtitulo) this.finalSubtitulo.textContent = subtitulo;
+
+        if (this.finalMarcador) {
+            this.finalMarcador.replaceChildren();
+            for (const equipo of marcador || []) {
+                const bloque = document.createElement("div");
+                bloque.className = `marcador-equipo${equipo.ganador ? " ganador" : ""}`;
+                const etiqueta = document.createElement("small");
+                etiqueta.textContent = equipo.etiqueta;
+                const valor = document.createElement("strong");
+                valor.textContent = equipo.valor;
+                const detalle = document.createElement("span");
+                detalle.textContent = equipo.detalle;
+                bloque.append(etiqueta, valor, detalle);
+                this.finalMarcador.appendChild(bloque);
+            }
+        }
+
+        if (this.finalStats) {
+            this.finalStats.replaceChildren();
+            for (const linea of stats || []) {
+                const item = document.createElement("span");
+                item.textContent = linea;
+                this.finalStats.appendChild(item);
+            }
+        }
+
+        if (this.finalConfig) this.finalConfig.hidden = !esAnfitrion;
+        if (this.btnRevancha) this.btnRevancha.hidden = !esAnfitrion || !revanchaDisponible;
+        if (this.finalEspera) this.finalEspera.hidden = esAnfitrion || !revanchaDisponible;
+        if (this.finalError) this.finalError.hidden = true;
+
+        const pares = Math.min(Math.max(Number(config?.pares) || 8, 8), 16);
+        if (this.finalPares) this.finalPares.value = String(pares);
+        if (this.finalMezclar) this.finalMezclar.checked = config?.mezclarAldeas !== false;
+        this.#actualizarConsistenciaPares();
+
+        this.modalFinal.classList.remove("hidden");
+        const foco = esAnfitrion && revanchaDisponible ? this.btnRevancha : this.btnVolverMenu;
+        foco?.focus();
+    }
+
+    ocultarModalFinal() {
+        this.modalFinal?.classList.add("hidden");
+    }
+
+    bindModalFinal({ alVolver, alRevancha }) {
+        if (this.modalFinalBindings) return;
+        this.modalFinalBindings = true;
+        this.btnVolverMenu?.addEventListener("click", () => alVolver?.());
+        this.btnRevancha?.addEventListener("click", () => alRevancha?.(this.leerConfigRevancha()));
+        this.finalMezclar?.addEventListener("change", () => this.#actualizarConsistenciaPares());
+        this.modalFinal?.addEventListener("keydown", (event) => {
+            if (event.key !== "Tab") return;
+            const focos = [...this.modalFinal.querySelectorAll("button:not([hidden]):not(:disabled), select:not(:disabled), input:not(:disabled)")];
+            if (focos.length === 0) return;
+            const primero = focos[0];
+            const ultimo = focos[focos.length - 1];
+            if (event.shiftKey && document.activeElement === primero) {
+                event.preventDefault();
+                ultimo.focus();
+            } else if (!event.shiftKey && document.activeElement === ultimo) {
+                event.preventDefault();
+                primero.focus();
+            }
+        });
+    }
+
+    leerConfigRevancha() {
+        return {
+            pares: Number(this.finalPares?.value) || 8,
+            mezclarAldeas: this.finalMezclar ? this.finalMezclar.checked : true,
+        };
+    }
+
+    mostrarErrorRevancha(texto) {
+        if (!this.finalError) return;
+        this.finalError.textContent = texto;
+        this.finalError.hidden = false;
+    }
+
+    bloquearRevancha(bloqueado, mensaje = "Esperando que el anfitrión inicie la revancha…") {
+        if (this.btnRevancha) {
+            this.btnRevancha.disabled = bloqueado;
+            this.btnRevancha.textContent = bloqueado ? "ESPERANDO…" : "REVANCHA";
+        }
+        if (this.finalEspera) {
+            this.finalEspera.textContent = mensaje;
+            this.finalEspera.hidden = !bloqueado;
+        }
+    }
+
+    #actualizarConsistenciaPares() {
+        if (!this.finalPares) return;
+        const mezclar = this.finalMezclar ? this.finalMezclar.checked : true;
+        if (!mezclar) this.finalPares.value = "8";
+        this.finalPares.disabled = !mezclar;
     }
 
     bindBotonesModal() {

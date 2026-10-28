@@ -57,7 +57,11 @@ export class Poder {
         const contexto = this.contexto;
 
         if (contexto.esOnline) {
-            this.mostrarMensaje("LOS PODERES TODAVÍA NO ESTÁN DISPONIBLES EN PARTIDAS ONLINE");
+            if (typeof contexto.activarPoderOnline === "function") {
+                contexto.activarPoderOnline(this.id);
+                return;
+            }
+            this.mostrarMensaje("LOS PODERES NO SE PUEDEN ACTIVAR AHORA");
             return;
         }
 

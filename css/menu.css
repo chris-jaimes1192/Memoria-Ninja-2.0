@@ -1114,45 +1114,234 @@ button,
     margin-top: 2px;
 }
 
+/* Barra de acciones lobby */
+.barra-acciones-lobby {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 18px;
+}
+
+.btn-lobby {
+    font-family: 'Fredoka', sans-serif;
+    border-radius: 999px;
+    padding: 10px 18px;
+    font-size: 13px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.btn-lobby-primario {
+    background: linear-gradient(90deg, rgba(0, 255, 153, 0.9), rgba(0, 219, 255, 0.9));
+    color: #001a12;
+    font-weight: 700;
+    box-shadow: 0 0 18px rgba(0, 255, 153, 0.25);
+}
+
+.btn-lobby-primario:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 24px rgba(0, 255, 153, 0.4);
+}
+
+.btn-lobby-secundario {
+    background: rgba(0, 0, 0, 0.45);
+    color: #dff7ee;
+    border-color: rgba(0, 255, 153, 0.4);
+}
+
+.btn-lobby-secundario:hover {
+    background: rgba(0, 255, 153, 0.12);
+    border-color: rgba(0, 255, 153, 0.8);
+    box-shadow: 0 0 16px rgba(0, 255, 153, 0.25);
+}
+
+.btn-lobby-activo {
+    background: linear-gradient(90deg, rgba(0, 255, 153, 0.95), rgba(0, 219, 255, 0.95));
+    color: #001a12;
+    font-weight: 700;
+    box-shadow: 0 0 22px rgba(0, 255, 153, 0.35);
+    border-color: transparent;
+}
+
 /* Contenedor de la lista */
 .lista-salas-container {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    max-height: 340px; /* Evita que rompa pantallas pequeñas */
+    gap: 12px;
+    max-height: 320px;
     overflow-y: auto;
-    padding-right: 5px;
-    margin-bottom: 25px;
+    padding: 4px 6px 4px 4px;
+    margin-bottom: 20px;
 }
 
-/* Estilo para personalizar la barra de scroll si es necesario */
+/* Estilo para personalizar la barra de scroll */
 .lista-salas-container::-webkit-scrollbar {
     width: 6px;
 }
 .lista-salas-container::-webkit-scrollbar-thumb {
-    background: #00ff99;
-    border-radius: 4px;
+    background: linear-gradient(180deg, #00ff99, #00dbff);
+    border-radius: 6px;
+}
+.lista-salas-container::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 6px;
 }
 
-/* Filas de la lista (Salas) */
-.sala-row {
-    display: grid;
-    grid-template-columns: 2fr 1.5fr 1fr 1fr;
+/* Tarjetas de salas estilo FreeFire */
+.sala-card {
+    display: flex;
     align-items: center;
-    padding: 10px 25px;
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid #005f37;
-    border-radius: 30px; /* Totalmente redondeado como el prototipo */
-    font-size: 14px;
-    transition: background 0.2s, transform 0.2s;
-    cursor: pointer;
-    text-align: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 18px;
+    background: radial-gradient(circle at top, rgba(0, 255, 153, 0.12), rgba(0, 0, 0, 0.7));
+    border: 1px solid rgba(0, 255, 153, 0.35);
+    border-radius: 16px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
-.sala-row:hover {
-    background: rgba(0, 255, 153, 0.1);
-    border-color: #00ff99;
-    transform: scale(1.01);
+.sala-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(0, 255, 153, 0.9);
+    box-shadow: 0 10px 30px rgba(0, 255, 153, 0.18);
+    background: radial-gradient(circle at top, rgba(0, 255, 153, 0.18), rgba(0, 0, 0, 0.72));
+}
+
+.sala-card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+}
+
+.sala-card-fila {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+}
+
+.sala-card-fila-secundaria {
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.sala-card-id {
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: #00ff99;
+    text-shadow: 0 0 12px rgba(0, 255, 153, 0.4);
+}
+
+.sala-card-anfitrion {
+    font-size: 12px;
+    color: #d7fff3;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.sala-card-detalles {
+    font-size: 12px;
+    color: rgba(223, 247, 238, 0.8);
+    letter-spacing: 0.5px;
+}
+
+.sala-card-estado {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+}
+
+.sala-card-estado-esperando {
+    color: #001a12;
+    background: linear-gradient(90deg, #00ff99, #00dbff);
+    box-shadow: 0 0 16px rgba(0, 255, 153, 0.25);
+}
+
+.sala-card-estado-llena {
+    color: rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Botón unirse pequeño */
+.btn-unirse-sala-pequeno {
+    border-radius: 999px;
+    padding: 9px 18px;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 12px;
+    letter-spacing: 2px;
+    border: 1px solid rgba(0, 255, 153, 0.8);
+    background: linear-gradient(90deg, rgba(0, 255, 153, 0.9), rgba(0, 219, 255, 0.9));
+    color: #001a12;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 0 18px rgba(0, 255, 153, 0.25);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.btn-unirse-sala-pequeno:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 0 24px rgba(0, 255, 153, 0.4);
+}
+
+.btn-unirse-sala-pequeno:disabled,
+.btn-unirse-sala-pequeno-deshabilitado {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.5);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+/* Buscador por ID */
+.panel-buscar-codigo {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 18px;
+    padding: 16px 18px;
+    border-radius: 18px;
+    background: radial-gradient(circle at top, rgba(0, 219, 255, 0.14), rgba(0, 0, 0, 0.7));
+    border: 1px solid rgba(0, 219, 255, 0.4);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.buscar-codigo-header {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.buscar-codigo-titulo {
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #00dbff;
+}
+
+.buscar-codigo-subtitulo {
+    font-size: 12px;
+    color: rgba(223, 247, 238, 0.7);
+}
+
+.buscar-codigo-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.buscar-codigo-row .input-lobby {
+    flex: 1 1 220px;
+    min-width: 200px;
 }
 
 /* Alineación específica para el nombre del creador */
@@ -2332,3 +2521,213 @@ FECHA Y HORA (celda de la tabla)
     }
 }
 
+
+.resultado-empate{
+    color:#c6b4ff;
+    font-weight:bold;
+}
+
+.modo-rapida{
+    justify-content:center;
+    margin:10px 0 14px;
+}
+.esperando-equipos{
+    text-align:center;
+    color:#ffd166;
+    font-size:0.82rem;
+    letter-spacing:0.5px;
+    margin:4px 0 8px;
+}
+.sala-compartir{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:14px;
+    margin:10px 0 14px;
+    flex-wrap:wrap;
+}
+.qr-sala{
+    width:150px;
+    height:150px;
+    border-radius:10px;
+    border:2px solid rgba(255,209,102,0.55);
+    background:#f5efe0;
+    padding:4px;
+}
+.qr-sala[hidden]{
+    display:none;
+}
+.sala-compartir-texto{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    max-width:280px;
+}
+.esperando-url{
+    color:#9fd8ff;
+    font-size:0.75rem;
+    word-break:break-all;
+    margin:0;
+}
+
+@media (max-width: 700px), (max-height: 680px) {
+    .modal-content-multijugador {
+        width: 96vw;
+        max-height: 92vh;
+        overflow-y: auto;
+        padding: 18px 14px;
+        -webkit-overflow-scrolling: touch;
+    }
+    .multijugador-titulo-texto h2 {
+        font-size: 18px;
+    }
+    .barra-acciones-lobby {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .barra-acciones-lobby .btn-lobby {
+        flex: 1 1 100%;
+    }
+    .crear-sala-grid {
+        grid-template-columns: 1fr;
+    }
+    .sala-compartir {
+        gap: 10px;
+    }
+    .qr-sala {
+        width: 132px;
+        height: 132px;
+    }
+    .sala-card {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .btn-unirse-sala-pequeno {
+        width: 100%;
+    }
+    .buscar-codigo-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .buscar-codigo-row .input-lobby,
+    .buscar-codigo-row .btn-lobby {
+        width: 100%;
+    }
+}
+
+/* Mobile vertical adjustments */
+@media (max-width: 600px) {
+    html, body {
+        overflow-x: hidden;
+    }
+    .header {
+        flex-direction: column;
+        gap: 10px;
+        padding: 10px;
+    }
+    .logo-panel img {
+        width: 200px;
+        max-width: 70vw;
+    }
+    .perfil-panel {
+        width: 100%;
+        justify-content: center;
+    }
+    .derecha {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    .modos-juego {
+        flex-direction: column;
+        width: 95vw;
+        gap: 12px;
+    }
+    .panel {
+        width: 100%;
+    }
+    .contenedor-inferior .barra-inferior {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .contenedor-inferior .item {
+        flex: 1 1 45%;
+    }
+    .modal-content-juego {
+        width: 96vw;
+        max-height: 92vh;
+        overflow-y: auto;
+        padding: 16px;
+        -webkit-overflow-scrolling: touch;
+    }
+    .opciones-juego-container {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .opcion-card {
+        width: 100%;
+    }
+    .modal-content-ranking,
+    .modal-content-perfil,
+    .modal-content-info-puntaje,
+    .modal-content-config {
+        width: 96vw;
+        max-height: 92vh;
+        overflow-y: auto;
+        padding: 18px 14px;
+        -webkit-overflow-scrolling: touch;
+    }
+    .tabla-ranking-container {
+        overflow-x: auto;
+    }
+    .ranking-row-header,
+    .ranking-row {
+        min-width: 520px;
+    }
+    .config-fila {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    .config-label {
+        width: 100%;
+    }
+    .config-slider {
+        width: 100%;
+    }
+    .config-valor {
+        align-self: flex-end;
+    }
+    .aviso-invitado {
+        width: 92vw;
+        flex-direction: column;
+        text-align: center;
+        border-radius: 16px;
+        padding: 10px 12px;
+    }
+}
+
+/* Extra small phones */
+@media (max-width: 420px) {
+    .btn-lobby {
+        font-size: 13px;
+        padding: 9px 12px;
+    }
+    .sala-card {
+        padding: 10px;
+    }
+    .sala-card-info {
+        width: 100%;
+    }
+    .btn-unirse-sala-pequeno {
+        width: 100%;
+    }
+    .input-lobby,
+    .select-lobby {
+        width: 100%;
+    }
+    .multijugador-header-box {
+        flex-direction: column;
+        text-align: center;
+    }
+}

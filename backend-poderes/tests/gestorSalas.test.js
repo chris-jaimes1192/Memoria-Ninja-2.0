@@ -309,6 +309,195 @@ describe("GestorSalas (multijugador online real)", () => {
     assert.equal(respuesta.error, "No perteneces a esta sala");
   });
 
+  async function sala2v2Iniciada() {
+    const uno = await cliente("token-2v2-uno");
+    const dos = await cliente("token-2v2-dos");
+    const tres = await cliente("token-2v2-tres");
+    const cuatro = await cliente("token-2v2-cuatro");
+
+    const creada = await emitir(uno, "crear-sala", {
+      nombre: "Uno",
+      config: { modo: "2v2", mezclarAldeas: true, pares: 8 },
+    });
+    assert.equal(creada.exito, true);
+    assert.equal(creada.sala.capacidad, 4);
+
+    await emitir(dos, "unirse-sala", { codigo: creada.codigo, nombre: "Dos" });
+    await emitir(tres, "unirse-sala", { codigo: creada.codigo, nombre: "Tres" });
+
+    const inicios = [uno, dos, tres, cuatro].map((socket) => esperarEvento(socket, "partida-iniciada"));
+    const unida = await emitir(cuatro, "unirse-sala", { codigo: creada.codigo, nombre: "Cuatro" });
+    assert.equal(unida.exito, true);
+
+    const estados = await Promise.all(inicios);
+    return { uno, dos, tres, cuatro, codigo: creada.codigo, estados };
+  }
+
+  function ganarTodosLosPares(socket, cantidad, evento = "acierto") {
+    const promesas = [];
+    for (let par = 0; par < cantidad; par++) {
+      promesas.push(esperarEvento(socket, evento));
+      socket.emit("voltear-carta", { index: par * 2 });
+      socket.emit("voltear-carta", { index: par * 2 + 1 });
+    }
+    return Promise.all(promesas);
+  }
+
+  it("inicia 2v2 con cuatro jugadores, dos equipos y turno compartido", async () => {
+    const { uno, dos, tres, estados } = await sala2v2Iniciada();
+
+    for (const estado of estados) {
+      assert.equal(estado.estado, "jugando");
+      assert.equal(estado.modo, "2v2");
+      assert.equal(estado.capacidad, 4);
+      assert.equal(estado.jugadores.length, 4);
+      assert.equal(estado.turno, "token-2v2-uno");
+      assert.equal(estado.turnoEquipo, "A");
+      assert.deepEqual(estado.jugadores.map((j) => j.equipo), ["A", "A", "B", "B"]);
+    }
+
+    const recibidas = [];
+    uno.on("carta-volteada", (datos) => recibidas.push(datos));
+
+    tres.emit("voltear-carta", { index: 0 });
+    await pausa(80);
+    assert.equal(recibidas.length, 0, "el equipo B no puede voltear en turno A");
+
+    const revelada = esperarEvento(uno, "carta-volteada");
+    dos.emit("voltear-carta", { index: 0 });
+    assert.equal((await revelada).equipo, "A", "el compañero de equipo sí puede voltear");
+  });
+
+  it("acredita las parejas al equipo y cambia el turno al equipo rival", async () => {
+    const { uno, dos, tres, codigo } = await sala2v2Iniciada();
+    const estado = gestor.salas.get(codigo);
+
+    const acierto = esperarEvento(uno, "acierto");
+    uno.emit("voltear-carta", { index: 0 });
+    uno.emit("voltear-carta", { index: 1 });
+    const datosAcierto = await acierto;
+    assert.equal(datosAcierto.parejasEquipos.A, 1);
+    assert.equal(datosAcierto.turnoEquipo, "A");
+    assert.equal(estado.turnoEquipo, "A");
+
+    const fallo = esperarEvento(uno, "fallo");
+    const cambio = esperarEvento(uno, "turno-cambiado");
+    uno.emit("voltear-carta", { index: 2 });
+    uno.emit("voltear-carta", { index: 4 });
+    await fallo;
+    const datosTurno = await cambio;
+    assert.equal(datosTurno.turnoEquipo, "B");
+    assert.equal(datosTurno.turno, "token-2v2-tres");
+
+    const reveladaB = esperarEvento(uno, "carta-volteada");
+    tres.emit("voltear-carta", { index: 2 });
+    assert.equal((await reveladaB).equipo, "B");
+  });
+
+  it("termina 2v2 cuando un equipo completa todos los pares", async () => {
+    const { uno, codigo } = await sala2v2Iniciada();
+    const terminada = esperarEvento(uno, "partida-terminada", 4000);
+
+    await ganarTodosLosPares(uno, 8);
+    const datos = await terminada;
+
+    assert.equal(datos.modo, "2v2");
+    assert.equal(datos.motivo, "completada");
+    assert.equal(datos.ganadorEquipo, "A");
+    assert.equal(datos.perdedorEquipo, "B");
+    assert.equal(datos.ganadorId, "token-2v2-uno");
+    assert.equal(datos.parejasEquipos.A, 8);
+    assert.equal(datos.parejasEquipos.B, 0);
+    assert.equal(gestor.salas.get(codigo).estado, "terminada");
+  });
+
+  it("el abandono explícito de un integrante hace perder a su equipo", async () => {
+    const { uno, dos } = await sala2v2Iniciada();
+    const terminada = esperarEvento(uno, "partida-terminada", 2000);
+
+    dos.emit("abandonar-sala");
+    const datos = await terminada;
+
+    assert.equal(datos.motivo, "abandono");
+    assert.equal(datos.ganadorEquipo, "B");
+    assert.equal(datos.perdedorEquipo, "A");
+  });
+
+  it("si un jugador 2v2 se desconecta, su equipo sigue si queda un compañero", async () => {
+    const { tres, codigo } = await sala2v2Iniciada();
+
+    tres.disconnect();
+    await pausa(TIEMPO_RECONEXION_MS + 120);
+
+    const estado = gestor.salas.get(codigo);
+    assert.equal(estado.estado, "jugando");
+    assert.equal(estado.jugadores.find((j) => j.id === "token-2v2-tres").abandonado, true);
+  });
+
+  it("empareja 2v2 por partida rápida con cuatro jugadores", async () => {
+    gestor.generarMazo = GestorSalas.prototype.generarMazo;
+    const clientes = [];
+    for (let i = 1; i <= 4; i++) clientes.push(await cliente(`token-rapido-2v2-${i}`));
+
+    const inicios = clientes.map((socket) => esperarEvento(socket, "partida-iniciada"));
+    for (let i = 0; i < 3; i++) {
+      const respuesta = await emitir(clientes[i], "buscar-partida", {
+        nombre: `Jugador ${i + 1}`,
+        modo: "2v2",
+      });
+      assert.equal(respuesta.emparejado, false);
+    }
+
+    const cuarto = await emitir(clientes[3], "buscar-partida", {
+      nombre: "Jugador 4",
+      modo: "2v2",
+    });
+    assert.equal(cuarto.emparejado, true);
+    assert.equal(cuarto.modo, "2v2");
+
+    const estados = await Promise.all(inicios);
+    assert.equal(estados[0].modo, "2v2");
+    assert.equal(estados[0].jugadores.length, 4);
+    assert.equal(estados[0].mazo.length, 24);
+    assert.equal(estados[0].turnoEquipo, "A");
+  });
+
+  it("permite al anfitrión iniciar una revancha 2v2 con otra configuración", async () => {
+    const { uno, dos, tres, cuatro, codigo } = await sala2v2Iniciada();
+    const terminada = esperarEvento(uno, "partida-terminada", 4000);
+    await ganarTodosLosPares(uno, 8);
+    const finalizada = await terminada;
+    const idPartidaAnterior = finalizada.idPartida;
+
+    gestor.generarMazo = () => mazoFijo(10);
+    const inicios = [uno, dos, tres, cuatro].map((socket) => esperarEvento(socket, "partida-iniciada"));
+    const respuesta = await emitir(uno, "revancha-sala", {
+      config: { mezclarAldeas: true, pares: 10 },
+    });
+    assert.equal(respuesta.exito, true);
+
+    const estados = await Promise.all(inicios);
+    for (const estado of estados) {
+      assert.equal(estado.estado, "jugando");
+      assert.equal(estado.config.pares, 10);
+      assert.equal(estado.mazo.length, 20);
+      assert.notEqual(estado.idPartida, undefined);
+    }
+    assert.notEqual(gestor.salas.get(codigo).idPartida, idPartidaAnterior);
+  });
+
+  it("solo el anfitrión puede iniciar la revancha", async () => {
+    const { uno, dos, codigo } = await sala2v2Iniciada();
+    const terminada = esperarEvento(uno, "partida-terminada", 4000);
+    await ganarTodosLosPares(uno, 8);
+    await terminada;
+
+    const respuesta = await emitir(dos, "revancha-sala", { config: { pares: 10 } });
+    assert.equal(respuesta.exito, false);
+    assert.equal(respuesta.error, "Solo el anfitrión puede iniciar la revancha");
+    assert.equal(gestor.salas.get(codigo).estado, "terminada");
+  });
+
   it("desconecta sockets sin token válido", async () => {
     const socket = io(url, {
       auth: { token: "x" },

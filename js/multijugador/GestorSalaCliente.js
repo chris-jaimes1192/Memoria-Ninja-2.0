@@ -6,6 +6,8 @@ export class GestorSalaCliente {
     this.codigoSala = null;
     this.miId = null;
     this.miNombre = "Jugador";
+    this.miEquipo = null;
+    this.miAsiento = null;
     this.rivalNombre = "Rival";
     this.estado = null;
     this.esMiTurno = false;
@@ -13,6 +15,17 @@ export class GestorSalaCliente {
     this.listenersRegistrados = false;
     this.promesaPartida = null;
     this.resolverPartida = null;
+    this.partidaTerminada = false;
+  }
+
+  get es2v2() {
+    return this.estado?.modo === "2v2" || this.estado?.capacidad === 4;
+  }
+
+  get esAnfitrion() {
+    const yo = this.estado?.jugadores?.find((j) => j.id === this.miId);
+    const primero = this.estado?.jugadores?.[0];
+    return !!yo && !!primero && yo.id === primero.id;
   }
 
   async iniciar(opciones = {}) {
@@ -38,8 +51,10 @@ export class GestorSalaCliente {
 
     this.aplicarEstado(respuesta.estado);
     this.iniciado = true;
+    this.partidaTerminada = this.estado?.estado === "terminada";
 
     if (this.estado?.estado === "jugando") return this.estado;
+    if (this.estado?.estado === "terminada") return this.estado;
 
     this.esperandoInicio();
     return this.promesaPartida;
@@ -62,6 +77,10 @@ export class GestorSalaCliente {
     this.listenersRegistrados = true;
 
     clienteMultijugador.on("partida-iniciada", (estado) => {
+      if (this.partidaTerminada) {
+        window.location.reload();
+        return;
+      }
       this.aplicarEstado(estado);
       if (this.resolverPartida) {
         clearTimeout(this.temporizadorInicio);
@@ -81,9 +100,12 @@ export class GestorSalaCliente {
       if (this.estado) {
         this.estado.movimientos = datos.movimientos;
         this.estado.parejas = datos.parejas || this.estado.parejas;
+        this.estado.parejasEquipos = datos.parejasEquipos || this.estado.parejasEquipos;
         this.estado.turno = datos.turno;
+        this.estado.turnoEquipo = datos.turnoEquipo || this.estado.turnoEquipo;
       }
       this.refrescarMarcadores();
+      this.refrescarEquipos();
       this.actualizarTurno(datos.turno);
     });
 
@@ -93,12 +115,17 @@ export class GestorSalaCliente {
     });
 
     clienteMultijugador.on("turno-cambiado", (datos) => {
-      if (this.estado) this.estado.turno = datos.turno;
+      if (this.estado) {
+        this.estado.turno = datos.turno;
+        this.estado.turnoEquipo = datos.turnoEquipo || this.estado.turnoEquipo;
+      }
       this.actualizarTurno(datos.turno);
+      this.refrescarEquipos();
     });
 
     clienteMultijugador.on("partida-terminada", (datos) => {
       if (this.estado) this.estado.estado = "terminada";
+      this.partidaTerminada = true;
       BoardManager.bloquearTablero(true);
       window.dispatchEvent(new CustomEvent("partida-terminada-online", { detail: datos }));
     });
@@ -114,7 +141,40 @@ export class GestorSalaCliente {
     });
 
     clienteMultijugador.on("poder-activado", (datos) => {
+      if (this.estado) {
+        if (datos?.jugadorId && datos.poderId) {
+          if (!this.estado.poderes) this.estado.poderes = {};
+          if (!this.estado.poderes[datos.jugadorId]) this.estado.poderes[datos.jugadorId] = {};
+          this.estado.poderes[datos.jugadorId][datos.poderId] = datos.usosRestantes ?? this.estado.poderes[datos.jugadorId][datos.poderId];
+        }
+        if (typeof datos?.chakra === "number" && datos.jugadorId) {
+          if (!this.estado.chakra) this.estado.chakra = {};
+          this.estado.chakra[datos.jugadorId] = datos.chakra;
+        }
+      }
+      this.actualizarPoderesUI(datos);
       window.dispatchEvent(new CustomEvent("poder-activado-online", { detail: datos }));
+    });
+
+    clienteMultijugador.on("poder-rechazado", (datos) => {
+      window.dispatchEvent(new CustomEvent("poder-rechazado-online", { detail: datos }));
+    });
+
+    clienteMultijugador.on("poder-efecto", (datos) => {
+      window.dispatchEvent(new CustomEvent("poder-efecto-online", { detail: datos }));
+    });
+
+    clienteMultijugador.on("estado-poderes", (datos) => {
+      if (this.estado && datos) {
+        if (datos.poderes) this.estado.poderes = datos.poderes;
+        if (datos.chakra) this.estado.chakra = datos.chakra;
+        if (datos.sustitucionArmada) {
+          if (!this.estado.sustitucionArmada) this.estado.sustitucionArmada = {};
+          Object.assign(this.estado.sustitucionArmada, datos.sustitucionArmada);
+        }
+      }
+      this.actualizarPoderesUI();
+      window.dispatchEvent(new CustomEvent("estado-poderes-online", { detail: datos }));
     });
 
     clienteMultijugador.on("error-sesion", (datos) => {
@@ -150,15 +210,27 @@ export class GestorSalaCliente {
     if (!estado) return;
     this.estado = estado;
     this.codigoSala = estado.codigo || this.codigoSala;
-    this.esMiTurno = estado.turno === this.miId;
 
     const yo = estado.jugadores.find((j) => j.id === this.miId);
     const rival = estado.jugadores.find((j) => j.id !== this.miId);
     this.miNombre = yo?.nombre || "Jugador";
+    this.miEquipo = yo?.equipo || null;
+    this.miAsiento = yo?.asiento ?? null;
     this.rivalNombre = rival?.nombre || "Rival";
+    this.esMiTurno = this.#esTurnoDeMiEquipo(estado.turnoEquipo, estado.turno);
 
     window.dispatchEvent(new CustomEvent("sala-lista-online", { detail: estado }));
     this.refrescarUI();
+  }
+
+  #esTurnoDeMiEquipo(turnoEquipo, turnoId) {
+    if (turnoEquipo) return turnoEquipo === this.miEquipo;
+    return turnoId === this.miId;
+  }
+
+  #parejasDeMiEquipo() {
+    if (this.es2v2) return this.estado?.parejasEquipos?.[this.miEquipo] || 0;
+    return this.estado?.parejas?.[this.miId] || 0;
   }
 
   refrescarUI() {
@@ -175,6 +247,7 @@ export class GestorSalaCliente {
     if (tiempo) tiempo.textContent = "—";
 
     this.refrescarMarcadores();
+    this.refrescarEquipos();
     this.actualizarEstadoConexion();
     this.actualizarTurno(estado.turno);
 
@@ -197,16 +270,116 @@ export class GestorSalaCliente {
     const movimientos = document.getElementById("moves");
     const puntaje = document.getElementById("score");
     if (movimientos) movimientos.textContent = this.estado.movimientos ?? 0;
-    if (puntaje) puntaje.textContent = (this.estado.parejas?.[this.miId] || 0) * 10;
+    if (puntaje) puntaje.textContent = this.#parejasDeMiEquipo() * 10;
+  }
+
+  refrescarEquipos() {
+    const contenedor = document.getElementById("equiposOnline");
+    if (!contenedor) return;
+    const estado = this.estado;
+    if (!estado || !this.es2v2) {
+      contenedor.hidden = true;
+      contenedor.replaceChildren();
+      return;
+    }
+
+    contenedor.hidden = false;
+    contenedor.replaceChildren();
+
+    const renderEquipo = (clave) => {
+      const jugadores = estado.equipos?.[clave] || [];
+      const activo = estado.turnoEquipo === clave;
+      const equipo = document.createElement("div");
+      equipo.className = `equipo-online${activo ? " activo" : ""}`;
+      equipo.dataset.equipo = clave;
+
+      const titulo = document.createElement("div");
+      titulo.className = "equipo-online-titulo";
+      const nombreEquipo = document.createElement("span");
+      nombreEquipo.textContent = `EQUIPO ${clave}`;
+      const parejas = document.createElement("strong");
+      parejas.textContent = `+${estado.parejasEquipos?.[clave] || 0}`;
+      titulo.append(nombreEquipo, parejas);
+
+      const lista = document.createElement("div");
+      lista.className = "equipo-online-jugadores";
+      for (const jugador of jugadores) {
+        const chip = document.createElement("span");
+        chip.className = "jugador-online";
+        if (jugador.id === this.miId) chip.classList.add("es-yo");
+        if (!jugador.conectado || jugador.abandonado) chip.classList.add("desconectado");
+        chip.textContent = jugador.id === this.miId ? `${jugador.nombre} (tú)` : jugador.nombre;
+        lista.appendChild(chip);
+      }
+      equipo.append(titulo, lista);
+      return equipo;
+    };
+
+    const separador = document.createElement("span");
+    separador.className = "equipo-online-separador";
+    separador.textContent = "VS";
+    contenedor.append(renderEquipo("A"), separador, renderEquipo("B"));
+  }
+
+  actualizarPoderesUI(datos = null) {
+    const estado = this.estado;
+    if (!estado) return;
+    const poderesYo = estado.poderes?.[this.miId] || {};
+    const map = [
+      ["sustitucion", "usosSustitucion", "btnSustitucion"],
+      ["byakugan", "usosByakugan", "btnByakugan"],
+      ["robo", "usosRobo", "btnRobo"],
+      ["genjutsu", "usosGenjutsu", "btnGenjutsu"],
+      ["sello", "usosSello", "btnSello"],
+      ["bomba", "usosBomba", "btnBomba"],
+    ];
+    for (const [id, usosId, btnId] of map) {
+      const usosEl = document.getElementById(usosId);
+      if (usosEl && typeof poderesYo[id] === "number") {
+        usosEl.textContent = poderesYo[id];
+      }
+      const btn = document.getElementById(btnId);
+      if (btn && typeof poderesYo[id] === "number") {
+        btn.classList.toggle("poder-agotado", poderesYo[id] <= 0);
+      }
+    }
+    if (datos?.poderId) {
+      const btn = document.getElementById(`btn${datos.poderId === "robo" ? "Robo" : datos.poderId.charAt(0).toUpperCase() + datos.poderId.slice(1)}`);
+      if (datos.poderId === "sustitucion") {
+        const b = document.getElementById("btnSustitucion");
+        if (b) {
+          b.classList.add("poder-usado");
+          setTimeout(() => b.classList.remove("poder-usado"), 900);
+        }
+      } else if (datos.poderId === "bomba") {
+        const b = document.getElementById("btnBomba");
+        if (b) { b.classList.add("poder-usado"); setTimeout(() => b.classList.remove("poder-usado"), 900); }
+      } else if (datos.poderId === "robo") {
+        const b = document.getElementById("btnRobo");
+        if (b) { b.classList.add("poder-usado"); setTimeout(() => b.classList.remove("poder-usado"), 900); }
+      } else if (datos.poderId === "byakugan") {
+        const b = document.getElementById("btnByakugan");
+        if (b) { b.classList.add("poder-usado"); setTimeout(() => b.classList.remove("poder-usado"), 900); }
+      } else if (datos.poderId === "genjutsu") {
+        const b = document.getElementById("btnGenjutsu");
+        if (b) { b.classList.add("poder-usado"); setTimeout(() => b.classList.remove("poder-usado"), 900); }
+      } else if (datos.poderId === "sello") {
+        const b = document.getElementById("btnSello");
+        if (b) { b.classList.add("poder-usado"); setTimeout(() => b.classList.remove("poder-usado"), 900); }
+      }
+    }
   }
 
   actualizarEstadoConexion(texto) {
     const el = document.getElementById("onlineEstado");
     if (!el) return;
     el.hidden = false;
+    const marcador = this.es2v2
+      ? `EQUIPO A ${this.estado?.parejasEquipos?.A || 0} · EQUIPO B ${this.estado?.parejasEquipos?.B || 0}`
+      : `PAREJAS ${this.estado?.parejas?.[this.miId] || 0} - ${this.estado?.parejas?.[this.rivalId()] || 0}`;
     el.textContent =
       texto ||
-      `SALA ${this.codigoSala} · ${this.miNombre} vs ${this.rivalNombre} · PAREJAS ${this.estado?.parejas?.[this.miId] || 0} - ${this.estado?.parejas?.[this.rivalId()] || 0}`;
+      `SALA ${this.codigoSala} · ${this.es2v2 ? "2 VS 2" : `${this.miNombre} vs ${this.rivalNombre}`} · ${marcador}`;
   }
 
   rivalId() {
@@ -214,12 +387,14 @@ export class GestorSalaCliente {
   }
 
   actualizarTurno(turnoId) {
-    if (!turnoId) return;
-    this.esMiTurno = turnoId === this.miId;
+    const estado = this.estado;
+    if (!estado) return;
+    this.esMiTurno = this.#esTurnoDeMiEquipo(estado.turnoEquipo, turnoId || estado.turno);
     const turnoSasuke = document.getElementById("turnoSasuke");
     const turnoNaruto = document.getElementById("turnoNaruto");
+    const compañeroActivo = this.es2v2 && this.esMiTurno && estado.turno !== this.miId;
     if (turnoSasuke) {
-      turnoSasuke.textContent = this.esMiTurno ? "TU TURNO" : "";
+      turnoSasuke.textContent = compañeroActivo ? "TURNO DE TU EQUIPO" : this.esMiTurno ? "TU TURNO" : "";
       turnoSasuke.classList.toggle("turno-activo", this.esMiTurno);
     }
     if (turnoNaruto) {
@@ -227,6 +402,10 @@ export class GestorSalaCliente {
       turnoNaruto.classList.toggle("turno-activo", !this.esMiTurno);
     }
     BoardManager.bloquearTablero(!this.esMiTurno);
+  }
+
+  async solicitarRevancha(config = {}) {
+    return clienteMultijugador.solicitarRevancha(config);
   }
 
   voltearCarta(index) {
