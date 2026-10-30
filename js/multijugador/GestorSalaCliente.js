@@ -103,15 +103,25 @@ export class GestorSalaCliente {
         this.estado.parejasEquipos = datos.parejasEquipos || this.estado.parejasEquipos;
         this.estado.turno = datos.turno;
         this.estado.turnoEquipo = datos.turnoEquipo || this.estado.turnoEquipo;
+        this.#aplicarEstadoJugadores(datos);
       }
       this.refrescarMarcadores();
       this.refrescarEquipos();
       this.actualizarTurno(datos.turno);
+      this.actualizarEstadoJugadoresUI();
+      this.actualizarTiemposUI();
+      this.actualizarPoderesUI();
     });
 
     clienteMultijugador.on("fallo", (datos) => {
       BoardManager.bloquearTablero(true);
       BoardManager.ocultarCartasRemotas(datos.index1, datos.index2, 800);
+      if (this.estado) this.#aplicarEstadoJugadores(datos);
+      this.actualizarEstadoJugadoresUI();
+      this.actualizarTiemposUI();
+      if (datos.sustitucion) {
+        window.dispatchEvent(new CustomEvent("sustitucion-usada-online", { detail: datos }));
+      }
     });
 
     clienteMultijugador.on("turno-cambiado", (datos) => {
@@ -120,13 +130,25 @@ export class GestorSalaCliente {
         this.estado.turnoEquipo = datos.turnoEquipo || this.estado.turnoEquipo;
       }
       this.actualizarTurno(datos.turno);
+      this.actualizarTiemposUI();
       this.refrescarEquipos();
     });
 
+    clienteMultijugador.on("tiempo-actualizado", (datos) => {
+      if (!this.estado) return;
+      this.estado.tiempos = datos.tiempos || this.estado.tiempos;
+      this.actualizarTiemposUI();
+    });
+
     clienteMultijugador.on("partida-terminada", (datos) => {
-      if (this.estado) this.estado.estado = "terminada";
+      if (this.estado) {
+        this.estado.estado = "terminada";
+        this.#aplicarEstadoJugadores(datos);
+      }
       this.partidaTerminada = true;
       BoardManager.bloquearTablero(true);
+      this.actualizarEstadoJugadoresUI();
+      this.actualizarTiemposUI();
       window.dispatchEvent(new CustomEvent("partida-terminada-online", { detail: datos }));
     });
 
@@ -152,6 +174,7 @@ export class GestorSalaCliente {
           this.estado.chakra[datos.jugadorId] = datos.chakra;
         }
       }
+      this.actualizarEstadoJugadoresUI();
       this.actualizarPoderesUI(datos);
       window.dispatchEvent(new CustomEvent("poder-activado-online", { detail: datos }));
     });
@@ -161,18 +184,62 @@ export class GestorSalaCliente {
     });
 
     clienteMultijugador.on("poder-efecto", (datos) => {
+      if (this.estado) {
+        if (datos?.vida !== undefined) this.estado.vida = datos.vida;
+        if (datos?.tipo === "robo") {
+          if (!this.estado.chakra) this.estado.chakra = {};
+          if (datos.jugadorId) this.estado.chakra[datos.jugadorId] = datos.chakraAtacante;
+          if (datos.objetivoId) this.estado.chakra[datos.objetivoId] = datos.chakraObjetivo;
+        }
+        if (datos?.tipo === "defensa") {
+          if (!this.estado.sustitucionArmada) this.estado.sustitucionArmada = {};
+          this.estado.sustitucionArmada[datos.jugadorId] = { activa: true };
+        }
+        if (datos?.tipo === "defensa_expira" || datos?.tipo === "evadido") {
+          if (!this.estado.sustitucionArmada) this.estado.sustitucionArmada = {};
+          this.estado.sustitucionArmada[datos.objetivoId || datos.jugadorId] = { activa: false };
+        }
+      }
+      if (datos?.tipo === "byakugan") {
+        for (const carta of datos.cartas || []) {
+          BoardManager.revelarTemporal(carta.index, carta.valor, carta.aldea, datos.duracion);
+        }
+      } else if (datos?.tipo === "sello") {
+        if (this.estado) this.estado.sello = { index: datos.index, hasta: datos.hasta };
+        BoardManager.sellarCarta(datos.index, datos.duracion);
+      } else if (datos?.tipo === "sello_expirado") {
+        if (this.estado) this.estado.sello = null;
+        BoardManager.quitarSello(datos.index);
+      } else if (datos?.tipo === "mezcla") {
+        BoardManager.aplicarMezcla(datos.cartas);
+        this.#activarIlusionGenjutsu(datos.duracion);
+      } else if (datos?.tipo === "genjutsu_expirado") {
+        this.#desactivarIlusionGenjutsu();
+      } else if (datos?.tipo === "contrarresto") {
+        if (datos.cartas) BoardManager.aplicarMezcla(datos.cartas);
+        this.#desactivarIlusionGenjutsu();
+      }
+      this.actualizarEstadoJugadoresUI();
+      this.actualizarPoderesUI();
       window.dispatchEvent(new CustomEvent("poder-efecto-online", { detail: datos }));
     });
 
     clienteMultijugador.on("estado-poderes", (datos) => {
       if (this.estado && datos) {
         if (datos.poderes) this.estado.poderes = datos.poderes;
-        if (datos.chakra) this.estado.chakra = datos.chakra;
+        if (datos.chakra !== undefined) this.estado.chakra = datos.chakra;
+        if (datos.vida !== undefined) this.estado.vida = datos.vida;
+        if (datos.combo !== undefined) this.estado.combo = datos.combo;
+        if (datos.aciertos !== undefined) this.estado.aciertos = datos.aciertos;
+        if (datos.errores !== undefined) this.estado.errores = datos.errores;
+        if (datos.tiempos !== undefined) this.estado.tiempos = datos.tiempos;
         if (datos.sustitucionArmada) {
           if (!this.estado.sustitucionArmada) this.estado.sustitucionArmada = {};
           Object.assign(this.estado.sustitucionArmada, datos.sustitucionArmada);
         }
       }
+      this.actualizarEstadoJugadoresUI();
+      this.actualizarTiemposUI();
       this.actualizarPoderesUI();
       window.dispatchEvent(new CustomEvent("estado-poderes-online", { detail: datos }));
     });
@@ -228,6 +295,29 @@ export class GestorSalaCliente {
     return turnoId === this.miId;
   }
 
+  #aplicarEstadoJugadores(datos = {}) {
+    if (!this.estado || !datos) return;
+    if (datos.chakra !== undefined) this.estado.chakra = datos.chakra;
+    if (datos.vida !== undefined) this.estado.vida = datos.vida;
+    if (datos.combo !== undefined) this.estado.combo = datos.combo;
+    if (datos.aciertos !== undefined) this.estado.aciertos = datos.aciertos;
+    if (datos.errores !== undefined) this.estado.errores = datos.errores;
+    if (datos.tiempos !== undefined) this.estado.tiempos = datos.tiempos;
+  }
+
+  #activarIlusionGenjutsu(duracion = 5000) {
+    const frame = document.getElementById("boardFrame");
+    if (frame) frame.classList.add("genjutsu-ilusion");
+    clearTimeout(this._genjutsuTimeout);
+    this._genjutsuTimeout = setTimeout(() => this.#desactivarIlusionGenjutsu(), duracion);
+  }
+
+  #desactivarIlusionGenjutsu() {
+    document.getElementById("boardFrame")?.classList.remove("genjutsu-ilusion");
+    clearTimeout(this._genjutsuTimeout);
+    this._genjutsuTimeout = null;
+  }
+
   #parejasDeMiEquipo() {
     if (this.es2v2) return this.estado?.parejasEquipos?.[this.miEquipo] || 0;
     return this.estado?.parejas?.[this.miId] || 0;
@@ -243,13 +333,13 @@ export class GestorSalaCliente {
     if (nombres[0]) nombres[0].textContent = this.miNombre;
     if (nombres[1]) nombres[1].textContent = this.rivalNombre;
 
-    const tiempo = document.getElementById("timer");
-    if (tiempo) tiempo.textContent = "—";
-
     this.refrescarMarcadores();
     this.refrescarEquipos();
     this.actualizarEstadoConexion();
     this.actualizarTurno(estado.turno);
+    this.actualizarEstadoJugadoresUI();
+    this.actualizarTiemposUI();
+    this.actualizarPoderesUI();
 
     if (Array.isArray(estado.mazo)) {
       estado.mazo.forEach((carta, index) => {
@@ -263,6 +353,7 @@ export class GestorSalaCliente {
         BoardManager.revelarCartaRemota(carta.index, carta.valor, carta.aldea);
       }
     }
+    BoardManager.aplicarEstadoSello(estado.sello);
   }
 
   refrescarMarcadores() {
@@ -319,6 +410,94 @@ export class GestorSalaCliente {
     separador.className = "equipo-online-separador";
     separador.textContent = "VS";
     contenedor.append(renderEquipo("A"), separador, renderEquipo("B"));
+  }
+
+  actualizarEstadoJugadoresUI() {
+    const estado = this.estado;
+    if (!estado) return;
+    const rivalId = this.rivalId();
+    this.#actualizarJugadorUI(this.miId, {
+      chakraTexto: "chakraTextoSasuke",
+      chakraBarra: "chakraBarraSasuke",
+      vidaTexto: "vidaTextoSasuke",
+      vidaBarra: "vidaBarraSasuke",
+      comboLateral: "comboSasuke",
+      aciertos: "playerHits",
+      errores: "playerErrors",
+      combo: "playerCombo",
+    });
+    this.#actualizarJugadorUI(rivalId, {
+      chakraTexto: "chakraTextoNaruto",
+      chakraBarra: "chakraBarraNaruto",
+      vidaTexto: "vidaTextoNaruto",
+      vidaBarra: "vidaBarraNaruto",
+      comboLateral: "comboNaruto",
+      aciertos: "enemyHits",
+      errores: "enemyErrors",
+      combo: "enemyCombo",
+    });
+    this.actualizarSustitucionUI();
+  }
+
+  #actualizarJugadorUI(jugadorId, ids) {
+    if (!jugadorId) return;
+    const estado = this.estado;
+    const chakra = estado.chakra?.[jugadorId];
+    const vida = estado.vida?.[jugadorId];
+    const combo = estado.combo?.[jugadorId] || 0;
+    const aciertos = estado.aciertos?.[jugadorId];
+    const errores = estado.errores?.[jugadorId];
+
+    if (typeof chakra === "number") {
+      const texto = document.getElementById(ids.chakraTexto);
+      const barra = document.getElementById(ids.chakraBarra);
+      if (texto) texto.textContent = `${chakra} / 100`;
+      if (barra) barra.style.width = `${Math.max(0, Math.min(100, chakra))}%`;
+    }
+    if (typeof vida === "number") {
+      const texto = document.getElementById(ids.vidaTexto);
+      const barra = document.getElementById(ids.vidaBarra);
+      if (texto) texto.textContent = `${vida}/100`;
+      if (barra) barra.style.width = `${Math.max(0, Math.min(100, vida))}%`;
+    }
+    const comboLateral = document.getElementById(ids.comboLateral);
+    if (comboLateral) comboLateral.textContent = combo > 0 ? `COMBO x${combo}` : "";
+    const comboEl = document.getElementById(ids.combo);
+    if (comboEl) comboEl.textContent = `x${combo}`;
+    const aciertosEl = document.getElementById(ids.aciertos);
+    if (aciertosEl && typeof aciertos === "number") aciertosEl.textContent = aciertos;
+    const erroresEl = document.getElementById(ids.errores);
+    if (erroresEl && typeof errores === "number") erroresEl.textContent = errores;
+  }
+
+  actualizarTiemposUI() {
+    const estado = this.estado;
+    if (!estado) return;
+    const formatear = (segundos) => {
+      const total = Math.max(0, Math.floor(Number(segundos) || 0));
+      const minutos = String(Math.floor(total / 60)).padStart(2, "0");
+      const resto = String(total % 60).padStart(2, "0");
+      return `${minutos}:${resto}`;
+    };
+    const tiempos = estado.tiempos || {};
+    const miTiempo = tiempos[this.miId];
+    const rivalTiempo = tiempos[this.rivalId()];
+    const tiempoSasuke = document.getElementById("tiempoSasuke");
+    const tiempoNaruto = document.getElementById("tiempoNaruto");
+    const tiempo = document.getElementById("timer");
+    if (tiempoSasuke) tiempoSasuke.textContent = formatear(miTiempo);
+    if (tiempoNaruto) tiempoNaruto.textContent = formatear(rivalTiempo);
+    if (tiempo) tiempo.textContent = formatear(tiempos[estado.turno] ?? miTiempo);
+  }
+
+  actualizarSustitucionUI() {
+    const el = document.getElementById("sustitucionEstado");
+    if (!el) return;
+    const mia = !!this.estado?.sustitucionArmada?.[this.miId]?.activa;
+    const rival = !!this.estado?.sustitucionArmada?.[this.rivalId()]?.activa;
+    el.textContent = mia ? "SUSTITUCIÓN ARMADA" : rival ? "RIVAL CON SUSTITUCIÓN" : "";
+    el.classList.toggle("sustitucion-activa", mia);
+    el.classList.toggle("sustitucion-rival", rival && !mia);
   }
 
   actualizarPoderesUI(datos = null) {

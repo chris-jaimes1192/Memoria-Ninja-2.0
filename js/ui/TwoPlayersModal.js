@@ -215,7 +215,7 @@ export class TwoPlayersModal extends BaseModal {
     this.unirseASalaDirecto(sala.codigo);
   }
 
-  async   async unirseASalaDirecto(codigo, contrasena = null) {
+  async unirseASalaDirecto(codigo, contrasena = null) {
     const nombre = localStorage.getItem('usuarioActivo') 
       ? JSON.parse(localStorage.getItem('usuarioActivo') || '{}').nombre || 'Jugador'
       : 'Jugador';

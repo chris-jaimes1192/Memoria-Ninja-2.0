@@ -9,6 +9,7 @@
     "pretest": "node scripts/db-setup.js --test",
     "db:setup": "node scripts/db-setup.js",
     "db:test-setup": "node scripts/db-setup.js --test",
+    "check:js": "node scripts/verificar-sintaxis.js",
     "seed:demo": "node scripts/seed-demo.js",
     "correo:probar": "node scripts/probar-correo.js"
   },

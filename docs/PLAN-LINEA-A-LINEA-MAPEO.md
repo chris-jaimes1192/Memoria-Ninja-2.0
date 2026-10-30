@@ -1,44 +1,55 @@
-﻿# MAPEO PLAN-DESARROLLO.md LINEA A LINEA
-Fecha: $(Get-Date -Format 'yyyy-MM-dd HH:mm')
-Objetivo: CUMPLE / PARCIAL / FALTA / DESVIACIÓN con evidencia
+# MAPEO PLAN-DESARROLLO.md
 
-## 1-23 (Reglas/Protocolo)
-1-22: CUMPLE - Reglas y protocolo documentados.
+Fecha: 2026-10-29
+Objetivo: CUMPLE / PARCIAL / FALTA / DESVIACI�N con evidencia.
 
-## 25-34 (Estado base)
-26: CUMPLE - sql/esquema.sql existe
-31: CUMPLE - Auth real implementado
-32: CUMPLE - seed-demo + datos-simulados
-33: CUMPLE - Tests verdes
+> El plan cambi� de numeraci�n al aplicar los ajustes del 2026-10-29. Por eso este mapeo usa secciones, no l�neas fijas.
 
-## 37-63 (Parte 1 SMTP)
-37-62: CUMPLE - Verificado en README/AGENTS/archivos backend. Tests 98/98.
+## Reglas, protocolo y estado base
+- Reglas y protocolo: CUMPLE.
+- `sql/esquema.sql`, auth real, seed demo: CUMPLE.
+- Tests actuales: CUMPLE � 166/166, 25 suites.
 
-## 64-97 (Parte 2 Sesión real)
-64-96: CUMPLE - sesion-guard.js, botón invitado, logout real, CSP arreglado.
+## Parte 1 � SMTP
+- CUMPLE. `SmtpNotificadorCorreo`, `MAILER=smtp|ethereal|consola`, tests y correo real verificado.
+- Pendiente de seguridad: rotar la App Password expuesta.
 
-## 98-214 (Parte 3 Datos reales + 3.5)
-98-213: CUMPLE - URLs relativas, ranking real, historial real, merge invitado->cuenta, tests 104/104.
+## Parte 2 � Sesi�n real
+- CUMPLE. `sesion-guard.js`, logout real, invitado/offline, CSP sin inline.
+- Pendiente menor: prueba visual final de invitado/offline.
 
-## 215-230 (Parte 4 Endurecer)
-215-229: CUMPLE - middlewares, CORS, cookies, tests 124/124.
+## Parte 3 � Datos reales + 3.5
+- CUMPLE. Ranking/historial reales, URLs relativas, merge invitado?cuenta, cola y dedup.
 
-## 231-306 (Parte 5 + 5.1)
-231-276: CUMPLE - Socket.io 1v1, 137/137
-278-305: CUMPLE - 2v2/QR/LAN/móvil, 152/152
+## Parte 4 � Endurecer backend
+- CUMPLE en HTTP: auth/owner, CORS, cookies y rate limit.
+- La seguridad de Socket.io queda en Parte 6.
 
-## 307-323 (Parte 6)
-307: EN PROGRESO
-317-319: CUMPLE (adelantados)
-320-322: PENDIENTE - Afinar UX invitado, A11y WCAG 2.2, Desplegar
-309-311: Documentado
+## Parte 5 � Online base
+- CUMPLE. Socket.io 1v1, salas, turnos, reconexi�n, abandono y anti-trampa.
+- Adem�s ya existen 2v2, QR/LAN, lista de salas y viewport.
 
-## 324-340 (Parte 7)
-324: PENDIENTE
-331: CUMPLE - cola historialPendiente
-335: CUMPLE - dedup servidor
-333: FALTA - reintento online/offline
-337-339: Documentado
+## Parte 5.1 � Poderes online
+- IMPLEMENTADA en c�digo 1v1. Estado/chakra/vida/combo/tiempos/defensas, 6 poderes y contrarrestos.
+- Efectos en tablero y avisos conectados; 9 tests nuevos de poderes.
+- FALTA: E2E manual con 2 navegadores, pulido de animaciones/banners y paridad 2v2 (5.3).
+- `Poder.activar()` ya delega en `activarPoderOnline()`; no est� deshabilitado.
 
-## 343-352 (Registro)
-350: PARCIAL/DESVIADO - Indica 137/137 pero ahora hay 152/152 (5.1 añadido)
+## Parte 5.2 � Social
+- PARCIAL. Lista de salas, QR/LAN y `menu.html?codigo=` hechos.
+- FALTAN: chat, filtros/invitaciones y persistencia online en servidor.
+
+## Parte 5.3 � 2v2 y espectadores
+- PARCIAL. 2v2, equipos, turno compartido, abandono y revancha hechos y testeados.
+- FALTAN: espectadores y poderes/chakra de equipo.
+
+## Parte 6 � Pulido/despliegue
+- PARCIAL. Navegaci�n, p�ginas hu�rfanas, viewport y bot�n NIVELES resueltos.
+- FALTAN: despliegue HTTPS/wss, seguridad Socket.io, m�vil real y accesibilidad completa.
+
+## Parte 7 � Offline
+- PARCIAL. Cola, dedup y merge hechos.
+- FALTA: activar el reintento autom�tico en p�ginas de juego (hoy solo desde login).
+
+## Registro de avance
+- El plan ya fue actualizado: Parte 5 completa; 5.1/5.2/5.3/6/7 en progreso.

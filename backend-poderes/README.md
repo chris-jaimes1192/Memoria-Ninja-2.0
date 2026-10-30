@@ -155,10 +155,16 @@ asíncrono, aplica `sql/esquema.sql` al iniciar). `DatabaseSqlite` se conserva
 npm test
 ```
 
-Corre **91 tests en 20 suites**, todos verdes. El `pretest` aplica el esquema
+Corre **166 tests en 25 suites**, todos verdes. El `pretest` aplica el esquema
 a `memoria_ninja_test`. La mayoría son **tests de contrato**: la misma batería
 corre contra varias implementaciones de `PartidaRepository` (memoria, archivo,
 SQL) y contra los 6 poderes → **el LSP está verificado con tests, no prometido**.
+
+Para validar sintaxis sin tocar la base:
+
+```bash
+npm run check:js
+```
 
 Los tests de integración (`usuarioService`, `usuarioPerfil`,
 `procedimientoService`) corren contra PostgreSQL. `tests/authE2e.test.js`

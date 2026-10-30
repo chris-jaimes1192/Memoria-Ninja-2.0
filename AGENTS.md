@@ -39,14 +39,14 @@ Algunos archivos son ES modules (`import`/`export`); `require` estilo CommonJS p
 
 - El nombre de la carpeta **contiene espacios**: `js/nucleo-GAME ONLI/` — usá comillas o `-LiteralPath` en comandos de shell. Las rutas de import también usan el espacio (funciona en la resolución de módulos del navegador, pero los glob del shell necesitan comillas).
 - **Este ES el motor vivo.** `game-online.js` es un bootstrap delgado; el motor real: `GestorPartida.js` (raíz de composición), `GestorTurno.js`, `GestorTiempo.js`, `entidades/Personaje.js`, `poderes/Poder.js` (Template Method) + las 6 clases de poderes + `GestorPoderes.js`, `datos/ProveedorDatos*.js`, `vista/VistaPartida.js`
-- Conexión de datos + persistencia: `ProveedorDatosServidor` crea la partida en el backend (`POST /api/partida` → PostgreSQL) y `Poder.activar()` notifica `POST /api/poder/activar` best-effort; ambos caen silenciosamente a la lógica simulada local cuando el servidor no responde, así el juego funciona offline también. **En partidas online (1v1 o 2v2) no se usa el proveedor ni XP**: `Poder.activar()` corta con un aviso de que los poderes online todavía no existen.
+- Conexión de datos + persistencia: `ProveedorDatosServidor` crea la partida en el backend (`POST /api/partida` → PostgreSQL) y `Poder.activar()` notifica `POST /api/poder/activar` best-effort; ambos caen silenciosamente a la lógica simulada local cuando el servidor no responde, así el juego funciona offline también. **En partidas online (1v1 o 2v2) no se usa el proveedor ni XP**: `Poder.activar()` delega en `activarPoderOnline()`. En 1v1 el servidor ya es autoritativo para chakra, vida, combo, tiempos, aciertos/errores, los 6 poderes, Byakugan/Sello/Genjutsu reales y contrarrestos (Parte 5.1); falta la prueba manual con 2 clientes y la paridad de poderes en 2v2 (Parte 5.3).
 - `COMO-QUEDO-ORGANIZADO.md` dentro de la carpeta mapea el código viejo de `game-online.js` a las clases nuevas.
 - Hay un archivo basura de 0 bytes `{entidades,poderes,datos,vista}` en la carpeta (brace-expansion roto), ignorarlo sin problema.
 
 ### Multijugador online real (Socket.io)
 
 - Backend: `backend-poderes/src/servicios/online/GestorSalas.js`, montado por `server.js` sobre el mismo HTTP server (Socket.io 4.8.4). Salas **en memoria** (no PostgreSQL): efímeras, se pierden al reiniciar. Soporta **1v1** y **2v2** (`config.modo`), capacidad 2/4 y asientos `0-1 = Equipo A`, `2-3 = Equipo B`.
-- Eventos: `crear-sala`, `unirse-sala` (auto-start con 2 en 1v1 y 4 en 2v2), `marcar-listo`, `listar-salas`, `buscar-sala-por-codigo`, `buscar-partida` (matchmaking por modo), `cancelar-busqueda`, `reincorporarse-sala`, `voltear-carta`, `revancha-sala`, `abandonar-sala`. El servidor emite `partida-iniciada`, `sala-actualizada`, `carta-volteada`, `acierto`, `fallo`, `turno-cambiado`, `partida-terminada`, `jugador-desconectado|reconectado`, `error-sesion`.
+- Eventos: `crear-sala`, `unirse-sala` (auto-start con 2 en 1v1 y 4 en 2v2), `marcar-listo`, `listar-salas`, `buscar-sala-por-codigo`, `buscar-partida` (matchmaking por modo), `cancelar-busqueda`, `reincorporarse-sala`, `voltear-carta`, `revancha-sala`, `abandonar-sala`. El servidor emite `partida-iniciada`, `sala-actualizada`, `carta-volteada`, `acierto`, `fallo`, `turno-cambiado`, `tiempo-actualizado`, `poder-activado`, `poder-efecto`, `partida-terminada`, `jugador-desconectado|reconectado`, `error-sesion`.
 - Identidad: token estable por pestaña en `sessionStorage["memoriaNinjaTokenJugador"]` (no `socket.id`), enviado en `handshake.auth.token`; permite reincorporarse tras recargar. Gracia de reconexión: **15 s**; si expira en partida → abandono del rival (en 2v2 el equipo sigue si queda un integrante). Salas se limpian 30 s después de terminar.
 - Reglas: solo el jugador del turno puede voltear (en 2v2 cualquier integrante activo del equipo del turno); acierto suma pareja y conserva turno; fallo bloquea 800 ms y cambia turno; el mazo no filtra `valor/aldea` de cartas no descubiertas. Empate posible (`ganadorId: null`). El abandono explícito hace perder al equipo.
 - `partida-terminada` incluye `idPartida`, `motivo` (`completada`/`abandono`), ganador/perdedor y equipo, `parejasEquipos`, `puntaje`, roster y `config`. `revancha-sala` solo la puede pedir el anfitrión, exige partida terminada y todos los conectados; reutiliza la sala y emite `partida-iniciada`.
@@ -69,7 +69,8 @@ El **logout es real**: `window.SesionNinja.cerrarSesion()` (usado por `js/menu.j
 cd backend-poderes
 npm install
 npm start          # corre en http://localhost:3000
-npm test           # runner nativo de Node (--test): 152 tests, 25 suites, todas verdes
+npm test           # runner nativo de Node (--test): 166 tests, 25 suites, todas verdes
+npm run check:js   # sintaxis de todo el JS del repo (frontend + backend)
 npm run seed:demo  # llena PGDATABASE con datos demo (7 cuentas @demo.ninja / clave123)
 ```
 
@@ -117,7 +118,7 @@ Hooks (12 páginas, todas llaman a `progresoService.registrarFinPartida({victori
 
 ## Testing
 
-- **Solo backend** — no hay tests de frontend
+- **Solo backend** — no hay tests de frontend; `npm run check:js` valida la sintaxis de todo el JS
 - Correr desde el directorio `backend-poderes/`: `npm test` (su `pretest` corre `node scripts/db-setup.js --test`, que aplica `sql/esquema.sql` a `memoria_ninja_test`)
 - Las suites de integración `usuarioService.test.js`, `usuarioPerfil.test.js`, `procedimientoService.test.js` e `importarProgreso.test.js` corren contra **PostgreSQL** (`memoria_ninja_test`), no SQLite. Comparten `tests/helpers/baseDatosPrueba.js` (`crearDatabasePrueba()` / `limpiarDatabase()` → `TRUNCATE ... CASCADE`) y limpian las 7 tablas entre tests.
 - Los repos son async-safe: los métodos de escritura de `UsuarioRepositorySQL`/`HistorialPartidaRepositorySQL` hacen `return` de la promesa `run()` para que el PostgreSQL (async) sea awaited; esperar el resultado síncrono de SQLite es un no-op, así funcionan ambos motores.
@@ -147,7 +148,7 @@ Hay cuatro skills especializadas instaladas y se deben cargar vía la tool `skil
 
 ## Cosas a tener en cuenta
 
-- No hay `package.json` en la raíz — el `package-lock.json` de la raíz está vacío (`"packages": {}`)
+- La raíz tiene un `package.json` legado (Express 5 + `mysql2`) que no usa el backend real; el backend vive en `backend-poderes/` con Express 4. No instalar dependencias desde la raíz.
 - El frontend no tiene dev server — abrí los HTML directamente o usá un servidor de archivos estáticos
 - Algunos archivos JS usan ES modules, otros no — revisá el estilo de módulo de cada archivo antes de agregar código
 - El backend sirve el frontend con `helmet()` → **CSP activo**: no usar `onclick`/`onerror` ni `<script>` inline en las páginas HTML (el navegador los bloquea). Conectar todo con `addEventListener` desde el JS de la página. Único HTML con inline: `Agrupar/facil.html` (legado, no se toca)

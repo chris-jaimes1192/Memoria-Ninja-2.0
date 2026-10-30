@@ -1,35 +1,39 @@
-﻿# POWERS ONLINE CHECKLIST
-Fecha: $(Get-Date -Format 'yyyy-MM-dd HH:mm')
+# POWERS ONLINE CHECKLIST
+
+Fecha: 2026-10-29
 
 ## Servidor (GestorSalas.js)
-- [ ] Añadir estado: sala.chakra, sala.defensas.sustitucion, sala.poderEnProceso
-- [ ] Inicializar en inicializarEstadoSala()
-- [ ] Reescribir evento "activar-poder" con validaciones (turno/equipo, usos, chakra)
-- [ ] Añadir "poder-rechazado"
-- [ ] Añadir "poder-activado" con info para UI
-- [ ] Añadir "poder-efecto" con resultado
-- [ ] Añadir "estado-poderes" para rejoin
-- [ ] Bloquear voltear-carta si poderEnProceso
-- [ ] Lógica Sustitución/Bomba/Robo
-- [ ] Incluir poderes/estado en vistaEstado
+- [x] A�adir estado: `sala.chakra`, `sala.defensas.sustitucion`, `sala.poderEnProceso`
+- [x] Inicializar en `inicializarEstadoSala()`
+- [x] Reescribir evento `activar-poder` con validaciones (turno/equipo, usos, chakra)
+- [x] A�adir `poder-rechazado`
+- [x] A�adir `poder-activado` con info para UI
+- [x] A�adir `poder-efecto` con resultado
+- [~] `estado-poderes` para rejoin (el estado completo viaja en `vistaEstado`; el evento existe en cliente)
+- [x] Bloquear `voltear-carta` si `poderEnProceso` o carta sellada
+- [x] L�gica de los 6 poderes + vida/combo/tiempos/contrarrestos
+- [x] Incluir poderes/estado en `vistaEstado`
 
 ## Cliente
-- [ ] ClienteMultijugador.activarPoder(poderId)
-- [ ] GestorSalaCliente escuchar poder-rechazado/poder-efecto/estado-poderes
-- [ ] GestorPartida contexto.activarPoderOnline
-- [ ] Poder.js quitar bloqueo online, usar flujo socket
-- [ ] GestorPoderes pasar contexto correcto
+- [x] `ClienteMultijugador.activarPoder(poderId)`
+- [x] `GestorSalaCliente` escucha `poder-activado`/`poder-rechazado`/`poder-efecto`/`estado-poderes`
+- [x] `GestorPartida` contexto `activarPoderOnline`
+- [x] `Poder.js` usa flujo socket online
+- [x] `GestorPoderes` pasa el contexto correcto
+- [x] `GestorPartida`/`GestorSalaCliente` aplican efectos al tablero (revelar, mezclar, sellar)
 
 ## UI
-- [ ] Resaltar botón al usar poder
-- [ ] Actualizar contadores desde servidor
-- [ ] Mostrar aviso quién usó poder
-- [ ] Estilos CSS
+- [x] Resaltar bot�n al usar poder
+- [x] Actualizar contadores desde servidor
+- [x] Mostrar aviso de quién usó poder (`poder-activado-online` banner + `poder-efecto-online` aviso)
+- [x] Estilos CSS para efectos (revelado/sello/ilusión, banner de poder e impacto de Bomba)
 
 ## Tests/Pruebas
-- [ ] npm test backend >=152
-- [ ] 1v1 online poderes
-- [ ] 2v2 online poderes por equipo
-- [ ] Sustitución+Bomba (10) consume
-- [ ] Sustitución+Robo evade consume
-- [ ] Usos se agotan
+- [x] `npm test` backend: 166/166, 25 suites
+- [x] 1v1 online con poderes (integraci�n Socket.io)
+- [ ] 1v1 online con poderes (manual, 2 navegadores)
+- [ ] 2v2 online con poderes por equipo
+- [x] Sustituci�n + Bomba (10) consume
+- [x] Sustituci�n + Robo evade consume
+- [x] Usos se agotan
+- [x] Byakugan/Sello/Genjutsu/contrarrestos (tests de integraci�n)

@@ -2292,3 +2292,149 @@ video {
 #btnRevanchaFinal[hidden] {
   display: none !important;
 }
+
+/* =====================================================
+   BANNER DE PODER ONLINE
+   ===================================================== */
+.banner-poder-online {
+  --poder-color: #ffd166;
+  --poder-glow: rgba(255, 209, 102, .45);
+  position: fixed;
+  top: clamp(14px, 8vh, 88px);
+  left: 50%;
+  display: none;
+  align-items: center;
+  gap: 14px;
+  min-width: min(390px, 92vw);
+  max-width: min(560px, 94vw);
+  padding: 10px 22px 10px 12px;
+  border-radius: 14px;
+  border: 2px solid var(--poder-color);
+  background: linear-gradient(135deg, rgba(8, 10, 18, .97), rgba(22, 16, 34, .95));
+  box-shadow:
+    0 14px 40px rgba(0, 0, 0, .7),
+    0 0 30px var(--poder-glow),
+    inset 0 0 18px rgba(255, 255, 255, .04);
+  z-index: 10000;
+  pointer-events: none;
+  font-family: 'Permanent Marker', cursive;
+  transform: translate(-50%, -12px) scale(.96);
+  opacity: 0;
+}
+
+.banner-poder-online.visible {
+  display: flex;
+  animation: bannerPoderEntra .24s cubic-bezier(.2, .9, .3, 1.2) forwards;
+}
+
+.banner-poder-online.es-rival {
+  border-style: dashed;
+}
+
+.banner-poder-online.poder-sustitucion {
+  --poder-color: #d8b26a;
+  --poder-glow: rgba(216, 178, 106, .5);
+}
+
+.banner-poder-online.poder-byakugan {
+  --poder-color: #9be8ff;
+  --poder-glow: rgba(120, 220, 255, .55);
+}
+
+.banner-poder-online.poder-robo {
+  --poder-color: #4db8ff;
+  --poder-glow: rgba(77, 184, 255, .5);
+}
+
+.banner-poder-online.poder-genjutsu {
+  --poder-color: #c66bff;
+  --poder-glow: rgba(198, 107, 255, .55);
+}
+
+.banner-poder-online.poder-sello {
+  --poder-color: #ff9a3d;
+  --poder-glow: rgba(255, 140, 20, .5);
+}
+
+.banner-poder-online.poder-bomba {
+  --poder-color: #ff5b3b;
+  --poder-glow: rgba(255, 80, 0, .6);
+}
+
+.banner-poder-icono {
+  width: 54px;
+  height: 54px;
+  flex: 0 0 54px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 10px var(--poder-glow));
+}
+
+.banner-poder-texto {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.1;
+}
+
+.banner-poder-titulo {
+  color: var(--poder-color);
+  font-size: clamp(1.05rem, 2.6vw, 1.45rem);
+  letter-spacing: 1.2px;
+  white-space: nowrap;
+  text-shadow: 0 0 12px var(--poder-glow);
+}
+
+.banner-poder-detalle {
+  margin-top: 3px;
+  color: #d8e2f5;
+  font-family: 'Fredoka', sans-serif;
+  font-size: .76rem;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+
+.banner-poder-online.es-rival .banner-poder-detalle {
+  color: #ffb3b3;
+}
+
+@keyframes bannerPoderEntra {
+  0%   { opacity: 0; transform: translate(-50%, -16px) scale(.92); }
+  60%  { opacity: 1; transform: translate(-50%, 2px) scale(1.02); }
+  100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+
+.aviso-rapido-central.aviso-info {
+  color: #b8ffdc;
+  border-color: #35d07f;
+}
+
+.aviso-rapido-central.aviso-poder {
+  color: #ffd166;
+  border-color: #ffd166;
+}
+
+.aviso-rapido-central.aviso-error {
+  color: #ff6b6b;
+  border-color: #ff6b6b;
+}
+
+.aviso-rapido-central {
+  max-width: min(520px, 92vw);
+  text-align: center;
+}
+
+@media (max-width: 700px) {
+  .banner-poder-online {
+    top: 10px;
+    gap: 10px;
+    padding: 8px 14px 8px 8px;
+  }
+  .banner-poder-icono {
+    width: 42px;
+    height: 42px;
+    flex-basis: 42px;
+  }
+  .banner-poder-titulo { font-size: 1.05rem; }
+  .banner-poder-detalle { font-size: .66rem; }
+}

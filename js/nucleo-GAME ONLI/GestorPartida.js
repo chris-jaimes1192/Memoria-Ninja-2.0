@@ -15,6 +15,39 @@ const CHAKRA_POR_ACIERTO = 5;
 const CHAKRA_BASE_COMBO = 3;
 const VIDA_PERDIDA_POR_ERROR = 5;
 
+const PODERES_ONLINE = {
+    sustitucion: {
+        nombre: "SUSTITUCIÓN",
+        clase: "sustitucion",
+        icono: "Agrupar/img/online%20-%20juts-sustit.png",
+    },
+    byakugan: {
+        nombre: "BYAKUGAN",
+        clase: "byakugan",
+        icono: "Agrupar/img/logo-online-byakugan.png",
+    },
+    robo: {
+        nombre: "ROBO DE CHAKRA",
+        clase: "robo",
+        icono: "Agrupar/img/robo-chakra.png",
+    },
+    genjutsu: {
+        nombre: "GENJUTSU",
+        clase: "genjutsu",
+        icono: "Agrupar/img/logo-genyugsu%20online.png",
+    },
+    sello: {
+        nombre: "SELLO DE BLOQUEO",
+        clase: "sello",
+        icono: "Agrupar/img/logo%20-sllo%20bloq.png",
+    },
+    bomba: {
+        nombre: "BOMBA EXPLOSIVA",
+        clase: "bomba",
+        icono: "Agrupar/img/logo%20-online-%20bomba%20.png",
+    },
+};
+
 const MODO_PRUEBA_LOCAL = true;
 const MI_PERSONAJE_ES_SASUKE = true;
 
@@ -213,16 +246,70 @@ export class GestorPartida {
             const detalle = ev.detail || {};
             const espera = detalle.segundos ? `${detalle.segundos}s` : "unos segundos";
             const quien = detalle.jugadorId === this.gestorSala?.miId ? "Tu conexión" : `${detalle.nombre || "El rival"}`;
-            this.vista.mostrarAvisoRapido(`${quien} se desconectó. Esperando ${espera}...`);
+            this.vista.mostrarAvisoRapido(`${quien} se desconectó. Esperando ${espera}...`, "info");
             BoardManager.bloquearTablero(true);
         });
 
         window.addEventListener('jugador-reconectado-online', (ev) => {
-            this.vista.mostrarAvisoRapido(`${ev.detail?.nombre || "El rival"} se reconectó.`);
+            this.vista.mostrarAvisoRapido(`${ev.detail?.nombre || "El rival"} se reconectó.`, "info");
         });
 
         window.addEventListener('sala-error-online', (ev) => {
             this.mostrarErrorConexion(ev.detail?.mensaje);
+        });
+
+        window.addEventListener('poder-activado-online', (ev) => {
+            const datos = ev.detail || {};
+            const poder = PODERES_ONLINE[datos.poderId];
+            if (!poder) return;
+
+            const miId = this.gestorSala?.miId;
+            const miEquipo = this.gestorSala?.miEquipo;
+            const esMio = datos.jugadorId === miId;
+            const esAliado = !esMio && !!miEquipo && datos.equipo === miEquipo;
+            const autor = datos.nombre || (esAliado ? "TU COMPAÑERO" : "EL RIVAL");
+
+            this.vista.mostrarBannerPoder({
+                poder: poder.clase,
+                titulo: poder.nombre,
+                detalle: esMio ? "ACTIVADO POR TI" : `${autor} LO ACTIVÓ`,
+                icono: poder.icono,
+                deRival: !esMio && !esAliado,
+            });
+        });
+
+        window.addEventListener('poder-rechazado-online', (ev) => {
+            const mensaje = ev.detail?.mensaje || "No se pudo activar el poder.";
+            this.vista.mostrarAvisoRapido(mensaje.toUpperCase(), "error");
+        });
+
+        window.addEventListener('poder-efecto-online', (ev) => {
+            const datos = ev.detail || {};
+            const miId = this.gestorSala?.miId;
+            if (datos.tipo === 'danio') {
+                this.vista.mostrarImpactoBomba({
+                    objetivoEsMio: datos.objetivoId === miId,
+                    danio: datos.danio,
+                });
+                const mitigado = datos.consumidoSustitucion ? " (mitigado)" : "";
+                this.vista.mostrarAvisoRapido(`BOMBA: ${datos.danio} de daño${mitigado}`, "poder");
+            } else if (datos.tipo === 'robo') {
+                this.vista.mostrarAvisoRapido(`ROBO: ${datos.robado} de chakra`, "poder");
+            } else if (datos.tipo === 'evadido') {
+                this.vista.mostrarAvisoRapido('SUSTITUCIÓN: poder evadido', "info");
+            } else if (datos.tipo === 'contrarresto') {
+                this.vista.mostrarAvisoRapido('BYAKUGAN: Genjutsu anulado', "info");
+            } else if (datos.tipo === 'byakugan' && datos.jugadorId === miId) {
+                this.vista.mostrarAvisoRapido('BYAKUGAN: cartas reveladas', "info");
+            } else if (datos.tipo === 'sello') {
+                this.vista.mostrarAvisoRapido('SELLO: carta bloqueada', "poder");
+            } else if (datos.tipo === 'mezcla') {
+                this.vista.mostrarAvisoRapido('GENJUTSU: tablero alterado', "poder");
+            }
+        });
+
+        window.addEventListener('sustitucion-usada-online', () => {
+            this.vista.mostrarAvisoRapido('SUSTITUCIÓN: el fallo no cuenta', "info");
         });
     }
 
@@ -310,7 +397,10 @@ export class GestorPartida {
         const parejasEquipos = datos.parejasEquipos || { A: 0, B: 0 };
         const misParejas = es2v2 ? parejasEquipos[miEquipo] || 0 : parejas[miId] || 0;
         const puntajeMio = misParejas * 10;
-        const motivo = datos.motivo === "abandono" ? "Un jugador abandonó la sala." : "";
+        const motivo =
+            datos.motivo === "abandono" ? "Un jugador abandonó la sala." :
+            datos.motivo === "tiempo" ? "Se agotó el tiempo de un jugador." :
+            datos.motivo === "vida" ? "Un jugador se quedó sin vida." : "";
 
         const jugadores = datos.jugadores || [];
         const nombresDe = (equipo) => jugadores

@@ -220,7 +220,7 @@ Consultar también: `js/COMO-INTEGRAR-NAVEGACION.md` (refactor de `niveles.js`/`
 3. **`usosPermitidos` definido y nunca aplicado.** `Poder.js` lo guarda, pero ningún service lo cuenta ni limita.
 4. **Repositorios de clanes avanzados = scaffold muerto.** Ningún controller importa sus `repositories/`; solo `muerte` y `orden` tienen `JugadorRepository.js` con contenido.
 5. **Mezcla de idiomas:** capa de cuentas y clanes en español; `js/domain|services|ui|infrastructure` del menú en inglés. `verifivacion.html` es un nombre real (con errata).
-6. **~~El backend no está conectado al frontend~~ → RESUELTO.** Antes el juego usaba `mock-server.js` como motor; hoy `POST /api/partida` crea la partida en PostgreSQL y `POST /api/poder/activar` registra el poder cuando el backend responde. El frontend cae a `MockServer`+localStorage solo si el backend no responde (best-effort). La autenticación, en cambio, es **solo servidor**. Queda como trabajo futuro (no deuda): las salas **WebSocket** en tiempo real, citadas en `backend-poderes/README.md`.
+6. **~~El backend no está conectado al frontend~~ → RESUELTO.** Antes el juego usaba `mock-server.js` como motor; hoy `POST /api/partida` crea la partida en PostgreSQL y `POST /api/poder/activar` registra el poder cuando el backend responde. El frontend cae a `MockServer`+localStorage solo si el backend no responde (best-effort). La autenticación es **solo servidor**. Las salas **WebSocket** en tiempo real ya existen (`GestorSalas.js`: 1v1/2v2, QR y lista de salas); los poderes online siguen parciales.
 
 ---
 
@@ -232,7 +232,7 @@ Consultar también: `js/COMO-INTEGRAR-NAVEGACION.md` (refactor de `niveles.js`/`
 | Reglas puras aisladas de HTTP/DOM | `backend-poderes/src/services/PoderService.js`, `js/nucleo-GAME ONLI/poderes/Poder.js` |
 | El ejemplo "saldo/chakra insuficiente" | `backend-poderes/src/services/PoderService.js:38-41` |
 | Composition root | `backend-poderes/server.js`, `js/nucleo-GAME ONLI/GestorPartida.js`, `js/login.js`, `js/app.js` |
-| Prueba de LSP (contrato único, **3 implementaciones**: memoria/archivo/SQL) + e2e de auth | `backend-poderes/tests/` → `npm test` desde `backend-poderes/` (**98 tests / 22 suites**, todos verdes) |
+| Prueba de LSP (contrato único, **3 implementaciones**: memoria/archivo/SQL) + e2e de auth | `backend-poderes/tests/` → `npm test` desde `backend-poderes/` (**166 tests / 25 suites**, todos verdes) |
 | Abstracciones/interfaces | `backend-poderes/src/repositories/PartidaRepository.js`, `js/core/interfaces/`, `js/domain/` |
 | UI / filas "js.ui" | `js/ui/`, `js/utils/ModalHelper.js`, `js/utils/TogglePasswordHelper.js`, `js/controladores/` |
 | Cómo el motor viejo se reorganizó en clases | `js/nucleo-GAME ONLI/COMO-QUEDO-ORGANIZADO.md` |

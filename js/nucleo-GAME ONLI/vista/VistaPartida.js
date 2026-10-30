@@ -52,6 +52,7 @@ export class VistaPartida {
         this.finalStats = document.getElementById("finalStats");
         this.modalFinal = document.getElementById("modalFinal");
         this.modalFinalPanel = this.modalFinal?.querySelector(".modal-final-panel");
+        this.bannerPoder = document.getElementById("bannerPoderOnline");
         this.finalTitulo = document.getElementById("finalTitulo");
         this.finalSubtitulo = document.getElementById("finalSubtitulo");
         this.finalIcono = document.getElementById("finalIcon");
@@ -186,12 +187,100 @@ export class VistaPartida {
         setTimeout(() => aviso.remove(), 1000);
     }
 
-    mostrarAvisoRapido(mensaje) {
+    mostrarAvisoRapido(mensaje, tipo = "error") {
+        this._avisoRapidoActual?.remove();
         const aviso = document.createElement("div");
-        aviso.className = "aviso-rapido-central";
-        aviso.textContent = "⚠️ " + mensaje;
+        aviso.className = `aviso-rapido-central aviso-${tipo}`;
+        aviso.setAttribute("role", tipo === "error" ? "alert" : "status");
+        aviso.textContent = mensaje;
         document.body.appendChild(aviso);
-        setTimeout(() => aviso.remove(), 1200);
+        this._avisoRapidoActual = aviso;
+        setTimeout(() => {
+            aviso.remove();
+            if (this._avisoRapidoActual === aviso) this._avisoRapidoActual = null;
+        }, 1200);
+    }
+
+    mostrarBannerPoder({ poder = "", titulo = "", detalle = "", icono = "", deRival = false, duracion = 1700 } = {}) {
+        const banner = this.bannerPoder;
+        if (!banner) return;
+
+        clearTimeout(this._bannerPoderTimeout);
+        banner.replaceChildren();
+        banner.className = "banner-poder-online";
+        if (poder) banner.classList.add(`poder-${poder}`);
+        if (deRival) banner.classList.add("es-rival");
+
+        const texto = document.createElement("div");
+        texto.className = "banner-poder-texto";
+        const tituloEl = document.createElement("strong");
+        tituloEl.className = "banner-poder-titulo";
+        tituloEl.textContent = titulo;
+        const detalleEl = document.createElement("span");
+        detalleEl.className = "banner-poder-detalle";
+        detalleEl.textContent = detalle;
+        texto.append(tituloEl, detalleEl);
+
+        if (icono) {
+            const iconoEl = document.createElement("img");
+            iconoEl.className = "banner-poder-icono";
+            iconoEl.src = icono;
+            iconoEl.alt = "";
+            iconoEl.setAttribute("aria-hidden", "true");
+            banner.append(iconoEl, texto);
+        } else {
+            banner.append(texto);
+        }
+
+        void banner.offsetWidth;
+        banner.classList.add("visible");
+        this._bannerPoderTimeout = setTimeout(() => {
+            banner.classList.remove("visible");
+        }, duracion);
+    }
+
+    mostrarImpactoBomba({ objetivoEsMio = false, danio = 20 } = {}) {
+        const panel = document.querySelector(objetivoEsMio ? ".panel-personaje-lateral" : ".panel-naruto-lateral");
+        const board = document.getElementById("boardFrame");
+
+        const flash = document.createElement("div");
+        flash.className = "bomba-flash-overlay";
+        document.body.appendChild(flash);
+        setTimeout(() => flash.remove(), 700);
+
+        const onda = document.createElement("div");
+        onda.className = "bomba-onda-choque";
+        document.body.appendChild(onda);
+        setTimeout(() => onda.remove(), 900);
+
+        if (board) {
+            board.classList.remove("bomba-temblor-pantalla");
+            void board.offsetWidth;
+            board.classList.add("bomba-temblor-pantalla");
+            setTimeout(() => board.classList.remove("bomba-temblor-pantalla"), 550);
+        }
+
+        const avatar = panel?.querySelector(".personaje-imagen");
+        if (avatar) {
+            avatar.classList.remove("bomba-golpe-avatar");
+            void avatar.offsetWidth;
+            avatar.classList.add("bomba-golpe-avatar");
+            setTimeout(() => avatar.classList.remove("bomba-golpe-avatar"), 750);
+        }
+
+        const numero = document.createElement("div");
+        numero.className = "bomba-numero-dano";
+        numero.textContent = `-${danio}`;
+        const rect = panel?.getBoundingClientRect();
+        if (rect && rect.width) {
+            numero.style.left = `${rect.left + rect.width / 2}px`;
+            numero.style.top = `${rect.top + rect.height / 2}px`;
+        } else {
+            numero.style.left = "50%";
+            numero.style.top = "50%";
+        }
+        document.body.appendChild(numero);
+        setTimeout(() => numero.remove(), 1100);
     }
 
     mostrarModalFinal(movimientosFinales, puntajeFinal, jugador, rival, formatearTiempo, tiempoSasuke, tiempoNaruto) {
