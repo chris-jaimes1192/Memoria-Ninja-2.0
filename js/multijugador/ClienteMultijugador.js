@@ -194,11 +194,18 @@ export class ClienteMultijugador {
     return this.emitir("buscar-sala-por-codigo", { codigo });
   }
 
-  async buscarPartidaRapida() {
+  async buscarPartidaRapida(modo = "1v1") {
     await this.conectar();
-    const respuesta = await this.emitir("buscar-partida", { nombre: this.nombreLocal() });
+    const respuesta = await this.emitir("buscar-partida", {
+      nombre: this.nombreLocal(),
+      modo: modo === "2v2" ? "2v2" : "1v1",
+    });
     if (respuesta?.codigo) this.codigoSala = respuesta.codigo;
     return respuesta;
+  }
+
+  async solicitarRevancha(config = {}) {
+    return this.emitir("revancha-sala", { config });
   }
 
   cancelarBusqueda() {
@@ -211,6 +218,11 @@ export class ClienteMultijugador {
 
   voltearCarta(index) {
     this.socket?.emit("voltear-carta", { index });
+  }
+
+  activarPoder(poderId) {
+    if (!this.socket?.connected) return;
+    this.socket.emit("activar-poder", { poderId });
   }
 
   abandonarSala() {

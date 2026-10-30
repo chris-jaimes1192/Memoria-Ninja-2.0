@@ -117,6 +117,69 @@ export const BoardManager = {
         }, espera);
     },
 
+    revelarTemporal(index, valor, aldea, duracion = 3000) {
+        const carta = cartaPorIndice(index);
+        if (!carta || !valor || carta.classList.contains("emparejada")) return;
+        carta.dataset.valor = valor;
+        carta.dataset.aldea = aldea || ALDEA;
+        const img = carta.querySelector("img");
+        if (img) img.src = `${RUTA_ALDEAS}${aldea || ALDEA}/${valor}.png`;
+        carta.classList.add("byakugan-revelada");
+        setTimeout(() => {
+            if (carta.classList.contains("volteada") || carta.classList.contains("emparejada")) return;
+            const imagen = carta.querySelector("img");
+            if (imagen) imagen.src = RUTA_BACK;
+            carta.classList.remove("byakugan-revelada");
+        }, duracion);
+    },
+
+    sellarCarta(index, duracion = 5000) {
+        const carta = cartaPorIndice(index);
+        if (!carta || carta.classList.contains("emparejada")) return;
+        carta.classList.add("carta-sellada");
+        if (!carta.querySelector(".sello-icono-carta")) {
+            const icono = document.createElement("div");
+            icono.className = "sello-icono-carta";
+            icono.textContent = "封";
+            carta.appendChild(icono);
+        }
+        clearTimeout(carta._selloTimeout);
+        carta._selloTimeout = setTimeout(() => this.quitarSello(index), Math.max(0, duracion));
+    },
+
+    quitarSello(index) {
+        const carta = cartaPorIndice(index);
+        if (!carta) return;
+        carta.classList.remove("carta-sellada");
+        carta.querySelector(".sello-icono-carta")?.remove();
+        clearTimeout(carta._selloTimeout);
+        carta._selloTimeout = null;
+    },
+
+    aplicarMezcla(cartas) {
+        for (const datos of cartas || []) {
+            const carta = cartaPorIndice(datos.index);
+            if (!carta || !datos.valor) continue;
+            carta.dataset.valor = datos.valor;
+            carta.dataset.aldea = datos.aldea || ALDEA;
+            const img = carta.querySelector("img");
+            if (!img) continue;
+            const visible = carta.classList.contains("volteada") || carta.classList.contains("byakugan-revelada");
+            img.src = visible
+                ? `${RUTA_ALDEAS}${datos.aldea || ALDEA}/${datos.valor}.png`
+                : RUTA_BACK;
+        }
+    },
+
+    aplicarEstadoSello(sello) {
+        for (const carta of document.querySelectorAll(".card.carta-sellada")) {
+            this.quitarSello(Number(carta.dataset.index));
+        }
+        if (sello && Number.isInteger(sello.index)) {
+            this.sellarCarta(sello.index, Math.max(0, (sello.hasta || 0) - Date.now()));
+        }
+    },
+
     renderBoard(callbackResultado, callbackFinal, callbackEsMiTurno, mazoExterno = null) {
         onResultado = callbackResultado || null;
         onPartidaCompletada = callbackFinal || null;

@@ -4,19 +4,26 @@ import { historialApi } from '../infraestructura/repositorios/HttpHistorialRepos
 /*
  * MODAL DE HISTORIAL (Parte 3 — datos reales)
  *
- * Antes `this.partidas` estaba HARDCODEADO en el constructor (4 filas falsas
- * del 12/05/2024). Ahora lee el historial REAL de PostgreSQL mediante
+ * Lee el historial REAL de PostgreSQL mediante
  * `GET /api/usuarios/:id/historial` (a través de historialApi) y lo pinta en
  * #historialBody.
  *
- * Convención de `ganador` (ver los controllers de juego):
+ * Convención de `ganador`:
  *   - el NOMBRE del ganador si la partida se ganó,
- *   - "ninguno" si se perdió.
+ *   - "ninguno" si se perdió,
+ *   - "empate" si terminó igualada.
  *
- * La pestaña "Partidas Normales" muestra TODO el historial real (la columna
- * Modo distingue 1 vs 2 jugadores). "Online 1vs1" y "Unirse a sala" quedan
- * vacías a propósito: el multijugador real llega en la Parte 5.
+ * Modos:
+ *   - "1" / "2": partidas locales de 1 o 2 jugadores,
+ *   - "online-1v1": multijugador online de a dos,
+ *   - "online-2v2": salas online por equipos.
  */
+const CATEGORIAS = {
+  normales: /^1$|^2$/,
+  online: /^online-1v1$/,
+  sala: /^online-2v2$/,
+};
+
 export class HistoryModal extends BaseModal {
   constructor(modalId) {
     super(modalId);
@@ -67,16 +74,33 @@ export class HistoryModal extends BaseModal {
   #mapear(fila) {
     const { fecha, hora } = this.#fechaHora(fila.jugada_en);
     const modo = String(fila.modo ?? '1');
-    const gano = Boolean(fila.ganador) && fila.ganador !== 'ninguno';
+    const ganador = String(fila.ganador ?? '');
+    const empate = ganador.toLowerCase() === 'empate';
+    const gano = !empate && Boolean(ganador) && ganador !== 'ninguno';
 
     return {
-      resultado: gano ? 'victoria' : 'derrota',
-      modo: modo === '2' ? 'Partida 2 jugadores' : 'Partida Normal',
-      sub: modo === '2' ? '2 jugadores' : '1 jugador',
+      categoria: modo.startsWith('online-2v2') ? 'sala' : modo.startsWith('online-1v1') ? 'online' : 'normales',
+      resultado: empate ? 'empate' : gano ? 'victoria' : 'derrota',
+      modo: this.#etiquetaModo(modo),
+      sub: this.#subModo(modo),
       puntaje: this.#formato(fila.puntaje),
       fecha,
       hora
     };
+  }
+
+  #etiquetaModo(modo) {
+    if (modo === 'online-2v2') return 'Sala 2 vs 2';
+    if (modo === 'online-1v1') return 'Online 1 vs 1';
+    if (modo === '2') return 'Partida 2 jugadores';
+    return 'Partida Normal';
+  }
+
+  #subModo(modo) {
+    if (modo === 'online-2v2') return 'online · equipos';
+    if (modo === 'online-1v1') return 'online · 1 vs 1';
+    if (modo === '2') return '2 jugadores';
+    return '1 jugador';
   }
 
   #fechaHora(valor) {
@@ -105,42 +129,57 @@ export class HistoryModal extends BaseModal {
 
   mensaje(texto) {
     if (!this.cuerpoTabla) return;
-    this.cuerpoTabla.innerHTML = `
-      <tr>
-        <td colspan="4">
-          <div class="historial-vacio">${texto}</div>
-        </td>
-      </tr>`;
+    this.cuerpoTabla.replaceChildren();
+    const fila = document.createElement('tr');
+    const celda = document.createElement('td');
+    celda.colSpan = 4;
+    const vacio = document.createElement('div');
+    vacio.className = 'historial-vacio';
+    vacio.textContent = texto;
+    celda.appendChild(vacio);
+    fila.appendChild(celda);
+    this.cuerpoTabla.appendChild(fila);
   }
 
   renderTabla(tabKey) {
     if (!this.cuerpoTabla) return;
 
-    if (tabKey !== 'normales') {
-      this.mensaje('Todavía no hay partidas en esta categoría.');
-      return;
-    }
-
-    const filas = this.partidas || [];
+    const patron = CATEGORIAS[tabKey] || CATEGORIAS.normales;
+    const filas = (this.partidas || []).filter((partida) => patron.test(partida.categoria));
 
     if (filas.length === 0) {
       this.mensaje('Todavía no hay partidas registradas en esta categoría.');
       return;
     }
 
-    this.cuerpoTabla.innerHTML = filas.map(p => `
-      <tr>
-        <td class="${p.resultado === 'victoria' ? 'resultado-victoria' : 'resultado-derrota'}">
-          ${p.resultado === 'victoria' ? 'VICTORIA' : 'DERROTA'}
-        </td>
-        <td>
-          <span class="modo-principal">${p.modo}</span>
-          <span class="modo-sub">${p.sub}</span>
-        </td>
-        <td>${p.puntaje}</td>
-        <td class="fecha-hora">${this.renderFecha(p.fecha, p.hora)}</td>
-      </tr>
-    `).join('');
+    this.cuerpoTabla.replaceChildren(...filas.map((partida) => this.#fila(partida)));
+  }
+
+  #fila(partida) {
+    const fila = document.createElement('tr');
+
+    const resultado = document.createElement('td');
+    resultado.className = `resultado-${partida.resultado}`;
+    resultado.textContent = partida.resultado.toUpperCase();
+
+    const modo = document.createElement('td');
+    const principal = document.createElement('span');
+    principal.className = 'modo-principal';
+    principal.textContent = partida.modo;
+    const sub = document.createElement('span');
+    sub.className = 'modo-sub';
+    sub.textContent = partida.sub;
+    modo.append(principal, sub);
+
+    const puntaje = document.createElement('td');
+    puntaje.textContent = partida.puntaje;
+
+    const fecha = document.createElement('td');
+    fecha.className = 'fecha-hora';
+    fecha.innerHTML = this.renderFecha(partida.fecha, partida.hora);
+
+    fila.append(resultado, modo, puntaje, fecha);
+    return fila;
   }
 
   renderFecha(fecha, hora) {

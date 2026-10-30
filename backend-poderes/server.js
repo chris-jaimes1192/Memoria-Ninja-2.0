@@ -50,6 +50,7 @@ const crearRutasProcedimientos = require("./src/routes/procedimientoRoutes");
 const crearMiddlewaresDeAutorizacion = require("./src/middlewares/AutorizacionMiddleware");
 const EstadoController = require("./src/controllers/EstadoController");
 const crearRutasEstado = require("./src/routes/estadoRoutes");
+const crearRutasSalas = require("./src/routes/salasRoutes");
 
 /**
  * RAÍZ DE COMPOSICIÓN (Composition Root)
@@ -220,6 +221,7 @@ app.use("/api", crearRutasAuth(authController, verificacionController, recuperac
 app.use("/api", crearRutasPartidas(partidaController, autorizacion));
 app.use("/api", crearRutasVistas(vistaController, autorizacion));
 app.use("/api", crearRutasProcedimientos(procedimientoController, autorizacion));
+app.use("/api", crearRutasSalas());
 
 // El backend también sirve el frontend (mismo origen -> cookies httpOnly OK).
 app.use(express.static(path.join(__dirname, "..")));

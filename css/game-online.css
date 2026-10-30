@@ -1009,10 +1009,21 @@ video {
   font-weight: bold;
 }
 
-.skill.disabled {
-  opacity: .35;
-  filter: grayscale(100%);
-  cursor: not-allowed;
+.skill.poder-agotado {
+    opacity: 0.4;
+    filter: grayscale(100%);
+    cursor: not-allowed;
+}
+
+.skill.poder-usado {
+    animation: poder-usado-pulso 0.9s ease;
+    box-shadow: 0 0 18px rgba(255, 215, 0, 0.9);
+}
+
+@keyframes poder-usado-pulso {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.08); }
+    100% { transform: scale(1); }
 }
 
 .skill.cooldown img {
@@ -1920,4 +1931,510 @@ video {
 #board.bloqueado-turno {
   pointer-events: none;
   filter: brightness(.72) saturate(.8);
+}
+
+/* =====================================================
+   ONLINE 2V2 � MARCADOR DE EQUIPOS
+   ===================================================== */
+.equipos-online {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) auto minmax(180px, 1fr);
+  align-items: stretch;
+  gap: 10px;
+  width: min(980px, 96vw);
+  margin: 4px auto 0;
+}
+
+.equipo-online {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(15, 15, 24, .92), rgba(5, 5, 10, .92));
+  box-shadow: inset 0 0 18px rgba(255, 255, 255, .03);
+  transition: border-color .2s, box-shadow .2s, transform .2s;
+}
+
+.equipo-online[data-equipo="B"] {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.equipo-online.activo {
+  border-color: #ffd166;
+  box-shadow: 0 0 0 1px rgba(255, 209, 102, .25), 0 0 22px rgba(255, 209, 102, .18);
+  transform: translateY(-1px);
+}
+
+.equipo-online-titulo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 72px;
+  color: #ffd166;
+  font-size: .72rem;
+  letter-spacing: 1.2px;
+}
+
+.equipo-online-titulo strong {
+  color: #fff;
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.equipo-online-jugadores {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 1;
+}
+
+.equipo-online[data-equipo="B"] .equipo-online-jugadores {
+  justify-content: flex-end;
+}
+
+.jugador-online {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, .1);
+  background: rgba(255, 255, 255, .04);
+  color: #cdd8f0;
+  font-size: .76rem;
+  white-space: nowrap;
+}
+
+.jugador-online.es-yo {
+  border-color: rgba(0, 255, 170, .55);
+  color: #c6ffe9;
+  background: rgba(0, 255, 170, .08);
+}
+
+.jugador-online::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #35d07f;
+  box-shadow: 0 0 7px rgba(53, 208, 127, .8);
+}
+
+.jugador-online.desconectado::before {
+  background: #ff5d5d;
+  box-shadow: 0 0 7px rgba(255, 93, 93, .8);
+}
+
+.equipo-online-separador {
+  align-self: center;
+  color: rgba(255, 255, 255, .28);
+  font-size: 1.1rem;
+}
+
+/* =====================================================
+   MODAL FINAL ONLINE
+   ===================================================== */
+.modal-final {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background:
+    radial-gradient(circle at 50% 20%, rgba(115, 0, 247, .24), transparent 55%),
+    rgba(3, 4, 10, .82);
+  backdrop-filter: blur(5px);
+}
+
+.modal-final-panel {
+  position: relative;
+  width: min(560px, 94vw);
+  max-height: 92vh;
+  overflow-y: auto;
+  padding: 26px 26px 22px;
+  border: 2px solid #b8843b;
+  border-radius: 18px;
+  background:
+    linear-gradient(160deg, rgba(33, 24, 48, .98), rgba(8, 8, 14, .99)),
+    repeating-linear-gradient(45deg, transparent 0 9px, rgba(255, 255, 255, .015) 9px 10px);
+  box-shadow:
+    0 0 0 1px rgba(255, 209, 102, .12),
+    0 0 38px rgba(115, 0, 247, .28),
+    0 24px 60px rgba(0, 0, 0, .72);
+  text-align: center;
+  animation: modalFinalEntrada .3s cubic-bezier(.22, 1.2, .36, 1);
+}
+
+.modal-final-panel::before {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border: 1px solid rgba(255, 209, 102, .16);
+  border-radius: 12px;
+  pointer-events: none;
+}
+
+@keyframes modalFinalEntrada {
+  from { opacity: 0; transform: translateY(16px) scale(.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modal-final-icono {
+  font-size: 3rem;
+  line-height: 1;
+  filter: drop-shadow(0 0 16px rgba(255, 209, 102, .45));
+}
+
+.modal-final-panel h2 {
+  margin: 6px 0 2px;
+  font-family: 'Permanent Marker', cursive;
+  font-size: clamp(1.7rem, 5vw, 2.4rem);
+  letter-spacing: 2px;
+  color: #ffd166;
+  text-shadow: 0 0 18px rgba(255, 209, 102, .32);
+}
+
+.modal-final-panel.es-victoria h2 { color: #61ffb0; text-shadow: 0 0 20px rgba(97, 255, 176, .35); }
+.modal-final-panel.es-derrota h2 { color: #ff7b7b; text-shadow: 0 0 20px rgba(255, 123, 123, .3); }
+.modal-final-panel.es-empate h2 { color: #c6b4ff; text-shadow: 0 0 20px rgba(198, 180, 255, .3); }
+
+.modal-final-subtitulo {
+  margin: 0 0 16px;
+  color: #aab7d4;
+  font-family: 'Fredoka', sans-serif;
+  font-size: .92rem;
+}
+
+.modal-final-marcador {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.marcador-equipo {
+  padding: 10px 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, .1);
+  background: rgba(255, 255, 255, .035);
+}
+
+.marcador-equipo.ganador {
+  border-color: rgba(97, 255, 176, .5);
+  background: rgba(97, 255, 176, .07);
+}
+
+.marcador-equipo small {
+  display: block;
+  color: #8f9ab5;
+  font-family: 'Fredoka', sans-serif;
+  font-size: .7rem;
+  letter-spacing: 1px;
+}
+
+.marcador-equipo strong {
+  display: block;
+  margin-top: 2px;
+  color: #fff;
+  font-size: 1.3rem;
+}
+
+.marcador-equipo span {
+  display: block;
+  color: #bfc9e2;
+  font-family: 'Fredoka', sans-serif;
+  font-size: .78rem;
+}
+
+.modal-final-stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 12px;
+  margin-bottom: 16px;
+  color: #aab7d4;
+  font-family: 'Fredoka', sans-serif;
+  font-size: .82rem;
+}
+
+.modal-final-stats span {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .04);
+}
+
+.modal-final-config {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 10px 16px;
+  padding: 12px;
+  margin-bottom: 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, .08);
+  background: rgba(0, 0, 0, .22);
+  color: #cdd8f0;
+  font-family: 'Fredoka', sans-serif;
+  font-size: .82rem;
+}
+
+.modal-final-config label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal-final-config select {
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, .2);
+  background: #15151f;
+  color: #fff;
+  font-family: 'Fredoka', sans-serif;
+}
+
+.modal-final-check input {
+  accent-color: #ffd166;
+}
+
+.modal-final-error {
+  margin: 0 0 10px;
+  color: #ff9b9b;
+  font-family: 'Fredoka', sans-serif;
+  font-size: .82rem;
+}
+
+.modal-final-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.btn-final {
+  min-width: 150px;
+  padding: 10px 18px;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, .18);
+  font-family: 'Permanent Marker', cursive;
+  letter-spacing: 1px;
+  color: #fff;
+  cursor: pointer;
+  transition: transform .18s, filter .18s;
+}
+
+.btn-final:hover { transform: translateY(-1px); filter: brightness(1.08); }
+.btn-final:disabled { opacity: .45; cursor: not-allowed; transform: none; filter: none; }
+.btn-final-primario { background: linear-gradient(180deg, #ff9d2e, #c76a00); }
+.btn-final-secundario { background: linear-gradient(180deg, #4b2f7a, #2a1848); }
+
+.modal-final-espera {
+  margin: 10px 0 0;
+  color: #9fabc7;
+  font-family: 'Fredoka', sans-serif;
+  font-size: .8rem;
+}
+
+@media (max-width: 700px) {
+  .equipos-online {
+    grid-template-columns: 1fr;
+    width: 96vw;
+  }
+  .equipo-online[data-equipo="B"] { flex-direction: row; text-align: left; }
+  .equipo-online[data-equipo="B"] .equipo-online-jugadores { justify-content: flex-start; }
+  .equipo-online-separador { display: none; }
+}
+
+@media (max-height: 620px) and (orientation: landscape) {
+  body { padding: 4px 10px; gap: 2px; }
+  .stats > span { padding: 3px 9px; font-size: .78rem; }
+  .online-estado { margin-top: 2px; padding: 3px 10px; font-size: .72rem; }
+  .equipos-online { margin-top: 0; }
+  .equipo-online { padding: 4px 8px; }
+  .equipo-online-titulo strong { font-size: 1rem; }
+  .jugador-online { padding: 2px 7px; font-size: .66rem; }
+  .contenedor-principal-juego { gap: 8px; }
+  .panel-personaje-lateral, .panel-naruto-lateral {
+    width: 170px;
+    flex-basis: 170px;
+    max-height: 58vh;
+    overflow-y: auto;
+  }
+  .panel-personaje-lateral .personaje-habilidad,
+  .panel-naruto-lateral .personaje-habilidad { display: none; }
+  .personaje-imagen { height: 105px; }
+  .personaje-imagen img { width: 78px; height: 78px; }
+  #board { max-width: min(46vw, 420px); gap: 6px; }
+  .card { width: 62px; height: 88px; }
+  .special-panel { margin-top: 6px; }
+  .skill { width: 58px; }
+  .modal-final-panel { width: min(660px, 94vw); padding: 16px 20px; max-height: 94vh; }
+  .modal-final-icono { font-size: 2rem; }
+  .modal-final-panel h2 { font-size: 1.7rem; margin-top: 0; }
+  .modal-final-subtitulo { margin-bottom: 8px; }
+  .modal-final-marcador { margin-bottom: 8px; }
+  .modal-final-stats { margin-bottom: 8px; }
+  .modal-final-config { padding: 8px; margin-bottom: 8px; }
+}
+
+.equipos-online[hidden] {
+  display: none;
+}
+
+.modal-final-config[hidden],
+.modal-final-error[hidden],
+.modal-final-espera[hidden],
+#btnRevanchaFinal[hidden] {
+  display: none !important;
+}
+
+/* =====================================================
+   BANNER DE PODER ONLINE
+   ===================================================== */
+.banner-poder-online {
+  --poder-color: #ffd166;
+  --poder-glow: rgba(255, 209, 102, .45);
+  position: fixed;
+  top: clamp(14px, 8vh, 88px);
+  left: 50%;
+  display: none;
+  align-items: center;
+  gap: 14px;
+  min-width: min(390px, 92vw);
+  max-width: min(560px, 94vw);
+  padding: 10px 22px 10px 12px;
+  border-radius: 14px;
+  border: 2px solid var(--poder-color);
+  background: linear-gradient(135deg, rgba(8, 10, 18, .97), rgba(22, 16, 34, .95));
+  box-shadow:
+    0 14px 40px rgba(0, 0, 0, .7),
+    0 0 30px var(--poder-glow),
+    inset 0 0 18px rgba(255, 255, 255, .04);
+  z-index: 10000;
+  pointer-events: none;
+  font-family: 'Permanent Marker', cursive;
+  transform: translate(-50%, -12px) scale(.96);
+  opacity: 0;
+}
+
+.banner-poder-online.visible {
+  display: flex;
+  animation: bannerPoderEntra .24s cubic-bezier(.2, .9, .3, 1.2) forwards;
+}
+
+.banner-poder-online.es-rival {
+  border-style: dashed;
+}
+
+.banner-poder-online.poder-sustitucion {
+  --poder-color: #d8b26a;
+  --poder-glow: rgba(216, 178, 106, .5);
+}
+
+.banner-poder-online.poder-byakugan {
+  --poder-color: #9be8ff;
+  --poder-glow: rgba(120, 220, 255, .55);
+}
+
+.banner-poder-online.poder-robo {
+  --poder-color: #4db8ff;
+  --poder-glow: rgba(77, 184, 255, .5);
+}
+
+.banner-poder-online.poder-genjutsu {
+  --poder-color: #c66bff;
+  --poder-glow: rgba(198, 107, 255, .55);
+}
+
+.banner-poder-online.poder-sello {
+  --poder-color: #ff9a3d;
+  --poder-glow: rgba(255, 140, 20, .5);
+}
+
+.banner-poder-online.poder-bomba {
+  --poder-color: #ff5b3b;
+  --poder-glow: rgba(255, 80, 0, .6);
+}
+
+.banner-poder-icono {
+  width: 54px;
+  height: 54px;
+  flex: 0 0 54px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 10px var(--poder-glow));
+}
+
+.banner-poder-texto {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.1;
+}
+
+.banner-poder-titulo {
+  color: var(--poder-color);
+  font-size: clamp(1.05rem, 2.6vw, 1.45rem);
+  letter-spacing: 1.2px;
+  white-space: nowrap;
+  text-shadow: 0 0 12px var(--poder-glow);
+}
+
+.banner-poder-detalle {
+  margin-top: 3px;
+  color: #d8e2f5;
+  font-family: 'Fredoka', sans-serif;
+  font-size: .76rem;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+
+.banner-poder-online.es-rival .banner-poder-detalle {
+  color: #ffb3b3;
+}
+
+@keyframes bannerPoderEntra {
+  0%   { opacity: 0; transform: translate(-50%, -16px) scale(.92); }
+  60%  { opacity: 1; transform: translate(-50%, 2px) scale(1.02); }
+  100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+
+.aviso-rapido-central.aviso-info {
+  color: #b8ffdc;
+  border-color: #35d07f;
+}
+
+.aviso-rapido-central.aviso-poder {
+  color: #ffd166;
+  border-color: #ffd166;
+}
+
+.aviso-rapido-central.aviso-error {
+  color: #ff6b6b;
+  border-color: #ff6b6b;
+}
+
+.aviso-rapido-central {
+  max-width: min(520px, 92vw);
+  text-align: center;
+}
+
+@media (max-width: 700px) {
+  .banner-poder-online {
+    top: 10px;
+    gap: 10px;
+    padding: 8px 14px 8px 8px;
+  }
+  .banner-poder-icono {
+    width: 42px;
+    height: 42px;
+    flex-basis: 42px;
+  }
+  .banner-poder-titulo { font-size: 1.05rem; }
+  .banner-poder-detalle { font-size: .66rem; }
 }

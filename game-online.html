@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Juego — Memorice Duel</title>
 
     <!-- FUENTE -->
@@ -32,6 +33,8 @@
     </div>
 
     <div id="onlineEstado" class="online-estado" hidden></div>
+    <div id="equiposOnline" class="equipos-online" hidden aria-live="polite"></div>
+    <div id="bannerPoderOnline" class="banner-poder-online" role="status" aria-live="polite" aria-atomic="true"></div>
 
     <!-- CONTENEDOR PRINCIPAL: Alinea los 3 elementos en fila horizontal -->
     <div class="contenedor-principal-juego">
@@ -159,16 +162,42 @@
 
     </div>
 
-    <!-- MODAL DE FIN DE PARTIDA -->
-    <div id="modal" class="hidden" role="dialog" aria-modal="true" aria-labelledby="finalStats">
-          <div class="panel">
-              <h2>Partida terminada!</h2>
-              <p id="finalStats"></p>
-              <button id="saveRecord" aria-label="Guardar partida en historial">Guardar en historial</button>
-            <button id="closeModal" aria-label="Cerrar modal de fin de partida">Cerrar</button>
-          </div>
-      </div>
+    <!-- MODAL DE FIN DE PARTIDA ONLINE -->
+    <div id="modalFinal" class="modal-final hidden" role="dialog" aria-modal="true" aria-labelledby="finalTitulo">
+        <div class="modal-final-panel">
+            <div id="finalIcon" class="modal-final-icono" aria-hidden="true">🏆</div>
+            <h2 id="finalTitulo">PARTIDA TERMINADA</h2>
+            <p id="finalSubtitulo" class="modal-final-subtitulo"></p>
+
+            <div id="finalMarcador" class="modal-final-marcador"></div>
+            <div id="finalStats" class="modal-final-stats"></div>
+
+            <div id="finalConfig" class="modal-final-config">
+                <label for="finalPares">CARTAS
+                    <select id="finalPares">
+                        <option value="8">8 parejas · 16 cartas</option>
+                        <option value="10">10 parejas · 20 cartas</option>
+                        <option value="12">12 parejas · 24 cartas</option>
+                        <option value="14">14 parejas · 28 cartas</option>
+                        <option value="16">16 parejas · 32 cartas</option>
+                    </select>
+                </label>
+                <label class="modal-final-check">
+                    <input type="checkbox" id="finalMezclarAldeas">
+                    MEZCLAR ALDEAS
+                </label>
+            </div>
+
+            <p id="finalError" class="modal-final-error" role="alert" hidden></p>
+
+            <div class="modal-final-acciones">
+                <button type="button" id="btnRevanchaFinal" class="btn-final btn-final-primario">REVANCHA</button>
+                <button type="button" id="btnVolverMenuFinal" class="btn-final btn-final-secundario">VOLVER AL MENÚ</button>
+            </div>
+            <p id="finalEspera" class="modal-final-espera" hidden>Esperando que el anfitrión inicie la revancha…</p>
+        </div>
     </div>
+
 <div class="special-panel">
     <div class="panel-title">
         <span></span>

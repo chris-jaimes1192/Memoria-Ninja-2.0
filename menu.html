@@ -92,12 +92,19 @@
 
         <div class="barra-acciones-lobby">
             <button type="button" class="btn-lobby btn-lobby-primario" id="btnCrearSalaLobby">+ CREAR SALA</button>
+            <button type="button" class="btn-lobby btn-lobby-secundario" id="btnUnirsePorCodigo">UNIRSE A SALA</button>
             <button type="button" class="btn-lobby btn-lobby-secundario" id="btnPartidaRapida">PARTIDA RÁPIDA</button>
-            <button type="button" class="btn-lobby btn-lobby-secundario" id="btnUnirsePorCodigo">UNIRSE POR CÓDIGO</button>
         </div>
 
         <div id="panelCrearSala" class="panel-crear-sala" hidden>
             <div class="crear-sala-grid">
+                <div class="crear-sala-fila">
+                    <label>MODO</label>
+                    <div class="radio-grupo">
+                        <label><input type="radio" name="modoPartida" value="1v1" checked> 1 VS 1</label>
+                        <label><input type="radio" name="modoPartida" value="2v2"> 2 VS 2</label>
+                    </div>
+                </div>
                 <div class="crear-sala-fila">
                     <label>TIPO DE MAZO</label>
                     <div class="radio-grupo">
@@ -149,23 +156,38 @@
         </div>
 
         <div id="panelEsperandoRival" class="panel-esperando" hidden>
-            <p class="esperando-titulo">ESPERANDO RIVAL...</p>
+            <p class="esperando-titulo" id="esperandoTitulo">ESPERANDO RIVAL...</p>
             <p class="esperando-codigo">CÓDIGO: <span id="codigoSalaEspera">----</span></p>
-            <p class="esperando-info">COMPARTE ESTE CÓDIGO CON TU AMIGO</p>
+            <p class="esperando-info" id="esperandoInfo">COMPARTE ESTE CÓDIGO CON TU AMIGO</p>
+            <p class="esperando-equipos" id="esperandoEquipos" hidden></p>
+            <div class="sala-compartir">
+                <img id="qrSala" class="qr-sala" alt="QR para unirse a la sala" hidden>
+                <div class="sala-compartir-texto">
+                    <p class="esperando-url" id="urlSalaEspera"></p>
+                    <button type="button" class="btn-lobby btn-lobby-secundario" id="btnCopiarEnlaceSala">COPIAR ENLACE</button>
+                </div>
+            </div>
             <button type="button" class="btn-lobby btn-lobby-secundario" id="btnSalirEsperando">CANCELAR</button>
         </div>
 
         <div id="panelBuscarCodigo" class="panel-buscar-codigo" hidden>
+            <div class="buscar-codigo-header">
+                <span class="buscar-codigo-titulo">BUSCAR POR ID DE SALA</span>
+                <span class="buscar-codigo-subtitulo">Introduce el código exacto de la sala</span>
+            </div>
             <div class="buscar-codigo-row">
-                <input type="text" id="inputBuscarCodigo" class="input-lobby" placeholder="INTRODUCE CÓDIGO" maxlength="6" autocomplete="off">
+                <input type="text" id="inputBuscarCodigo" class="input-lobby" placeholder="ID DE SALA (6 CARACTERES)" maxlength="6" autocomplete="off">
                 <button type="button" class="btn-lobby btn-lobby-primario" id="btnBuscarUnirse">UNIRSE</button>
-                <button type="button" class="btn-lobby btn-lobby-secundario" id="btnCancelarBuscar">CANCELAR</button>
             </div>
             <p class="error-codigo" id="errorLobbyCodigo" hidden></p>
         </div>
 
         <div id="panelPartidaRapida" class="panel-partida-rapida" hidden>
-            <p class="esperando-titulo">BUSCANDO OPONENTE...</p>
+            <p class="esperando-titulo" id="textoBusquedaRapida">BUSCANDO OPONENTE...</p>
+            <div class="radio-grupo modo-rapida">
+                <label><input type="radio" name="modoRapida" value="1v1" checked> 1 VS 1</label>
+                <label><input type="radio" name="modoRapida" value="2v2"> 2 VS 2</label>
+            </div>
             <button type="button" class="btn-lobby btn-lobby-secundario" id="btnCancelarBusqueda">CANCELAR</button>
         </div>
 
