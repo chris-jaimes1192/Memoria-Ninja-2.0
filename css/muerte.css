@@ -613,3 +613,434 @@ video {
     }
 
 }
+
+
+
+
+
+/* ==========================================
+   MEMORIA NINJA - RESPONSIVE MÓVIL
+========================================== */
+
+* {
+    box-sizing: border-box;
+}
+
+/* CELULAR VERTICAL */
+@media screen and (max-width: 600px) and (orientation: portrait) {
+
+    html,
+    body {
+        width: 100%;
+        min-height: 100%;
+        margin: 0;
+        padding: 0 !important;
+        overflow-x: hidden !important;
+    }
+
+    body {
+        padding: 8px !important;
+    }
+
+    /* TÍTULO */
+    .titulo-juego {
+        margin: 8px auto 12px;
+        width: 100%;
+    }
+
+    .titulo-juego h1 {
+        font-size: clamp(19px, 5vw, 25px);
+        letter-spacing: 1px;
+    }
+
+    .titulo-juego p {
+        font-size: 12px;
+    }
+
+    /* ESTADÍSTICAS */
+    .stats {
+        display: flex;
+        flex-direction: row !important;
+        justify-content: space-around;
+        align-items: center;
+
+        width: 96% !important;
+        max-width: 430px;
+        gap: 2px !important;
+
+        margin: 10px auto !important;
+        padding: 8px 3px !important;
+    }
+
+    .stats > span {
+        width: auto !important;
+        flex: 1;
+        padding: 5px 2px !important;
+        border-right: 1px solid rgba(255,0,0,.5);
+        border-bottom: none !important;
+
+        font-size: 10px !important;
+        white-space: nowrap;
+    }
+
+    .stats > span span {
+        font-size: 12px !important;
+        margin-left: 2px;
+    }
+
+    /* MARCO DEL TABLERO */
+    #boardFrame {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        width: 96vw !important;
+        max-width: 480px !important;
+        min-width: 0 !important;
+
+        margin: 12px auto !important;
+        padding: 9px !important;
+
+        box-sizing: border-box !important;
+    }
+
+    /* TABLERO */
+    #board {
+        display: grid !important;
+
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+
+        gap: 8px !important;
+        padding: 9px !important;
+
+        margin: 0 !important;
+
+        box-sizing: border-box !important;
+    }
+
+    /* CARTAS */
+    #board .card {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+
+        height: auto !important;
+        aspect-ratio: 5 / 7 !important;
+
+        margin: 0 !important;
+    }
+
+    /* IMÁGENES */
+    #board .card img {
+        width: 100% !important;
+        height: 100% !important;
+
+        object-fit: fill !important;
+    }
+
+    /* BOTÓN VOLVER */
+    .boton {
+        font-size: 14px;
+        padding: 9px 20px;
+    }
+
+    /* MODALES */
+    #modal .panel,
+    .victory-panel {
+        width: 90% !important;
+        max-width: 380px;
+        padding: 18px 12px;
+    }
+
+    .victory-panel h2 {
+        font-size: 27px;
+    }
+
+    .victory-buttons {
+        flex-direction: column;
+    }
+}
+
+
+/* ==========================================
+   CELULAR HORIZONTAL
+========================================== */
+
+@media screen and (max-width: 900px) and (orientation: landscape) {
+
+    html,
+    body {
+        width: 100%;
+        overflow-x: hidden !important;
+    }
+
+    body {
+        padding: 5px !important;
+    }
+
+    .titulo-juego {
+        margin: 3px auto;
+    }
+
+    .titulo-juego h1 {
+        font-size: 19px;
+    }
+
+    .titulo-juego p {
+        font-size: 11px;
+        margin: 2px;
+    }
+
+    .stats {
+        flex-direction: row !important;
+        width: fit-content !important;
+        max-width: 95%;
+        gap: 5px !important;
+        padding: 5px 10px !important;
+        margin: 5px auto !important;
+    }
+
+    .stats > span {
+        width: auto !important;
+        border-bottom: none !important;
+        font-size: 11px !important;
+        padding: 3px 6px !important;
+    }
+
+    .stats > span span {
+        font-size: 12px !important;
+    }
+
+    #boardFrame {
+        width: min(70vw, 620px) !important;
+        max-width: 100%;
+        padding: 7px !important;
+        margin: 5px auto !important;
+    }
+
+    #board {
+        display: grid !important;
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+
+        width: 100% !important;
+        gap: 5px !important;
+        padding: 6px !important;
+    }
+
+    #board .card {
+        width: 100% !important;
+        min-width: 0 !important;
+        height: auto !important;
+        aspect-ratio: 5 / 7 !important;
+    }
+
+    #board .card img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: fill !important;
+    }
+
+    #modal .panel,
+    .victory-panel {
+        max-height: 85vh;
+        overflow-y: auto;
+    }
+}
+
+/* ==========================================
+   MEMORIA NINJA - MODO MUERTE
+   ADAPTACIÓN PARA CELULAR HORIZONTAL
+========================================== */
+
+@media screen and (max-width: 900px) and (orientation: landscape) {
+    html,
+    body {
+        width: 100%;
+        min-height: 100%;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow-x: hidden !important;
+    }
+
+    body {
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        padding: 3px 5px !important;
+        background-size: 30%, 30%;
+        background-position: left top, right top;
+    }
+
+    .titulo-juego {
+        margin: 2px auto !important;
+        width: 100%;
+    }
+
+    .titulo-juego h1 {
+        font-size: clamp(15px, 3.5vh, 21px) !important;
+        letter-spacing: 1px;
+    }
+
+    .titulo-juego p {
+        font-size: 10px !important;
+        margin: 1px !important;
+    }
+
+    .game-header {
+        width: 100%;
+        max-width: 750px;
+        margin: 2px auto !important;
+        gap: 5px;
+        font-size: 11px;
+    }
+
+    .player-info {
+        font-size: 11px;
+    }
+
+    .turn-info {
+        font-size: 12px;
+    }
+
+    .stats {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: center;
+        align-items: center;
+        width: fit-content !important;
+        max-width: 98%;
+        gap: 3px !important;
+        margin: 3px auto !important;
+        padding: 3px 6px !important;
+    }
+
+    .stats > span {
+        width: auto !important;
+        padding: 3px 5px !important;
+        font-size: 10px !important;
+        border-bottom: none !important;
+        white-space: nowrap;
+    }
+
+    .stats > span span {
+        font-size: 11px !important;
+    }
+
+    #boardFrame {
+        display: flex !important;
+        justify-content: center;
+        align-items: center;
+        width: fit-content !important;
+        max-width: 96vw !important;
+        min-width: 0 !important;
+        margin: 3px auto !important;
+        padding: 5px !important;
+        border-width: 4px !important;
+        box-sizing: border-box !important;
+    }
+
+    #board {
+        display: grid !important;
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+        width: fit-content !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        gap: clamp(3px, 1vh, 7px) !important;
+        padding: 4px !important;
+        margin: 0 !important;
+    }
+
+    #board .card {
+        width: clamp(32px, 12vh, 65px) !important;
+        height: auto !important;
+        aspect-ratio: 5 / 7 !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+    }
+
+    #board .card img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: fill !important;
+    }
+
+    .boton {
+        font-size: 11px !important;
+        padding: 6px 12px !important;
+        margin: 2px !important;
+    }
+
+    #modal .panel,
+    .victory-panel {
+        width: 90% !important;
+        max-width: 360px !important;
+        max-height: 88dvh;
+        overflow-y: auto;
+        padding: 12px !important;
+    }
+
+    .victory-icon {
+        font-size: 35px !important;
+    }
+
+    .victory-panel h2 {
+        font-size: 23px !important;
+    }
+
+    .victory-message {
+        font-size: 13px !important;
+    }
+
+    .victory-stats {
+        margin: 8px 0 !important;
+        padding: 7px !important;
+        font-size: 13px !important;
+    }
+
+    .victory-buttons {
+        flex-direction: row !important;
+        gap: 6px !important;
+        margin-top: 10px !important;
+    }
+
+    .victory-buttons button {
+        padding: 8px 10px !important;
+        font-size: 12px !important;
+    }
+}
+
+@media screen and (max-height: 400px) and (orientation: landscape) {
+    .titulo-juego h1 {
+        font-size: 14px !important;
+    }
+
+    .titulo-juego p {
+        display: none;
+    }
+
+    .stats {
+        margin: 1px auto !important;
+        padding: 2px 4px !important;
+    }
+
+    #boardFrame {
+        margin: 2px auto !important;
+        padding: 3px !important;
+    }
+
+    #board {
+        gap: 3px !important;
+        padding: 3px !important;
+    }
+
+    #board .card {
+        width: clamp(28px, 10vh, 45px) !important;
+    }
+}

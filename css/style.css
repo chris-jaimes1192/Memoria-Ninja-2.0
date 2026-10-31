@@ -105,6 +105,38 @@ button {
   outline: none;
 }
 
+/* ===========================
+   RECORDAR SESIÓN
+=========================== */
+
+.recordar-sesion {
+  display: flex;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+.recordar-sesion label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: white;
+  font-size: 15px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.recordar-sesion input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  padding: 0;
+  flex: 0 0 auto;
+  background: none;
+  border-radius: 3px;
+  accent-color: #ff7b00;
+  cursor: pointer;
+}
+
 .input-pass {
   position: relative;
   width: 100%;
