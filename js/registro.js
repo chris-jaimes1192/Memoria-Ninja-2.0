@@ -12,6 +12,13 @@ import { RegistroService } from "./servicios/RegistroService.js";
 import { RegistroController } from "./controladores/RegistroController.js";
 import { abrirModal, cerrarModal, inicializarCierreClicFuera } from "./utils/ModalHelper.js";
 
+if (window.location.protocol === "file:") {
+  const archivo = window.location.pathname.split("/").pop() || "registro.html";
+  window.location.replace(
+    "http://localhost:3000/" + archivo + window.location.search + window.location.hash
+  );
+}
+
 // --- Composición (Dependency Injection manual) ---
 // Registro REAL vía /api/auth: el backend guarda la cuenta en PostgreSQL
 // DESACTIVADA y envía un código de verificación al correo. Sin respaldo

@@ -10,6 +10,13 @@ import { AlertaNotificador } from "./infraestructura/notificadores/AlertaNotific
 import { VerificacionService } from "./servicios/VerificacionService.js";
 import { VerificacionController } from "./controladores/VerificacionController.js";
 
+if (window.location.protocol === "file:") {
+  const archivo = window.location.pathname.split("/").pop() || "verificacion.html";
+  window.location.replace(
+    "http://localhost:3000/" + archivo + window.location.search + window.location.hash
+  );
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const inputCorreo = document.getElementById("input-correo");
   const btnEnviarCorreo = document.getElementById("btn-enviar-correo");

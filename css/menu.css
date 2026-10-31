@@ -1761,10 +1761,18 @@ button,
     background: linear-gradient(145deg, #0052d4, #4364f7);
     border: 2px solid #00c6ff;
 }
+.azul-card:hover {
+    box-shadow: 0 0 25px rgba(0, 198, 255, 0.75), 0 0 45px rgba(0, 198, 255, 0.35);
+    border-color: #66e8ff;
+}
 
 .roja-card {
     background: linear-gradient(145deg, #870000, #190000);
     border: 2px solid #ff0000;
+}
+.roja-card:hover {
+    box-shadow: 0 0 25px rgba(255, 60, 60, 0.75), 0 0 45px rgba(255, 60, 60, 0.35);
+    border-color: #ff6666;
 }
 
 
@@ -2258,6 +2266,43 @@ FECHA Y HORA (celda de la tabla)
 .color-naranja-btn:hover {
     color: #ffcc66 !important;
     text-shadow: 0 0 10px #ff7b00;
+}
+
+/* Botón Cerrar sesión dentro de la configuración */
+.btn-cerrar-sesion-config {
+    flex-shrink: 0;
+    padding: 10px 22px;
+    border-radius: 12px;
+    border: 2px solid #ff4d4d;
+    background: rgba(255, 40, 40, 0.12);
+    color: #ff8080;
+    font-family: "Fredoka", sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s, background 0.2s, color 0.2s;
+}
+.btn-cerrar-sesion-config:hover {
+    background: #ff4d4d;
+    color: #fff;
+    transform: scale(1.04);
+    box-shadow: 0 0 18px rgba(255, 77, 77, 0.7);
+}
+
+#closeConfigBtn {
+    display: block;
+    margin: 40px auto;
+}
+
+/* Botón Cerrar sesión dentro de la configuración */
+.config-fila-peligro {
+    border-color: rgba(255, 60, 60, 0.45);
+    background: rgba(255, 40, 40, 0.07);
+}
+.config-fila-peligro:hover {
+    border-color: #ff4d4d;
+    background: rgba(255, 40, 40, 0.14);
 }
 
 /*=========================================================
