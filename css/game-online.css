@@ -2438,3 +2438,421 @@ video {
   .banner-poder-titulo { font-size: 1.05rem; }
   .banner-poder-detalle { font-size: .66rem; }
 }
+
+
+
+
+
+
+/* =====================================================
+   MEMORIA NINJA ONLINE - ADAPTACIÓN MÓVIL HORIZONTAL
+   Mantiene el diseño original y las funciones del juego
+===================================================== */
+
+/* Evita desbordamientos */
+.contenedor-principal-juego,
+#boardFrame,
+#board {
+    min-width: 0;
+}
+
+/* TABLET Y CELULAR EN HORIZONTAL */
+@media screen and (max-width: 900px) and (orientation: landscape) {
+
+    html {
+        width: 100%;
+        min-height: 100%;
+    }
+
+    body {
+        width: 100%;
+        min-height: 100vh;
+        padding: 5px 7px;
+        gap: 5px;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
+    /* Estadísticas superiores */
+    .stats {
+        width: 100%;
+        justify-content: center;
+        gap: 5px;
+    }
+
+    .stats > span {
+        padding: 4px 8px;
+        font-size: 11px;
+    }
+
+    /* Estado online */
+    .online-estado {
+        margin: 2px auto;
+        padding: 3px 8px;
+        font-size: 10px;
+    }
+
+    /* Equipos */
+    .equipos-online {
+        width: 100%;
+        gap: 5px;
+        margin: 2px auto;
+    }
+
+    .equipo-online {
+        padding: 4px 6px;
+        gap: 5px;
+    }
+
+    .equipo-online-titulo {
+        font-size: 9px;
+        min-width: 45px;
+    }
+
+    .equipo-online-titulo strong {
+        font-size: 14px;
+    }
+
+    .jugador-online {
+        padding: 2px 5px;
+        font-size: 9px;
+    }
+
+    /* DISTRIBUCIÓN PRINCIPAL */
+    .contenedor-principal-juego {
+        display: grid;
+        grid-template-columns:
+            minmax(90px, 19%)
+            minmax(0, 1fr)
+            minmax(90px, 19%);
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto;
+    }
+
+    /* PANEL SASUKE Y NARUTO */
+    .panel-personaje-lateral,
+    .panel-naruto-lateral {
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+        flex: none;
+        padding: 5px;
+        gap: 4px;
+        max-height: none;
+        overflow: visible;
+        border-radius: 10px;
+    }
+
+    .nombre-personaje {
+        font-size: 12px;
+    }
+
+    .personaje-header {
+        justify-content: center;
+    }
+
+    .personaje-imagen {
+        height: clamp(55px, 17vh, 100px);
+        border-radius: 8px 8px 0 0;
+    }
+
+    .personaje-imagen img {
+        width: clamp(38px, 10vh, 70px);
+        height: clamp(38px, 10vh, 70px);
+    }
+
+    .hp-compacto {
+        padding: 4px;
+        gap: 3px;
+    }
+
+    .hp-label,
+    .hp-texto {
+        font-size: 8px;
+    }
+
+    .vida-barra-mini,
+    .chakra-barra {
+        height: 5px;
+    }
+
+    /* HABILIDADES: NO SE OCULTAN */
+    .personaje-habilidad {
+        display: block;
+        padding: 5px;
+        border-radius: 8px;
+    }
+
+    .titulo-panel {
+        font-size: 9px;
+        margin-bottom: 3px;
+    }
+
+    .habilidad-contenido {
+        gap: 3px;
+    }
+
+    .habilidad-logo {
+        width: 23px;
+        height: 23px;
+    }
+
+    .habilidad-logo img {
+        width: 45px;
+        height: 45px;
+    }
+
+    .habilidad-texto h4 {
+        font-size: 8px;
+    }
+
+    .habilidad-texto p {
+        font-size: 7px;
+        line-height: 9px;
+        margin: 0;
+    }
+
+    /* CHAKRA */
+    .personaje-chakra {
+        padding: 5px;
+        border-radius: 8px;
+    }
+
+    .chakra-contenido {
+        gap: 3px;
+    }
+
+    .chakra-logo {
+        width: 19px;
+        height: 19px;
+    }
+
+    .chakra-logo img {
+        width: 34px;
+        height: 34px;
+    }
+
+    .chakra-cantidad span {
+        font-size: 8px;
+    }
+
+    /* TURNO, TIEMPO Y COMBO */
+    .turno-estado {
+        font-size: 9px;
+        min-height: 10px;
+        margin-top: 1px;
+    }
+
+    .tiempo-jugador {
+        font-size: 13px;
+        margin-top: 0;
+    }
+
+    .combo-jugador,
+    .sustitucion-estado {
+        font-size: 9px;
+        min-height: 10px;
+    }
+
+    /* TABLERO CENTRAL */
+    #boardFrame {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        padding: 5px;
+        margin: 0 auto;
+        border-width: 3px;
+        border-radius: 8px;
+    }
+
+    #board {
+        width: 100%;
+        max-width: 100%;
+        padding: 3px;
+        gap: 4px;
+        justify-content: center;
+        align-content: center;
+    }
+
+    .card {
+        width: clamp(34px, 7.5vw, 58px);
+        height: auto;
+        aspect-ratio: 90 / 125;
+        flex: 0 0 auto;
+        border-radius: 5px;
+    }
+
+    .card img {
+        border-radius: 5px;
+    }
+
+    /* CARTAS ESPECIALES */
+    .special-panel {
+        width: 100%;
+        max-width: 500px;
+        margin: 3px auto 0;
+        padding: 4px 7px;
+        border-radius: 7px;
+    }
+
+    .panel-title {
+        margin-bottom: 2px;
+    }
+
+    .panel-title h2 {
+        font-size: 10px;
+        margin: 0;
+    }
+
+    .skills {
+        display: flex;
+        flex-wrap: nowrap;
+        justify-content: center;
+        align-items: center;
+        gap: clamp(2px, 1vw, 8px);
+    }
+
+    .skill {
+        width: clamp(42px, 10vw, 62px);
+        min-width: 0;
+        padding: 0;
+    }
+
+    .skill img {
+        width: clamp(25px, 6vw, 40px);
+        height: clamp(28px, 7vh, 42px);
+    }
+
+    .name {
+        font-size: 7px;
+        line-height: 8px;
+        margin-top: 1px;
+    }
+
+    .uses {
+        width: 13px;
+        height: 13px;
+        font-size: 7px;
+    }
+
+    /* BOTÓN VOLVER */
+    .boton {
+        padding: 5px 12px;
+        font-size: 11px;
+        margin-top: 2px;
+    }
+
+    /* AVISOS Y EFECTOS */
+    .banner-poder-online {
+        top: 5px;
+        min-width: min(280px, 90vw);
+        padding: 6px 10px;
+        gap: 7px;
+    }
+
+    .banner-poder-icono {
+        width: 32px;
+        height: 32px;
+        flex-basis: 32px;
+    }
+}
+
+/* CELULARES HORIZONTALES PEQUEÑOS */
+@media screen and (max-width: 650px) and (orientation: landscape) {
+
+    .contenedor-principal-juego {
+        grid-template-columns:
+            minmax(76px, 18%)
+            minmax(0, 1fr)
+            minmax(76px, 18%);
+        gap: 4px;
+    }
+
+    .panel-personaje-lateral,
+    .panel-naruto-lateral {
+        padding: 3px;
+        gap: 3px;
+    }
+
+    .personaje-imagen {
+        height: 58px;
+    }
+
+    .personaje-imagen img {
+        width: 40px;
+        height: 40px;
+    }
+
+    .personaje-habilidad {
+        padding: 3px;
+    }
+
+    .habilidad-texto p {
+        font-size: 6px;
+        line-height: 7px;
+    }
+
+    #board {
+        gap: 3px;
+    }
+
+    .card {
+        width: clamp(29px, 7vw, 43px);
+    }
+
+    .special-panel {
+        padding: 3px;
+    }
+
+    .skill {
+        width: clamp(37px, 9vw, 50px);
+    }
+
+    .skill img {
+        width: 27px;
+        height: 29px;
+    }
+}
+
+/* TELÉFONO EN VERTICAL: AVISO PARA GIRAR */
+@media screen and (max-width: 600px) and (orientation: portrait) {
+
+    body {
+        overflow-x: hidden;
+    }
+
+    .contenedor-principal-juego {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .panel-personaje-lateral,
+    .panel-naruto-lateral {
+        display: none;
+    }
+
+    #boardFrame {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .special-panel {
+        width: 100%;
+    }
+}
+
+/* EVITA QUE LOS PODERES SE DESBORDEN */
+.skills,
+.special-panel {
+    box-sizing: border-box;
+    max-width: 100%;
+}
+
+.skill {
+    touch-action: manipulation;
+}
