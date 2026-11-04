@@ -43,6 +43,12 @@ html, body {
   transform: scale(0.9) translateY(-40px);
 }
 
+/* Mismo ancho real para todos los campos y botones:
+   el padding (incluido el espacio del ojo) queda dentro del 100%. */
+.login-contenedor * {
+  box-sizing: border-box;
+}
+
 h1 {
   font-family: "Fredoka", sans-serif;
   font-size: 40px;
