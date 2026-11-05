@@ -20,7 +20,6 @@ export class MultijugadorModal extends BaseModal {
       if (this.redirectEnCurso) return;
       this.redirectEnCurso = true;
       document.getElementById('panelEsperandoRivalVerde')?.setAttribute('hidden', 'true');
-      document.getElementById('panelPartidaRapidaVerde')?.setAttribute('hidden', 'true');
       const codigo = datos?.codigo || clienteMultijugador.codigoSala || '';
       window.location.href = `game-online.html?codigo=${encodeURIComponent(codigo)}`;
     });
@@ -28,12 +27,11 @@ export class MultijugadorModal extends BaseModal {
 
   ocultarTodo() {
     document.getElementById('panelCrearSalaVerde')?.setAttribute('hidden', 'true');
-    document.getElementById('panelPartidaRapidaVerde')?.setAttribute('hidden', 'true');
     document.getElementById('panelEsperandoRivalVerde')?.setAttribute('hidden', 'true');
   }
 
   marcarActivo(id) {
-    ['btnCrearSalaVerdeModal', 'btnPartidaRapidaVerdeModal', 'btnInvitarAmigosVerdeModal'].forEach(btnId => {
+    ['btnCrearSalaVerdeModal', 'btnInvitarAmigosVerdeModal'].forEach(btnId => {
       document.getElementById(btnId)?.classList.remove('btn-lobby-activo');
     });
     if (id) document.getElementById(id)?.classList.add('btn-lobby-activo');
@@ -141,43 +139,7 @@ export class MultijugadorModal extends BaseModal {
       }
     });
 
-    document.getElementById('btnPartidaRapidaVerdeModal')?.addEventListener('click', () => {
-      this.ocultarTodo();
-      this.marcarActivo('btnPartidaRapidaVerdeModal');
-      document.getElementById('panelPartidaRapidaVerde')?.removeAttribute('hidden');
-      const modo = document.querySelector('input[name="modoRapidaVerde"]:checked')?.value || '1v1';
-      const texto = document.getElementById('textoBusquedaRapidaVerde');
-      if (texto) texto.textContent = modo === '2v2' ? 'PARTIDA RÁPIDA - SELECCIONA EL MODO (2 VS 2)' : 'PARTIDA RÁPIDA - SELECCIONA EL MODO (1 VS 1)';
-    });
 
-    document.getElementById('btnBuscarRapidaVerde')?.addEventListener('click', async () => {
-      const modo = document.querySelector('input[name="modoRapidaVerde"]:checked')?.value || '1v1';
-      const texto = document.getElementById('textoBusquedaRapidaVerde');
-      if (texto) texto.textContent = modo === '2v2' ? 'BUSCANDO EQUIPO (2 VS 2)...' : 'BUSCANDO PARTIDA RÁPIDA (1 VS 1)...';
-      try {
-        const res = await clienteMultijugador.buscarPartidaRapida(modo);
-        if (res.exito && res.emparejado && res.codigo) {
-          if (this.redirectEnCurso) return;
-          this.redirectEnCurso = true;
-          document.getElementById('panelPartidaRapidaVerde')?.setAttribute('hidden', 'true');
-          window.location.href = `game-online.html?codigo=${encodeURIComponent(res.codigo)}`;
-        } else if (!res.exito) {
-          document.getElementById('panelPartidaRapidaVerde')?.setAttribute('hidden', 'true');
-          alert(res.error || 'No se pudo buscar partida.');
-          this.marcarActivo('btnPartidaRapidaVerdeModal');
-          document.getElementById('panelPartidaRapidaVerde')?.removeAttribute('hidden');
-        }
-      } catch (error) {
-        document.getElementById('panelPartidaRapidaVerde')?.setAttribute('hidden', 'true');
-        alert('No se pudo buscar partida. Verifica que el backend esté corriendo.');
-        this.marcarActivo('btnPartidaRapidaVerdeModal');
-        document.getElementById('panelPartidaRapidaVerde')?.removeAttribute('hidden');
-      }
-    });
-
-    document.getElementById('btnCancelarBusquedaVerde')?.addEventListener('click', () => {
-      clienteMultijugador.cancelarBusqueda();
-    });
 
     document.getElementById('btnInvitarAmigosVerdeModal')?.addEventListener('click', () => {
       const panelEspera = document.getElementById('panelEsperandoRivalVerde');
