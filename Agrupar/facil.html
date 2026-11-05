@@ -11,13 +11,13 @@
 </head>
 <body>
 
-    <img src="img/akatsuki.png" type="img/png" id="imagenfondo">
+    <img src="img/akatsuki.png" alt="" id="imagenfondo">
     
 
     <!-- Barra superior -->
     <div class="top-bar">
         <div class="left">
-            <img src="img/Reloj.png" class="reloj">
+            <img src="img/Reloj.png" alt="" class="reloj">
             <span id="timer">40</span>s
         </div>
 
@@ -31,6 +31,7 @@
 
     <!-- Texto -->
     <p class="titulo">Agrupa los objetos según corresponda</p>
+    <p class="ayuda">Arrastrá cada carta hasta su carpeta (o tocala y después tocá la carpeta)</p>
 
     <!-- Contenedor de objetos -->
     <div id="objetosContainer" class="objetos-container"></div>
@@ -38,13 +39,15 @@
     <!-- Carpetas -->
     <div class="carpetas">
         <div class="carpeta" id="mitologia">
-            <img src="img/Carpeta 1.png" class="carpeta-img">
+            <img src="img/Carpeta 1.png" alt="" class="carpeta-img">
             <p>Aldea de la roca</p>
+            <div class="carpeta-objetos"></div>
         </div>
 
         <div class="carpeta" id="scifi">
-            <img src="img/Carpeta 2.png" class="carpeta-img">
+            <img src="img/Carpeta 2.png" alt="" class="carpeta-img">
             <p>Akatsuki</p>
+            <div class="carpeta-objetos"></div>
         </div>
     </div>
 
@@ -52,17 +55,17 @@
     <div id="pauseMenu" class="pause-menu hidden">
         <div class="pause-box">
             <button id="btnResume">Reanudar</button>
-            <button onclick="window.location='../menu.html'">Modo de juego</button>
-            <button onclick="window.location='../menu.html'">Salir del juego</button>
+            <button data-accion="modo">Modo de juego</button>
+            <button data-accion="salir">Salir del juego</button>
         </div>
     </div>
 
     <!-- Pantalla Final -->
     <div id="finalScreen" class="final-screen hidden">
         <h1 id="finalMessage"></h1>
-        <button onclick="location.reload()">Reintentar</button>
-        <button onclick="window.location='../menu.html'">Modo de juego</button>
-        <button onclick="window.location='../menu.html'">Salir del juego</button>
+        <button data-accion="reintentar">Reintentar</button>
+        <button data-accion="modo">Modo de juego</button>
+        <button data-accion="salir">Salir del juego</button>
     </div>
 
     <script src="js/facil.js"></script>

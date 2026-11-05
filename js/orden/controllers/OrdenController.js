@@ -302,6 +302,10 @@ export class OrdenController {
                     .desactivar();
 
 
+                carta.entidad
+                    .desmarcarCorrecta();
+
+
                 carta.elemento
                     .classList
                     .remove(

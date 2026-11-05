@@ -35,11 +35,12 @@ html,
 body{
     font-family: var(--fuente-fredoka);  /* activa la fuente Fredoka cargada desde el HTML */
     color:white;
-    min-height: 100dvh;
-    height: 100dvh;
-    overflow: hidden;
-    overscroll-behavior: none;
-    touch-action: manipulation;
+    min-height:100vh;
+    overflow-x:hidden;
+}
+
+body{
+    padding-bottom:90px;
 }
 
 /* ===================================== */
@@ -148,18 +149,10 @@ button,
 /* CONTENEDOR PRINCIPAL */
 /* ===================================== */
 .menu-principal{
-    width:100vw;
-    max-width:100vw;
-    margin:0;
-    height: 100dvh;
-    min-height: 100dvh;
-    max-height: 100dvh;
-    padding:4px 6px;
-    display:flex;
-    flex-direction:column;
-    justify-content:flex-start;
-    gap:4px;
-    overflow: hidden;
+    width:min(1400px,95%);
+    margin:auto;
+    min-height:100vh;
+    padding:15px;
 }
 
 /* ===================================== */
@@ -168,24 +161,23 @@ button,
 .header{
     display:flex;
     justify-content:space-between;
-    align-items:center;
-    gap:6px;
-    flex-wrap:nowrap;
-    flex:0 0 auto;
+    align-items:flex-start;
+    gap:20px;
+    flex-wrap:wrap;
 }
 
 /* ===================================== */
 /* PERFIL */
 /* ===================================== */
 .perfil-panel{
-    flex:1 1 auto;
-    min-width:0;
-    max-width:100%;
+    flex:1;
+    min-width:250px;
+    max-width:320px;
     display:flex;
     align-items:center;
-    gap:8px;
-    padding:4px 10px;
-    border-radius:999px;
+    gap:15px;
+    padding:15px;
+    border-radius:16px;
     background:rgba(50,0,90,.85);
     border:2px solid #9c27ff;
     box-shadow:
@@ -197,16 +189,15 @@ button,
 /* AVATAR */
 /* ===================================== */
 .avatar{
-    width:44px;
-    height:44px;
+    width:60px;
+    height:60px;
     border-radius:50%;
     background:#222;
     display:flex;
     justify-content:center;
     align-items:center;
-    font-size:22px;
+    font-size:28px;
     border:2px solid rgba(255,255,255,.15);
-    flex:0 0 auto;
 }
 
 /* ===================================== */
@@ -218,7 +209,7 @@ button,
 }
 
 .logo-panel img{
-    width:clamp(90px,22vw,150px);
+    width:clamp(120px,15vw,220px);
     filter: drop-shadow(0 0 10px #ff7b00);
 }
 
@@ -227,10 +218,8 @@ button,
 /* ===================================== */
 .derecha{
     display:flex;
-    flex-direction:row;
-    gap:6px;
-    align-items:center;
-    flex:0 0 auto;
+    flex-direction:column;
+    gap:12px;
 }
 
 /* ===================================== */
@@ -238,19 +227,14 @@ button,
 /* ===================================== */
 .menu-superior,
 .ranking-panel{
-    min-width:0;
-    width:42px;
-    height:42px;
-    border-radius:50%;
+    min-width:180px;
+    height:65px;
+    border-radius:14px;
     background:rgba(0,0,0,.80);
     display:flex;
     justify-content:center;
     align-items:center;
     backdrop-filter:blur(8px);
-    font-size:18px;
-    padding:0;
-    text-align:center;
-    flex:0 0 auto;
 }
 
 .menu-superior{
@@ -267,33 +251,25 @@ button,
 /* MODOS DE JUEGO */
 /* ===================================== */
 .modos-juego{
-    margin-top:2px;
+    margin-top:30px;
     display:flex;
-    flex-direction:column;
     justify-content:center;
-    gap:6px;
-    flex-wrap:nowrap;
-    align-items:stretch;
-    flex: 1 1 auto;
-    min-height:0;
+    gap:20px;
+    flex-wrap:wrap;
 }
 
 /* ===================================== */
 /* PANEL GENERAL */
 /* ===================================== */
 .panel{
-    flex:1 1 0;
-    max-width:100%;
-    width:100%;
-    min-height:0;
-    height: auto;
-    padding:6px 10px;
-    border-radius:14px;
+    flex:1 1 220px;
+    max-width:250px;
+    min-height:260px;
+    padding:15px;
+    border-radius:20px;
     display:flex;
-    flex-direction:row;
-    align-items:center;
+    flex-direction:column;
     justify-content:space-between;
-    gap:10px;
     transition:.3s;
     backdrop-filter:blur(6px);
     position:relative;
@@ -310,8 +286,8 @@ button,
 .panel::before{
     content:"";
     position:absolute;
-    inset:6px;
-    border-radius:10px;
+    inset:10px;
+    border-radius:12px;
     border:1px solid rgba(255,255,255,.08);
     pointer-events:none;
 }
@@ -341,47 +317,45 @@ button,
 /* TITULO PANEL */
 /* ===================================== */
 .panel-titulo{
-    text-align:left;
-    font-size:clamp(11px,2.2vw,14px);
+    text-align:center;
+    font-size:clamp(14px,1.2vw,18px);
     font-weight:bold;
-    flex:0 0 auto;
 }
 
 /* ===================================== */
 /* CENTRO PANEL */
 /* ===================================== */
 .panel-centro{
-    flex:1 1 auto;
-    margin:0;
-    border-radius:10px;
-    border:none;
-    background:transparent;
+    flex:1;
+    margin:10px 0;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,.15);
+    background:rgba(0,0,0,.20);
     display:flex;
-    flex-direction:row;
-    justify-content:flex-start;
+    flex-direction:column;
+    justify-content:center;
     align-items:center;
-    gap:10px;
-    text-align:left;
-    min-height:0;
+    gap:12px;
+    text-align:center;
 }
 
 /* ===================================== */
 /* TEXTO */
 /* ===================================== */
 .texto-centro{
-    font-size:clamp(9px,2vw,12px);
-    padding:0;
+    font-size:clamp(12px,1vw,15px);
+    padding:0 10px;
 }
 
 /* ===================================== */
 /* ICONOS */
 /* ===================================== */
 .icono-centro{
-    font-size:clamp(22px,6vw,30px);
+    font-size:clamp(35px,4vw,55px);
 }
 
 .vs{
-    font-size:clamp(24px,7vw,34px);
+    font-size:clamp(35px,5vw,60px);
     color:#ff66ff;
     font-weight:bold;
 }
@@ -390,24 +364,22 @@ button,
 /* FOOTER PANEL */
 /* ===================================== */
 .panel-footer{
-    text-align:right;
-    font-size:9px;
+    text-align:center;
+    font-size:12px;
     color:#ddd;
-    flex:0 0 auto;
 }
 
 /* ===================================== */
 /* PANEL INFERIOR */
 /* ===================================== */
 .contenedor-inferior{
-    width:100%;
-    margin:2px 0 0;
-    padding:4px 6px;
-    border-radius:12px;
+    width:min(900px,95%);
+    margin:35px auto 0;
+    padding:18px;
+    border-radius:18px;
     background:rgba(5,15,40,.85);
     border:2px solid #0080ff;
     box-shadow:0 0 15px rgba(0,128,255,.4);
-    flex:0 0 auto;
 }
 
 /* ===================================== */
@@ -415,26 +387,25 @@ button,
 /* ===================================== */
 .barra-inferior{
     display:grid;
-    grid-template-columns: repeat(4, minmax(0,1fr));
-    gap:4px;
+    grid-template-columns: repeat(auto-fit,minmax(160px,1fr));
+    gap:15px;
 }
 
 /* ===================================== */
 /* ITEMS */
 /* ===================================== */
 .item{
-    min-height:52px;
-    border-radius:10px;
+    min-height:110px;
+    border-radius:12px;
     background:rgba(255,255,255,.05);
     border:1px solid rgba(255,255,255,.15);
     display:flex;
     flex-direction:column;
     justify-content:center;
     align-items:center;
-    gap:1px;
+    gap:8px;
     text-align:center;
     transition:.3s;
-    padding:3px 2px;
 }
 
 .item:hover{
@@ -443,33 +414,42 @@ button,
 }
 
 .item-icono{
-    font-size:18px;
+    font-size:28px;
 }
 
 .item h3{
-    font-size:10px;
+    font-size:16px;
 }
 
 .item p{
-    display:none;
+    font-size:12px;
+    color:#ccc;
 }
 
 /* ===================================== */
 /* ESTADO */
 /* ===================================== */
 .estado{
-    width:100%;
-    margin:2px 0 0;
-    padding:4px 8px;
-    border-radius:10px;
-    background:rgba(0,0,0,.85);
-    display:flex;
-    justify-content:space-around;
+    position:fixed;
+    z-index:20;
+    left:50%;
+    bottom:calc(10px + env(safe-area-inset-bottom, 0px));
+    transform:translateX(-50%);
+    width:min(1120px,calc(100% - 32px));
+    min-height:48px;
+    margin:0;
+    padding:10px 20px;
+    border:1px solid rgba(0,255,153,.28);
+    border-radius:16px;
+    background:rgba(5,8,9,.88);
+    box-shadow:0 10px 32px rgba(0,0,0,.42),0 0 18px rgba(0,255,153,.08);
+    backdrop-filter:blur(12px);
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    justify-items:center;
     align-items:center;
-    flex-wrap:nowrap;
-    gap:6px;
-    font-size:9px;
-    flex:0 0 auto;
+    gap:8px;
+    font-size:13px;
 }
 
 /* ===================================== */
@@ -506,8 +486,11 @@ button,
         grid-template-columns:1fr 1fr;
     }
     .estado{
-        flex-direction:column;
-        text-align:center;
+        grid-template-columns:repeat(2,minmax(0,1fr));
+        gap:8px 12px;
+        width:calc(100% - 24px);
+        padding:9px 12px;
+        font-size:12px;
     }
 }
 
@@ -516,308 +499,15 @@ button,
 /* ===================================== */
 @media(max-width:480px){
     .barra-inferior{
-        grid-template-columns:1fr 1fr;
+        grid-template-columns:1fr;
     }
     .menu-superior,
     .ranking-panel{
         width:100%;
     }
     .perfil-panel{
-        flex-direction:row;
-        text-align:left;
-    }
-}
-
-/* ===================================== */
-/* PAISAJE (HORIZONTAL) PARA MÓVIL */
-/* ===================================== */
-@media screen and (orientation: landscape) and (max-height: 520px) {
-    html, body {
-        overflow: hidden;
-    }
-
-    .menu-principal {
-        width: 100vw;
-        max-width: 100vw;
-        padding: 2px 6px;
-        height: 100dvh;
-        min-height: 100dvh;
-        max-height: 100dvh;
-        gap: 2px;
-        justify-content: flex-start;
-    }
-
-    .header {
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
-        gap: 6px;
-        flex-wrap: nowrap;
-    }
-
-    .perfil-panel {
-        min-width: 0;
-        max-width: 100%;
-        flex: 1 1 auto;
-        padding: 3px 8px;
-        gap: 6px;
-        border-radius: 999px;
-    }
-
-    .avatar {
-        width: 36px;
-        height: 36px;
-        font-size: 18px;
-    }
-
-    .nivel-badge {
-        font-size: 10px;
-    }
-
-    .perfil-panel p {
-        font-size: 8px;
-    }
-
-    .logo-panel img {
-        width: clamp(70px, 16vw, 110px);
-    }
-
-    .derecha {
-        flex-direction: row;
-        gap: 4px;
-        align-items: center;
-    }
-
-    .menu-superior,
-    .ranking-panel {
-        min-width: 0;
-        width: 36px;
-        height: 36px;
-        font-size: 16px;
-    }
-
-    .modos-juego {
-        margin-top: 2px;
-        flex-direction: row;
-        flex-wrap: nowrap;
-        gap: 6px;
-        align-items: stretch;
-        flex: 1 1 auto;
-        min-height: 0;
-    }
-
-    .panel {
-        flex: 1 1 0;
-        max-width: 33%;
-        min-height: 0;
-        height: clamp(126px, 58dvh, 170px);
-        padding: 6px 8px;
-    }
-
-    .panel-titulo {
-        font-size: clamp(10px, 1.6vw, 13px);
-    }
-
-    .panel-centro {
-        margin: 4px 0;
-        gap: 4px;
-        min-height: 0;
-    }
-
-    .texto-centro {
-        font-size: clamp(9px, 1.4vw, 11px);
-        padding: 0 4px;
-    }
-
-    .icono-centro {
-        font-size: clamp(24px, 6vw, 34px);
-    }
-
-    .vs {
-        font-size: clamp(26px, 7vw, 38px);
-    }
-
-    .panel-footer {
-        font-size: 8px;
-    }
-
-    .contenedor-inferior {
-        margin: 2px 0 0;
-        padding: 4px 6px;
-        width: 100%;
-    }
-
-    .barra-inferior {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 4px;
-    }
-
-    .item {
-        min-height: 56px;
-        gap: 1px;
-        padding: 3px 2px;
-    }
-
-    .item-icono {
-        font-size: 16px;
-    }
-
-    .item h3 {
-        font-size: 9px;
-    }
-
-    .item p {
-        font-size: 8px;
-    }
-
-    .estado {
-        margin: 2px 0 0;
-        padding: 3px 6px;
-        font-size: 8px;
-        gap: 4px;
-    }
-
-    .modal-content-multijugador,
-    .modal-content-dos-jugadores,
-    .modal-content-juego,
-    .modal-content-ranking,
-    .modal-content-config,
-    .modal-content-perfil,
-    .modal-content-info-puntaje {
-        width: 98vw;
-        max-height: 98dvh;
-        overflow-y: auto;
-        padding: 10px 12px;
-        border-radius: 14px;
-    }
-
-    .multijugador-header-box {
-        gap: 12px;
-        margin-bottom: 12px;
-    }
-
-    .globo-icon {
-        font-size: 34px;
-    }
-
-    .barra-acciones-lobby {
-        gap: 6px;
-        margin-bottom: 10px;
-    }
-
-    .btn-lobby {
-        padding: 6px 12px;
-        font-size: 11px;
-    }
-
-    .crear-sala-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 6px 10px;
-        align-items: start;
-    }
-
-    .crear-sala-fila {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-    }
-
-    .radio-grupo {
-        gap: 8px;
-        flex-wrap: wrap;
-    }
-
-    .radio-grupo label {
-        font-size: 11px;
-    }
-
-    .checkbox-grupo-aldeas {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 4px 6px;
-        padding: 6px;
-    }
-
-    .checkbox-grupo-aldeas label {
-        font-size: 10px;
-        gap: 6px;
-    }
-
-    .select-lobby,
-    .input-lobby {
-        height: 36px;
-        font-size: 12px;
-    }
-
-    .crear-sala-acciones {
-        display: flex;
-        flex-direction: row;
-        gap: 8px;
-        justify-content: flex-start;
-    }
-
-    .panel-buscar-codigo,
-    .panel-esperando,
-    .panel-partida-rapida {
-        padding: 10px 12px;
-        margin-bottom: 10px;
-    }
-
-    .buscar-codigo-row {
-        gap: 6px;
-    }
-
-    .lista-salas-container {
-        max-height: 36dvh;
-        margin-bottom: 12px;
-    }
-
-    .sala-card {
-        padding: 8px 12px;
-        gap: 10px;
-    }
-
-    .sala-card-detalles {
-        font-size: 11px;
-    }
-
-    .btn-unirse-sala-pequeno {
-        padding: 6px 12px;
-        font-size: 11px;
-    }
-
-    .opciones-juego-container {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
-        padding: 10px;
-    }
-
-    .opcion-card {
-        min-height: 130px;
-        padding: 10px;
-    }
-
-    .modal-juego-titulo {
-        margin-bottom: 12px;
-    }
-
-    .btn-volver-modal {
-        font-size: 13px;
-    }
-
-    .aviso-invitado {
-        font-size: 11px;
-        padding: 6px 10px;
-    }
-
-    .historial-caja {
-        max-height: 94dvh;
-        padding: 18px;
-    }
-
-    .config-opciones {
-        max-height: 60dvh;
-        overflow-y: auto;
+        flex-direction:column;
+        text-align:center;
     }
 }
 
@@ -884,6 +574,16 @@ button,
     align-items: center;
     background: #111;
     font-size: 32px;
+    overflow: hidden;
+}
+
+.avatar img,
+.avatar-modal img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
 }
 
 .perfil-info-modal h2 {
@@ -1485,11 +1185,11 @@ button,
 }
 
 .btn-lobby-activo {
-    background: linear-gradient(90deg, #00ff99, #00dbff) !important;
-    color: #001a12 !important;
-    font-weight: 700 !important;
-    border-color: rgba(0, 255, 153, 0.9) !important;
-    box-shadow: 0 0 22px rgba(0, 255, 153, 0.45) !important;
+    background: linear-gradient(90deg, rgba(0, 255, 153, 0.95), rgba(0, 219, 255, 0.95));
+    color: #001a12;
+    font-weight: 700;
+    box-shadow: 0 0 22px rgba(0, 255, 153, 0.35);
+    border-color: transparent;
 }
 
 /* Contenedor de la lista */
@@ -2077,10 +1777,18 @@ button,
     background: linear-gradient(145deg, #0052d4, #4364f7);
     border: 2px solid #00c6ff;
 }
+.azul-card:hover {
+    box-shadow: 0 0 25px rgba(0, 198, 255, 0.75), 0 0 45px rgba(0, 198, 255, 0.35);
+    border-color: #66e8ff;
+}
 
 .roja-card {
     background: linear-gradient(145deg, #870000, #190000);
     border: 2px solid #ff0000;
+}
+.roja-card:hover {
+    box-shadow: 0 0 25px rgba(255, 60, 60, 0.75), 0 0 45px rgba(255, 60, 60, 0.35);
+    border-color: #ff6666;
 }
 
 
@@ -2576,6 +2284,43 @@ FECHA Y HORA (celda de la tabla)
     text-shadow: 0 0 10px #ff7b00;
 }
 
+/* Botón Cerrar sesión dentro de la configuración */
+.btn-cerrar-sesion-config {
+    flex-shrink: 0;
+    padding: 10px 22px;
+    border-radius: 12px;
+    border: 2px solid #ff4d4d;
+    background: rgba(255, 40, 40, 0.12);
+    color: #ff8080;
+    font-family: "Fredoka", sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s, background 0.2s, color 0.2s;
+}
+.btn-cerrar-sesion-config:hover {
+    background: #ff4d4d;
+    color: #fff;
+    transform: scale(1.04);
+    box-shadow: 0 0 18px rgba(255, 77, 77, 0.7);
+}
+
+#closeConfigBtn {
+    display: block;
+    margin: 40px auto;
+}
+
+/* Botón Cerrar sesión dentro de la configuración */
+.config-fila-peligro {
+    border-color: rgba(255, 60, 60, 0.45);
+    background: rgba(255, 40, 40, 0.07);
+}
+.config-fila-peligro:hover {
+    border-color: #ff4d4d;
+    background: rgba(255, 40, 40, 0.14);
+}
+
 /*=========================================================
   AVISO DE INVITADO (sesión) — lo controla js/sesion-guard.js
 =========================================================*/
@@ -2708,29 +2453,6 @@ FECHA Y HORA (celda de la tabla)
     gap: 12px;
     flex-wrap: wrap;
     color: #fff;
-}
-
-.checkbox-grupo-aldeas {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 8px 12px;
-    color: #fff;
-    background: rgba(0,0,0,0.5);
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid rgba(0, 219, 255, 0.4);
-}
-
-.checkbox-grupo-aldeas label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-}
-
-.texto-ayuda {
-    font-size: 11px;
-    color: #9fd8ff;
 }
 
 .select-lobby, .input-lobby {
@@ -2907,12 +2629,6 @@ FECHA Y HORA (celda de la tabla)
     display:none;
 }
 .sala-compartir-texto{
-.sala-compartir-botones{
-    display:flex;
-    gap:8px;
-    flex-wrap:wrap;
-    justify-content:center;
-}
     display:flex;
     flex-direction:column;
     gap:8px;
@@ -3085,4 +2801,18 @@ FECHA Y HORA (celda de la tabla)
         flex-direction: column;
         text-align: center;
     }
+}
+
+.aviso-invitado.aviso-invitado--compacto {
+    width: fit-content;
+    max-width: 92vw;
+    min-width: 0;
+    flex-direction: row;
+    justify-content: center;
+    gap: 0;
+    padding: 8px;
+}
+
+.aviso-invitado--compacto #avisoInvitadoTexto {
+    display: none;
 }

@@ -11,6 +11,13 @@ import { MensajeDomNotificador } from "./infraestructura/notificadores/MensajeDo
 import { RecuperacionService } from "./servicios/RecuperacionService.js";
 import { RecuperacionController } from "./controladores/RecuperacionController.js";
 
+if (window.location.protocol === "file:") {
+  const archivo = window.location.pathname.split("/").pop() || "recuperar.html";
+  window.location.replace(
+    "http://localhost:3000/" + archivo + window.location.search + window.location.hash
+  );
+}
+
 // --- Composición ---
 // Recuperación REAL vía /api/auth: el backend envía un código al correo
 // (MAILER=consola lo imprime en la consola del servidor) y restablece la

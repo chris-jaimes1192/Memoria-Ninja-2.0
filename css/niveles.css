@@ -149,3 +149,140 @@ body{
         0 0 45px #ff0000;
 
 }
+/* =========================================================
+   BOTÓN VOLVER AL MENÚ (shuriken ninja)
+   Fijo sobre el mapa, arriba a la izquierda. Es un <a> para
+   funcionar incluso sin JS. Al pasar el ratón el shuriken gira
+   y el aro late en rojo.
+   ========================================================= */
+
+.btn-volver-mapa{
+    position:fixed;
+    top:18px;
+    left:18px;
+    z-index:200;
+
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+
+    padding:9px 20px 9px 12px;
+
+    text-decoration:none;
+    color:#ffe9ec;
+    font-size:14px;
+    font-weight:700;
+    letter-spacing:2px;
+    text-transform:uppercase;
+
+    background:
+        radial-gradient(circle at 30% 20%, rgba(255,60,80,.28), rgba(10,6,18,.88) 72%);
+
+    border:2px solid rgba(255,60,80,.55);
+    border-radius:999px;
+
+    -webkit-backdrop-filter:blur(6px);
+    backdrop-filter:blur(6px);
+
+    box-shadow:
+        0 0 14px rgba(255,0,40,.35),
+        inset 0 0 12px rgba(255,0,40,.18);
+
+    transition:
+        transform .25s ease,
+        border-color .25s ease,
+        box-shadow .25s ease,
+        letter-spacing .25s ease,
+        color .25s ease;
+
+    -webkit-tap-highlight-color:transparent;
+    animation:latidoMenu 3.2s ease-in-out infinite;
+}
+
+.btn-volver-icono{
+    display:flex;
+    width:26px;
+    height:26px;
+}
+
+.btn-volver-icono svg{
+    width:100%;
+    height:100%;
+    display:block;
+}
+
+.shuriken{
+    fill:currentColor;
+    transform-origin:50% 50%;
+    transition:transform .55s cubic-bezier(.2,.9,.2,1), fill .25s ease;
+}
+
+.shuriken-centro{
+    fill:#140a12;
+}
+
+.btn-volver-mapa:hover,
+.btn-volver-mapa:focus-visible{
+    transform:translateY(-2px) scale(1.04);
+    color:#ff3355;
+    border-color:#ff3355;
+    letter-spacing:3px;
+    box-shadow:
+        0 0 18px rgba(255,40,70,.85),
+        0 0 40px rgba(255,0,40,.45),
+        inset 0 0 16px rgba(255,0,40,.35);
+}
+
+.btn-volver-mapa:hover .shuriken,
+.btn-volver-mapa:focus-visible .shuriken{
+    transform:rotate(180deg);
+}
+
+.btn-volver-mapa:active{
+    transform:translateY(0) scale(.96);
+}
+
+.btn-volver-mapa:focus-visible{
+    outline:3px solid #ffd166;
+    outline-offset:3px;
+}
+
+@keyframes latidoMenu{
+    0%,100%{
+        box-shadow:
+            0 0 14px rgba(255,0,40,.35),
+            inset 0 0 12px rgba(255,0,40,.18);
+    }
+    50%{
+        box-shadow:
+            0 0 22px rgba(255,0,40,.6),
+            0 0 34px rgba(255,0,40,.25),
+            inset 0 0 16px rgba(255,0,40,.3);
+    }
+}
+
+@media (max-width:480px){
+    .btn-volver-mapa{
+        top:12px;
+        left:12px;
+        padding:7px 14px 7px 10px;
+        font-size:12px;
+        letter-spacing:1.5px;
+        gap:8px;
+    }
+
+    .btn-volver-icono{
+        width:20px;
+        height:20px;
+    }
+}
+
+@media (prefers-reduced-motion:reduce){
+    .btn-volver-mapa{
+        animation:none;
+    }
+
+    .shuriken{
+        transition:none;
+    }
+}
