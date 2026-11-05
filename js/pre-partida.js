@@ -22,9 +22,6 @@ class PrePartidaController {
 
         this._seleccionarClan(idInicial);
 
-        // Ya viene con nivel elegido desde el mapa, así que se muestra el botón de una
-        this.vistaClan.mostrarBotonIniciar();
-
         document.getElementById("btn-iniciar").addEventListener("click", () => this._irAJugar());
     }
 
@@ -41,6 +38,8 @@ class PrePartidaController {
     }
 
     confirmarNivel() {
+        if (this.vistaClan.estaConfirmado()) return;
+
         this.vistaClan.mostrarBotonIniciar();
         this.vistaClan.marcarConfirmado();
     }
@@ -69,10 +68,8 @@ document.getElementById("btnVolverMenu")?.addEventListener("click", () => {
   window.location.href = "menu.html";
 });
 
-document.querySelectorAll("[data-clan]").forEach((boton) => {
-  boton.addEventListener("click", () =>
-    prePartidaController.seleccionarClan(boton.dataset.clan)
-  );
+document.getElementById("btn-cambiar-nivel")?.addEventListener("click", () => {
+  window.location.href = "niveles.html";
 });
 
 prePartidaController.iniciar();

@@ -8,6 +8,12 @@ import { Partida } from "../entities/partida.js";
 
 import { historialApi } from "../../infraestructura/repositorios/HttpHistorialRepositorio.js";
 import { progresoService } from "../../services/progresoService.js";
+import {
+    aplicarTemaAldea,
+    prepararImagenCarta,
+    precargarImagenes
+} from "../../core-navegacion/TemaAldea.js";
+import { conectarPausa } from "../../ui/PauseModal.js";
 
 
 export class HyugaController {
@@ -19,7 +25,9 @@ export class HyugaController {
         // ==========================================
 
         this.rutaBack =
-            "assets/img/back.png";
+            "assets/cartas niveles/carta hyuga.png";
+
+        aplicarTemaAldea("hyuga");
 
 
         this.rutaHyuga =
@@ -72,6 +80,9 @@ export class HyugaController {
                 this.cartaService,
                 this.puntajeService
             );
+
+
+        conectarPausa(this.tiempoService);
 
 
         // ==========================================
@@ -236,6 +247,11 @@ export class HyugaController {
 
         this.cartasDOM = [];
 
+        precargarImagenes([
+            this.rutaBack,
+            ...cartas.map((carta) => carta.getImagen())
+        ]);
+
 
         cartas.forEach((carta, indice) => {
 
@@ -257,6 +273,8 @@ export class HyugaController {
             imagenBack.src =
                 this.rutaBack;
 
+            prepararImagenCarta(imagenBack);
+
 
             imagenBack.classList.add("back");
 
@@ -271,6 +289,8 @@ export class HyugaController {
 
             imagenFront.src =
                 carta.getImagen();
+
+            prepararImagenCarta(imagenFront);
 
 
             imagenFront.classList.add("front");

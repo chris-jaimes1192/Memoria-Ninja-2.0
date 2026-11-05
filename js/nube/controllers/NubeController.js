@@ -9,6 +9,12 @@ import { Partida } from "../entities/Partida.js";
 
 import { historialApi } from "../../infraestructura/repositorios/HttpHistorialRepositorio.js";
 import { progresoService } from "../../services/progresoService.js";
+import {
+    aplicarTemaAldea,
+    prepararImagenCarta,
+    precargarImagenes
+} from "../../core-navegacion/TemaAldea.js";
+import { conectarPausa } from "../../ui/PauseModal.js";
 
 
 export class NubeController {
@@ -19,7 +25,9 @@ export class NubeController {
         // RUTAS
         // ==========================================
 
-        this.rutaBack = "assets/img/back.png";
+        this.rutaBack = "assets/cartas niveles/carta nube.png";
+
+        aplicarTemaAldea("nube");
         this.rutaNube = "assets/img/cards/aldeas/nube/";
 
 
@@ -62,6 +70,9 @@ export class NubeController {
                 this.cartaService,
                 this.puntajeService
             );
+
+
+        conectarPausa(this.tiempoService);
 
 
         // ==========================================
@@ -213,6 +224,11 @@ export class NubeController {
 
         this.cartasDOM = [];
 
+        precargarImagenes([
+            this.rutaBack,
+            ...cartas.map((carta) => carta.getImagen())
+        ]);
+
 
         cartas.forEach((carta, indice) => {
 
@@ -236,6 +252,8 @@ export class NubeController {
             imagenBack.src =
                 this.rutaBack;
 
+            prepararImagenCarta(imagenBack);
+
             imagenBack.classList.add("back");
 
 
@@ -248,6 +266,8 @@ export class NubeController {
 
             imagenFront.src =
                 carta.getImagen();
+
+            prepararImagenCarta(imagenFront);
 
             imagenFront.classList.add("front");
 

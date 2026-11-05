@@ -8,6 +8,12 @@ import { Partida } from "../entities/partida.js";
 
 import { historialApi } from "../../infraestructura/repositorios/HttpHistorialRepositorio.js";
 import { progresoService } from "../../services/progresoService.js";
+import {
+    aplicarTemaAldea,
+    prepararImagenCarta,
+    precargarImagenes
+} from "../../core-navegacion/TemaAldea.js";
+import { conectarPausa } from "../../ui/PauseModal.js";
 
 
 export class UchihaController {
@@ -19,7 +25,8 @@ export class UchihaController {
         // ==========================================
 
         this.rutaBack =
-            "assets/img/back.png";
+            "assets/cartas niveles/carta uchiha.png";
+        aplicarTemaAldea("uchiha");
 
 
         this.rutaUchiha =
@@ -72,6 +79,9 @@ export class UchihaController {
                 this.cartaService,
                 this.puntajeService
             );
+
+
+        conectarPausa(this.tiempoService);
 
 
         // ==========================================
@@ -200,6 +210,12 @@ export class UchihaController {
             this.juegoService.iniciar();
 
 
+        precargarImagenes([
+            this.rutaBack,
+            ...cartas.map((carta) => carta.getImagen())
+        ]);
+
+
         this.generarTablero(cartas);
 
 
@@ -260,6 +276,8 @@ export class UchihaController {
 
             imagenBack.classList.add("back");
 
+            prepararImagenCarta(imagenBack);
+
 
             // =========================================
             // PARTE FRONTAL
@@ -274,6 +292,8 @@ export class UchihaController {
 
 
             imagenFront.classList.add("front");
+
+            prepararImagenCarta(imagenFront);
 
 
             // =========================================

@@ -1,10 +1,15 @@
+import {
+    aplicarTemaAldea,
+    obtenerTemaAldea,
+    obtenerTemaSeleccionado,
+    prepararImagenCarta,
+    precargarImagenes
+} from "./core-navegacion/TemaAldea.js";
+
 const RUTA_BACK = "assets/img/back.png";
-const RUTA_ALDEAS = "assets/img/cards/aldeas/";
 const IDS = ["1","2","3","4","5","6","7","8"];
 const TOTAL_PAREJAS = 8;
 const PUNTOS_POR_PAREJA = 10;
-
-const ALDEA = "arena";
 
 let cartasVolteadas = [];
 let movimientos = 0;
@@ -18,6 +23,7 @@ let onPartidaCompletada = null;
 // "¿me toca jugar a mí ahora?". Si no se pasa (queda null),
 // el tablero funciona exactamente igual que antes, sin bloqueo.
 let onEsMiTurno = null;
+let temaActual = obtenerTemaAldea("arena");
 
 
 // ==========================================
@@ -80,6 +86,8 @@ export const BoardManager = {
         onResultado = callbackResultado || null;
         onPartidaCompletada = callbackFinal || null;
         onEsMiTurno = callbackEsMiTurno || null; // NUEVO
+        temaActual = obtenerTemaSeleccionado() || obtenerTemaAldea("arena");
+        aplicarTemaAldea(localStorage.getItem("nivelActual"));
 
         const tablero = document.getElementById('board');
         tablero.innerHTML = '';
@@ -93,16 +101,28 @@ export const BoardManager = {
         const valores = [...IDS, ...IDS];
         valores.sort(() => Math.random() - 0.5);
 
+        precargarImagenes([
+            ...IDS.map(valor => this.obtenerRutaCarta(valor)),
+            this.obtenerReverso()
+        ]);
+
         valores.forEach(valor => {
             const carta = document.createElement('div');
             carta.className = 'card';
             carta.dataset.valor = valor;
 
-            const img = document.createElement('img');
-            img.src = RUTA_BACK;
-            img.className = 'img-card';
+            const reverso = document.createElement('img');
+            reverso.src = this.obtenerReverso();
+            reverso.className = 'img-card back';
+            prepararImagenCarta(reverso);
 
-            carta.appendChild(img);
+            const frente = document.createElement('img');
+            frente.src = this.obtenerRutaCarta(valor);
+            frente.className = 'img-card front';
+            prepararImagenCarta(frente);
+
+            carta.appendChild(reverso);
+            carta.appendChild(frente);
             carta.addEventListener('click', () => this.voltearCarta(carta));
             tablero.appendChild(carta);
         });
@@ -121,8 +141,7 @@ export const BoardManager = {
 
         if (carta.classList.contains('volteada') || cartasVolteadas.length === 2) return;
 
-        carta.classList.add('volteada');
-        carta.querySelector('img').src = `${RUTA_ALDEAS}${ALDEA}/${carta.dataset.valor}.png`;
+        carta.classList.add('volteada', 'flip');
 
         cartasVolteadas.push(carta);
 
@@ -154,12 +173,18 @@ export const BoardManager = {
             if (onResultado) onResultado(false, puntajeActual);
 
             setTimeout(() => {
-                c1.classList.remove('volteada');
-                c2.classList.remove('volteada');
-                c1.querySelector('img').src = RUTA_BACK;
-                c2.querySelector('img').src = RUTA_BACK;
+                c1.classList.remove('volteada', 'flip');
+                c2.classList.remove('volteada', 'flip');
                 cartasVolteadas = [];
             }, 800);
         }
+        },
+
+    obtenerRutaCarta(valor) {
+        return `${temaActual.cartas}${valor}.png`;
+    },
+
+    obtenerReverso() {
+        return temaActual.reverso || RUTA_BACK;
     }
 };

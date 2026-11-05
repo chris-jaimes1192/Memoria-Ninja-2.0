@@ -1,3 +1,5 @@
+import { aplicarTemaAldea, obtenerTemaSeleccionado } from "./core-navegacion/TemaAldea.js";
+
 /* =========================================================
    JUEGO: ENCONTRAR PARES
    (pares.html)
@@ -17,7 +19,7 @@
   const TIEMPO_JUEGO = 60; // segundos
   const PUNTOS_POR_PAR = 100;
 
-  const IMAGENES = [
+  const IMAGENES_PREDETERMINADAS = [
     "assets/img/cards/aldeas/akatsuki/1.png",
     "assets/img/cards/aldeas/akatsuki/2.png",
     "assets/img/cards/aldeas/akatsuki/3.png",
@@ -27,6 +29,12 @@
     "assets/img/cards/aldeas/konoha/uchiha/3.png",
     "assets/img/cards/aldeas/konoha/uchiha/4.png"
   ];
+  const temaSeleccionado = obtenerTemaSeleccionado();
+  const IMAGENES = temaSeleccionado
+    ? Array.from({ length: 8 }, (_, indice) => `${temaSeleccionado.cartas}${indice + 1}.png`)
+    : IMAGENES_PREDETERMINADAS;
+
+  aplicarTemaAldea(localStorage.getItem("nivelActual"));
 
   // ================== ELEMENTOS DEL DOM ==================
   const tableroIzq = document.getElementById("tableroIzquierdo");

@@ -2108,6 +2108,20 @@ FECHA Y HORA (celda de la tabla)
     animation: avisoPulso 0.9s ease-in-out 2;
 }
 
+.aviso-ocultando {
+    animation: avisoSalir 0.45s ease forwards;
+}
+
+@keyframes avisoSalir {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-18px);
+    }
+}
+
 @keyframes avisoPulso {
     0%,
     100% {

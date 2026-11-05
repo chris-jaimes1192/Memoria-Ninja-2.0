@@ -9,6 +9,12 @@ import { Partida } from "../entities/Partida.js";
 
 import { historialApi } from "../../infraestructura/repositorios/HttpHistorialRepositorio.js";
 import { progresoService } from "../../services/progresoService.js";
+import {
+    aplicarTemaAldea,
+    prepararImagenCarta,
+    precargarImagenes
+} from "../../core-navegacion/TemaAldea.js";
+import { conectarPausa } from "../../ui/PauseModal.js";
 
 
 export class RocaController {
@@ -19,8 +25,9 @@ export class RocaController {
         // RUTAS
         // ==========================================
 
-        this.rutaBack = "assets/img/back.png";
+        this.rutaBack = "assets/cartas niveles/carta roca.png";
         this.rutaRoca = "assets/img/cards/aldeas/roca/";
+        aplicarTemaAldea("roca");
 
 
         // ==========================================
@@ -62,6 +69,9 @@ export class RocaController {
                 this.cartaService,
                 this.puntajeService
             );
+
+
+        conectarPausa(this.tiempoService);
 
 
         // ==========================================
@@ -178,6 +188,12 @@ export class RocaController {
         const cartas =
             this.juegoService.iniciar();
 
+        // Calentar caché para que el volteo sea instantáneo
+        precargarImagenes([
+            this.rutaBack,
+            ...cartas.map((carta) => carta.getImagen())
+        ]);
+
         // Generar tablero
         this.generarTablero(cartas);
 
@@ -238,6 +254,8 @@ export class RocaController {
 
             imagenBack.classList.add("back");
 
+            prepararImagenCarta(imagenBack);
+
 
             // ------------------------------------------
             // PARTE FRONTAL
@@ -250,6 +268,8 @@ export class RocaController {
                 carta.getImagen();
 
             imagenFront.classList.add("front");
+
+            prepararImagenCarta(imagenFront);
 
 
             // ------------------------------------------
@@ -670,4 +690,3 @@ export class RocaController {
             "menu.html";
     }
 }
-

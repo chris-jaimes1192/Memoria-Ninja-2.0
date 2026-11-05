@@ -21,10 +21,17 @@ export class VistaClan {
     }
 
     mostrarBotonIniciar() {
-        document.getElementById("btn-iniciar").style.display = "block";
+        document.getElementById("btn-iniciar").hidden = false;
     }
 
     marcarConfirmado() {
-        document.getElementById("btn-confirmar").classList.add("confirmado");
+        const boton = document.getElementById("btn-confirmar");
+        boton.classList.add("confirmado");
+        boton.disabled = true;
+        boton.innerText = "NIVEL CONFIRMADO";
+    }
+
+    estaConfirmado() {
+        return document.getElementById("btn-confirmar").disabled;
     }
 }

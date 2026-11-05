@@ -1,9 +1,5 @@
 import { Poder } from "./Poder.js";
 
-// MISMAS rutas que BoardManager (board-manager.js): las carpetas reales
-// están en assets/img/cards/aldeas/ y el dorso en assets/img/back.png.
-const RUTA_ALDEAS = "assets/img/cards/aldeas/";
-const RUTA_BACK = "assets/img/back.png";
 const DURACION_BYAKUGAN = 3000;
 
 export class ByakuganPoder extends Poder {
@@ -38,7 +34,7 @@ export class ByakuganPoder extends Poder {
         this._activo = true;
 
         this._activarAnimacion(esSasuke);
-        this._revelarCartas(this._cartasParaRevelar);
+        this._revelarCartas(this._cartasParaRevelar, contexto);
 
         // Contraataque: si Genjutsu está activo, Byakugan lo detecta y lo cancela
         if (contexto.genjutsu.estaActivo()) {
@@ -64,12 +60,12 @@ export class ByakuganPoder extends Poder {
         setTimeout(() => simbolo.remove(), 900);
     }
 
-    _revelarCartas(cartas) {
+    _revelarCartas(cartas, contexto) {
         cartas.forEach((carta) => {
             const imagen = carta.querySelector("img");
             if (!imagen) return;
             carta.dataset.backOriginal = imagen.src;
-            imagen.src = `${RUTA_ALDEAS}arena/${carta.dataset.valor}.png`;
+            imagen.src = contexto.BoardManager.obtenerRutaCarta(carta.dataset.valor);
             carta.classList.add("byakugan-revelada");
         });
 
@@ -77,7 +73,7 @@ export class ByakuganPoder extends Poder {
             cartas.forEach((carta) => {
                 const imagen = carta.querySelector("img");
                 if (!imagen) return;
-                imagen.src = RUTA_BACK;
+                imagen.src = contexto.BoardManager.obtenerReverso();
                 carta.classList.remove("byakugan-revelada");
             });
             this._activo = false;
