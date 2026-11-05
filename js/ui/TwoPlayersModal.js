@@ -54,7 +54,7 @@ export class TwoPlayersModal extends BaseModal {
     }
   }
 
-  async abrir() {
+  async abrirUnirseDirecto() {
     super.abrir();
     this.redirectEnCurso = false;
     this.ultimoCodigoQr = null;
@@ -63,23 +63,54 @@ export class TwoPlayersModal extends BaseModal {
       await clienteMultijugador.conectar();
     } catch (error) {
       this.mostrarMensajeVacio('El multijugador requiere el backend corriendo (npm start).');
-      this.ocultarTodosLosPaneles();
+      ['panelCrearSala', 'panelEsperandoRival', 'panelBuscarCodigo', 'panelPartidaRapida'].forEach(id => {
+        document.getElementById(id)?.setAttribute('hidden', 'true');
+      });
       document.getElementById('listaSalasContainer')?.setAttribute('hidden', 'true');
       return;
     }
-    this.modoVista = null;
+    this.modoVista = 'unirse';
     const btnCrear = document.getElementById('btnCrearSalaLobby');
     const btnUnirse = document.getElementById('btnUnirsePorCodigo');
     const btnRapida = document.getElementById('btnPartidaRapida');
+    const btnCrearVerde = document.getElementById('btnCrearSalaVerde');
+    const btnRapidaVerde = document.getElementById('btnPartidaRapidaVerde');
+    const btnInvitarVerde = document.getElementById('btnInvitarAmigosVerde');
     btnCrear?.classList.remove('btn-lobby-activo');
     btnUnirse?.classList.remove('btn-lobby-activo');
     btnRapida?.classList.remove('btn-lobby-activo');
-    this.ocultarTodosLosPaneles();
+    btnCrearVerde?.classList.remove('btn-lobby-activo');
+    btnRapidaVerde?.classList.remove('btn-lobby-activo');
+    btnInvitarVerde?.classList.remove('btn-lobby-activo');
+    if (btnCrearVerde) btnCrearVerde.hidden = true;
+    if (btnRapidaVerde) btnRapidaVerde.hidden = true;
+    if (btnInvitarVerde) btnInvitarVerde.hidden = true;
+    if (btnUnirse) btnUnirse.hidden = false;
+    ['panelCrearSala', 'panelEsperandoRival', 'panelBuscarCodigo', 'panelPartidaRapida'].forEach(id => {
+      document.getElementById(id)?.setAttribute('hidden', 'true');
+    });
     document.getElementById('modalContrasenaSala')?.classList.remove('activo');
-    this.mostrarMensajeVacio(TEXTO_SALAS_VACIO);
+    document.getElementById('panelBuscarCodigo')?.removeAttribute('hidden');
     const lista = document.getElementById('listaSalasContainer');
     if (lista) lista.removeAttribute('hidden');
+    btnUnirse?.classList.add('btn-lobby-activo');
+    document.getElementById('inputBuscarCodigo').value = '';
+    const errorLobby = document.getElementById('errorLobbyCodigo');
+    if (errorLobby) errorLobby.hidden = true;
+    this.mostrarMensajeVacio(TEXTO_SALAS_VACIO);
     this.actualizarListaSalas();
+  }
+
+  async abrirMultijugador() {
+    return this.abrirUnirseDirecto();
+  }
+
+  async abrirParaUnirse() {
+    return this.abrirUnirseDirecto();
+  }
+
+  async abrir() {
+    return this.abrirUnirseDirecto();
   }
 
   ocultarTodosLosPaneles() {
@@ -92,7 +123,13 @@ export class TwoPlayersModal extends BaseModal {
 
   aplicarVista(vista) {
     this.modoVista = vista;
-    this.ocultarTodosLosPaneles();
+    // Forzar exclusividad: ocultar TODO primero
+    ['panelCrearSala', 'panelEsperandoRival', 'panelBuscarCodigo', 'panelPartidaRapida'].forEach(id => {
+      document.getElementById(id)?.setAttribute('hidden', 'true');
+    });
+    const lista = document.getElementById('listaSalasContainer');
+    if (lista) lista.setAttribute('hidden', 'true');
+
     const btnCrear = document.getElementById('btnCrearSalaLobby');
     const btnUnirse = document.getElementById('btnUnirsePorCodigo');
     const btnRapida = document.getElementById('btnPartidaRapida');
@@ -109,7 +146,6 @@ export class TwoPlayersModal extends BaseModal {
     if (vista === 'unirse') {
       btnUnirse?.classList.add('btn-lobby-activo');
       document.getElementById('panelBuscarCodigo')?.removeAttribute('hidden');
-      const lista = document.getElementById('listaSalasContainer');
       if (lista) lista.removeAttribute('hidden');
       this.mostrarMensajeVacio(TEXTO_SALAS_VACIO);
       this.actualizarListaSalas();
@@ -260,8 +296,12 @@ export class TwoPlayersModal extends BaseModal {
     btnUnirse?.classList.remove('btn-lobby-activo');
     btnRapida?.classList.remove('btn-lobby-activo');
     this.modoVista = 'crear';
-    this.ocultarTodosLosPaneles();
+    ['panelCrearSala', 'panelEsperandoRival', 'panelBuscarCodigo', 'panelPartidaRapida'].forEach(id => {
+      document.getElementById(id)?.setAttribute('hidden', 'true');
+    });
     document.getElementById('panelEsperandoRival')?.removeAttribute('hidden');
+    const lista = document.getElementById('listaSalasContainer');
+    if (lista) lista.setAttribute('hidden', 'true');
     this.actualizarPanelEspera({ ...sala, codigo: codigo || sala.codigo });
   }
 
@@ -335,13 +375,85 @@ export class TwoPlayersModal extends BaseModal {
   }
 
   inicializarEventos() {
+    document.getElementById('btnCrearSalaVerde')?.addEventListener('click', () => {
+      document.getElementById('modalContrasenaSala')?.classList.remove('activo');
+      this.salaPendienteContrasena = null;
+      document.getElementById('inputBuscarCodigo').value = '';
+      const errorLobby = document.getElementById('errorLobbyCodigo');
+      if (errorLobby) errorLobby.hidden = true;
+      const errorCrear = document.getElementById('errorCrearSala');
+      if (errorCrear) { errorCrear.hidden = true; errorCrear.textContent = ''; }
+      ['panelCrearSala', 'panelEsperandoRival', 'panelBuscarCodigo', 'panelPartidaRapida'].forEach(id => {
+        document.getElementById(id)?.setAttribute('hidden', 'true');
+      });
+      const lista = document.getElementById('listaSalasContainer');
+      if (lista) lista.setAttribute('hidden', 'true');
+      document.getElementById('panelCrearSala')?.removeAttribute('hidden');
+      this.modoVista = 'crear';
+    });
+
+    document.getElementById('btnPartidaRapidaVerde')?.addEventListener('click', async () => {
+      document.getElementById('modalContrasenaSala')?.classList.remove('activo');
+      this.salaPendienteContrasena = null;
+      document.getElementById('inputBuscarCodigo').value = '';
+      const errorLobby = document.getElementById('errorLobbyCodigo');
+      if (errorLobby) errorLobby.hidden = true;
+      const errorCrear = document.getElementById('errorCrearSala');
+      if (errorCrear) { errorCrear.hidden = true; errorCrear.textContent = ''; }
+      ['panelCrearSala', 'panelEsperandoRival', 'panelBuscarCodigo', 'panelPartidaRapida'].forEach(id => {
+        document.getElementById(id)?.setAttribute('hidden', 'true');
+      });
+      const lista = document.getElementById('listaSalasContainer');
+      if (lista) lista.setAttribute('hidden', 'true');
+      document.getElementById('panelPartidaRapida')?.removeAttribute('hidden');
+      const modo = document.querySelector('input[name="modoRapida"]:checked')?.value || '1v1';
+      const texto = document.getElementById('textoBusquedaRapida');
+      if (texto) texto.textContent = modo === '2v2' ? 'SELECCIONA EL MODO - BUSCANDO EQUIPO (2 VS 2)...' : 'SELECCIONA EL MODO - BUSCANDO PARTIDA RÁPIDA (1 VS 1)...';
+      try {
+        const res = await clienteMultijugador.buscarPartidaRapida(modo);
+        if (res.exito && res.emparejado && res.codigo) {
+          if (this.redirectEnCurso) return;
+          this.redirectEnCurso = true;
+          document.getElementById('panelPartidaRapida')?.setAttribute('hidden', 'true');
+          window.location.href = `game-online.html?codigo=${encodeURIComponent(res.codigo)}`;
+        } else if (!res.exito) {
+          document.getElementById('panelPartidaRapida')?.setAttribute('hidden', 'true');
+          this.mostrarMensajeVacio(res.error || 'No se pudo buscar partida.');
+        }
+      } catch (error) {
+        document.getElementById('panelPartidaRapida')?.setAttribute('hidden', 'true');
+        this.mostrarMensajeVacio('No se pudo buscar partida. Verifica que el backend esté corriendo.');
+      }
+    });
+
+    document.getElementById('btnInvitarAmigosVerde')?.addEventListener('click', () => {
+      const panelEspera = document.getElementById('panelEsperandoRival');
+      const codigo = document.getElementById('codigoSalaEspera')?.textContent;
+      if (panelEspera && !panelEspera.hidden && codigo && codigo !== '----') {
+        ['panelCrearSala', 'panelEsperandoRival', 'panelBuscarCodigo', 'panelPartidaRapida'].forEach(id => {
+          document.getElementById(id)?.setAttribute('hidden', 'true');
+        });
+        const lista = document.getElementById('listaSalasContainer');
+        if (lista) lista.setAttribute('hidden', 'true');
+        panelEspera.removeAttribute('hidden');
+        return;
+      }
+      this.mostrarMensajeVacio('Crea una sala primero para poder invitar amigos.');
+    });
+
     document.getElementById('btnCrearSalaLobby')?.addEventListener('click', () => {
       document.getElementById('modalContrasenaSala')?.classList.remove('activo');
       this.salaPendienteContrasena = null;
       document.getElementById('inputBuscarCodigo').value = '';
       const errorLobby = document.getElementById('errorLobbyCodigo');
       if (errorLobby) errorLobby.hidden = true;
-      this.aplicarVista('crear');
+      ['panelCrearSala', 'panelEsperandoRival', 'panelBuscarCodigo', 'panelPartidaRapida'].forEach(id => {
+        document.getElementById(id)?.setAttribute('hidden', 'true');
+      });
+      const lista = document.getElementById('listaSalasContainer');
+      if (lista) lista.setAttribute('hidden', 'true');
+      document.getElementById('panelCrearSala')?.removeAttribute('hidden');
+      this.modoVista = 'crear';
     });
     document.getElementById('btnCancelarCrearSala')?.addEventListener('click', () => {
       this.aplicarVista('crear');
@@ -352,6 +464,8 @@ export class TwoPlayersModal extends BaseModal {
       document.getElementById('inputBuscarCodigo').value = '';
       const errorLobby = document.getElementById('errorLobbyCodigo');
       if (errorLobby) errorLobby.hidden = true;
+      document.getElementById('panelCrearSala')?.setAttribute('hidden', 'true');
+      document.getElementById('panelEsperandoRival')?.setAttribute('hidden', 'true');
       this.aplicarVista('unirse');
     });
     document.getElementById('btnBuscarUnirse')?.addEventListener('click', async () => {
@@ -401,10 +515,14 @@ export class TwoPlayersModal extends BaseModal {
       document.getElementById('inputBuscarCodigo').value = '';
       const errorLobby = document.getElementById('errorLobbyCodigo');
       if (errorLobby) errorLobby.hidden = true;
+      document.getElementById('panelCrearSala')?.setAttribute('hidden', 'true');
+      document.getElementById('panelEsperandoRival')?.setAttribute('hidden', 'true');
+      const lista = document.getElementById('listaSalasContainer');
+      if (lista) lista.setAttribute('hidden', 'true');
       this.aplicarVista('rapida');
       const modo = document.querySelector('input[name="modoRapida"]:checked')?.value || '1v1';
       const texto = document.getElementById('textoBusquedaRapida');
-      if (texto) texto.textContent = modo === '2v2' ? 'BUSCANDO EQUIPO (2 VS 2)...' : 'BUSCANDO OPONENTE...';
+      if (texto) texto.textContent = modo === '2v2' ? 'BUSCANDO EQUIPO (2 VS 2)...' : 'BUSCANDO OPONENTE ALEATORIO...';
       try {
         const res = await clienteMultijugador.buscarPartidaRapida(modo);
         if (res.exito && res.emparejado && res.codigo) {
@@ -429,8 +547,15 @@ export class TwoPlayersModal extends BaseModal {
     document.getElementById('btnSalirEsperando')?.addEventListener('click', () => {
       clienteMultijugador.abandonarSala();
       document.getElementById('panelEsperandoRival')?.setAttribute('hidden', 'true');
+      const btnCrearVerde = document.getElementById('btnCrearSalaVerde');
+      if (btnCrearVerde && !btnCrearVerde.hidden) {
+        btnCrearVerde.classList.add('btn-lobby-activo');
+        document.getElementById('btnPartidaRapidaVerde')?.classList.remove('btn-lobby-activo');
+        document.getElementById('btnInvitarAmigosVerde')?.classList.remove('btn-lobby-activo');
+        document.getElementById('panelCrearSala')?.removeAttribute('hidden');
+        return;
+      }
       this.aplicarVista('crear');
-      this.actualizarListaSalas();
     });
     document.getElementById('btnCopiarEnlaceSala')?.addEventListener('click', async (evento) => {
       const boton = evento.currentTarget;
@@ -470,6 +595,7 @@ export class TwoPlayersModal extends BaseModal {
       r.addEventListener('change', () => {
         const esAldea = document.querySelector('input[name="tipoMazo"]:checked')?.value === 'aldea';
         document.getElementById('filaAldea')?.toggleAttribute('hidden', !esAldea);
+        document.getElementById('filaAldeasMezcla')?.toggleAttribute('hidden', esAldea);
         const selectPares = document.getElementById('selectPares');
         if (esAldea) {
           selectPares.innerHTML = '<option value="8">8 PAREJAS (16 CARTAS)</option>';
@@ -489,33 +615,52 @@ export class TwoPlayersModal extends BaseModal {
       document.getElementById('inputContrasenaSala')?.toggleAttribute('hidden', !e.target.checked);
     });
     document.getElementById('btnConfirmarCrearSala')?.addEventListener('click', async () => {
+      const errorCrear = document.getElementById('errorCrearSala');
+      if (errorCrear) { errorCrear.hidden = true; errorCrear.textContent = ''; }
       try {
         await clienteMultijugador.conectar();
       } catch (error) {
-        this.mostrarMensajeVacio('No se pudo conectar con el servidor de salas.');
+        if (errorCrear) { errorCrear.textContent = 'No se pudo conectar con el servidor de salas.'; errorCrear.hidden = false; }
         return;
       }
       const mezclarAldeas = document.querySelector('input[name="tipoMazo"]:checked')?.value === 'mezclar';
       const aldea = document.getElementById('selectAldea')?.value;
       const modo = document.querySelector('input[name="modoPartida"]:checked')?.value || '1v1';
+      if (!modo) {
+        if (errorCrear) { errorCrear.textContent = 'Selecciona el modo de partida (1 VS 1 o 2 VS 2)'; errorCrear.hidden = false; }
+        return;
+      }
       let pares = parseInt(document.getElementById('selectPares')?.value || '8');
       if (!mezclarAldeas) pares = 8;
       const publica = document.querySelector('input[name="tipoSala"]:checked')?.value === 'publica';
       const conPass = document.getElementById('chkContrasena')?.checked;
-      const contrasena = conPass ? document.getElementById('inputContrasenaSala')?.value || null : null;
+      const contrasena = conPass ? document.getElementById('inputContrasenaSala')?.value || '' : null;
+      if (conPass && !String(contrasena).trim()) {
+        if (errorCrear) { errorCrear.textContent = 'Introduce una contraseña para la sala privada.'; errorCrear.hidden = false; }
+        return;
+      }
+      let aldeasSeleccionadas = [];
+      if (mezclarAldeas) {
+        document.querySelectorAll('.chk-aldea:checked').forEach(chk => {
+          if (chk.value) aldeasSeleccionadas.push(chk.value);
+        });
+        if (aldeasSeleccionadas.length === 0) {
+          if (errorCrear) { errorCrear.textContent = 'Selecciona al menos una aldea o clan para mezclar.'; errorCrear.hidden = false; }
+          return;
+        }
+      }
       let res;
       try {
-        res = await clienteMultijugador.crearSala({ publica, contrasena, config: { modo, mezclarAldeas, aldea, pares } });
+        res = await clienteMultijugador.crearSala({ publica, contrasena: conPass ? contrasena : null, config: { modo, mezclarAldeas, aldea, pares, aldeasSeleccionadas } });
       } catch {
-        this.mostrarMensajeVacio('No se pudo crear la sala. Verifica que el backend esté corriendo.');
+        if (errorCrear) { errorCrear.textContent = 'No se pudo crear la sala. Verifica que el backend esté corriendo.'; errorCrear.hidden = false; }
         return;
       }
       if (res.exito) {
         document.getElementById('panelCrearSala')?.setAttribute('hidden', 'true');
         this.mostrarPanelEspera(res.codigo, res.sala || { modo, capacidad: modo === '2v2' ? 4 : 2, jugadores: 1 });
-        this.actualizarListaSalas();
       } else {
-        this.mostrarMensajeVacio(res.error || 'No se pudo crear la sala.');
+        if (errorCrear) { errorCrear.textContent = res.error || 'No se pudo crear la sala.'; errorCrear.hidden = false; }
       }
     });
   }

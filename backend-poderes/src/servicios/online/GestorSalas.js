@@ -119,8 +119,10 @@ class GestorSalas {
 
     let combinaciones;
     if (mezclarAldeas) {
+      const seleccionadas = Array.isArray(config.aldeasSeleccionadas) ? config.aldeasSeleccionadas.filter(Boolean) : [];
+      const pool = seleccionadas.length > 0 ? seleccionadas.filter((a) => ALDEAS_MEZCLADAS.includes(a)) : ALDEAS_MEZCLADAS;
       combinaciones = [];
-      for (const aldea of ALDEAS_MEZCLADAS) {
+      for (const aldea of pool) {
         for (const valor of VALORES_CARTA) combinaciones.push({ aldea, valor });
       }
     } else {

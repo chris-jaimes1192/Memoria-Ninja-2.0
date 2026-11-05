@@ -86,14 +86,24 @@ export class MenuController {
       this.abrirModal(this.modales.gameModeModal);
     });
 
-    // 3. Dos Jugadores (Tarjeta Morada)
-    document.querySelector('.panel.morado')?.addEventListener('click', () => {
-      this.abrirModal(this.modales.dosJugadoresModal);
+    // 3. Dos Jugadores (Tarjeta Morada) - solo unirse a salas
+    document.querySelector('.panel.morado')?.addEventListener('click', async () => {
+      const modal = this.modales.dosJugadoresModal;
+      if (modal?.abrirUnirseDirecto) {
+        await modal.abrirUnirseDirecto();
+        return;
+      }
+      this.abrirModal(modal);
     });
 
     // 4. Multijugador (Tarjeta Verde) — lobby online real (Socket.io)
-    document.querySelector('.panel.verde')?.addEventListener('click', () => {
-      this.abrirModal(this.modales.dosJugadoresModal);
+    document.querySelector('.panel.verde')?.addEventListener('click', async () => {
+      const modal = this.modales.multijugadorModal;
+      if (modal?.abrir) {
+        await modal.abrir();
+        return;
+      }
+      this.abrirModal(modal);
     });
 
     // 5. Ranking (Boton Arriba Derecha)
