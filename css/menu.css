@@ -1669,9 +1669,23 @@ button,
 .puntaje-cuerpo {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    margin-bottom: 22px;
+    gap: 14px;
 }
+
+.puntaje-cuerpo-guia { gap: 10px; max-height: min(52vh, 420px); overflow-y: auto; padding-right: 4px; }
+.puntaje-cuerpo-guia::-webkit-scrollbar { width: 6px; }
+.puntaje-cuerpo-guia::-webkit-scrollbar-thumb { background: rgba(0,204,255,.45); border-radius: 999px; }
+.guia-seccion { border-radius: 12px; padding: 10px 12px; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.04); }
+.guia-seccion h3 { margin: 0 0 6px; font-size: 15px; }
+.guia-seccion p { margin: 0; font-size: 13px; line-height: 1.5; color: #eaf3ff; }
+.guia-lista { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.55; color: #eaf3ff; }
+.guia-lista li { margin: 4px 0; }
+.guia-azul { border-color: rgba(0,204,255,.45); box-shadow: inset 0 0 18px rgba(0,128,255,.10); }
+.guia-naranja { border-color: rgba(255,123,0,.45); box-shadow: inset 0 0 18px rgba(255,123,0,.08); }
+.guia-morada { border-color: rgba(180,76,255,.45); box-shadow: inset 0 0 18px rgba(156,39,255,.08); }
+.guia-verde { border-color: rgba(0,255,153,.45); box-shadow: inset 0 0 18px rgba(0,255,153,.08); }
+.guia-amarilla { border-color: rgba(255,212,71,.45); box-shadow: inset 0 0 18px rgba(255,212,71,.07); }
+.modal-content-info-puntaje { max-width: 640px; }
 
 /* Tarjeta con el número grande */
 .puntaje-regla-destacada {

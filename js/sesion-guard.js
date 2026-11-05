@@ -32,7 +32,6 @@
   var CLAVE_ESTADO = "estadoSesion";
   var DURACION_AVISO_MS = 10000;
   var temporizadorAviso = null;
-  var CLASE_AVISO_COMPACTO = "aviso-invitado--compacto";
 
   function leerEstado() {
     try {
@@ -49,11 +48,10 @@
     }
   }
 
-  function programarCompactarAviso(aviso) {
+  function programarOcultarAviso(aviso) {
     cancelarTemporizadorAviso();
-    aviso.classList.remove(CLASE_AVISO_COMPACTO);
     temporizadorAviso = window.setTimeout(function () {
-      aviso.classList.add(CLASE_AVISO_COMPACTO);
+      aviso.hidden = true;
       temporizadorAviso = null;
     }, DURACION_AVISO_MS);
   }
@@ -63,16 +61,11 @@
     if (!aviso) return;
     if (leerEstado() === "activa") {
       aviso.hidden = true;
-      aviso.classList.remove(CLASE_AVISO_COMPACTO);
       cancelarTemporizadorAviso();
       return;
     }
-    if (aviso.hidden) {
-      aviso.hidden = false;
-      programarCompactarAviso(aviso);
-    } else if (temporizadorAviso === null && !aviso.classList.contains(CLASE_AVISO_COMPACTO)) {
-      programarCompactarAviso(aviso);
-    }
+    aviso.hidden = false;
+    programarOcultarAviso(aviso);
   }
 
   function marcar(estado) {
@@ -132,7 +125,7 @@
         return;
       }
       aviso.hidden = false;
-      programarCompactarAviso(aviso);
+      programarOcultarAviso(aviso);
       aviso.classList.remove("aviso-pulso");
       void aviso.offsetWidth;
       aviso.classList.add("aviso-pulso");
