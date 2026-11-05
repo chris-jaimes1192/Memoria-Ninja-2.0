@@ -30,6 +30,9 @@
 
   var CLAVE_SESION = "usuarioActivo";
   var CLAVE_ESTADO = "estadoSesion";
+  var DURACION_AVISO_MS = 10000;
+  var temporizadorAviso = null;
+  var CLASE_AVISO_COMPACTO = "aviso-invitado--compacto";
 
   function leerEstado() {
     try {
@@ -39,9 +42,37 @@
     }
   }
 
+  function cancelarTemporizadorAviso() {
+    if (temporizadorAviso !== null) {
+      window.clearTimeout(temporizadorAviso);
+      temporizadorAviso = null;
+    }
+  }
+
+  function programarCompactarAviso(aviso) {
+    cancelarTemporizadorAviso();
+    aviso.classList.remove(CLASE_AVISO_COMPACTO);
+    temporizadorAviso = window.setTimeout(function () {
+      aviso.classList.add(CLASE_AVISO_COMPACTO);
+      temporizadorAviso = null;
+    }, DURACION_AVISO_MS);
+  }
+
   function actualizarAviso() {
     var aviso = document.getElementById("avisoInvitado");
-    if (aviso) aviso.hidden = leerEstado() === "activa";
+    if (!aviso) return;
+    if (leerEstado() === "activa") {
+      aviso.hidden = true;
+      aviso.classList.remove(CLASE_AVISO_COMPACTO);
+      cancelarTemporizadorAviso();
+      return;
+    }
+    if (aviso.hidden) {
+      aviso.hidden = false;
+      programarCompactarAviso(aviso);
+    } else if (temporizadorAviso === null && !aviso.classList.contains(CLASE_AVISO_COMPACTO)) {
+      programarCompactarAviso(aviso);
+    }
   }
 
   function marcar(estado) {
@@ -101,6 +132,7 @@
         return;
       }
       aviso.hidden = false;
+      programarCompactarAviso(aviso);
       aviso.classList.remove("aviso-pulso");
       void aviso.offsetWidth;
       aviso.classList.add("aviso-pulso");
