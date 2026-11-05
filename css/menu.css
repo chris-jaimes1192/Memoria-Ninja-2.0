@@ -39,6 +39,10 @@ body{
     overflow-x:hidden;
 }
 
+body{
+    padding-bottom:90px;
+}
+
 /* ===================================== */
 /* TIPOGRAFÍA EXPLÍCITA (todas las zonas del menú) */
 /* ===================================== */
@@ -426,16 +430,25 @@ button,
 /* ESTADO */
 /* ===================================== */
 .estado{
-    width:min(900px,95%);
-    margin:15px auto;
-    padding:10px 15px;
-    border-radius:12px;
-    background:rgba(0,0,0,.85);
-    display:flex;
-    justify-content:space-around;
+    position:fixed;
+    z-index:20;
+    left:50%;
+    bottom:calc(10px + env(safe-area-inset-bottom, 0px));
+    transform:translateX(-50%);
+    width:min(1120px,calc(100% - 32px));
+    min-height:48px;
+    margin:0;
+    padding:10px 20px;
+    border:1px solid rgba(0,255,153,.28);
+    border-radius:16px;
+    background:rgba(5,8,9,.88);
+    box-shadow:0 10px 32px rgba(0,0,0,.42),0 0 18px rgba(0,255,153,.08);
+    backdrop-filter:blur(12px);
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    justify-items:center;
     align-items:center;
-    flex-wrap:wrap;
-    gap:10px;
+    gap:8px;
     font-size:13px;
 }
 
@@ -473,8 +486,11 @@ button,
         grid-template-columns:1fr 1fr;
     }
     .estado{
-        flex-direction:column;
-        text-align:center;
+        grid-template-columns:repeat(2,minmax(0,1fr));
+        gap:8px 12px;
+        width:calc(100% - 24px);
+        padding:9px 12px;
+        font-size:12px;
     }
 }
 
@@ -2950,4 +2966,18 @@ FECHA Y HORA (celda de la tabla)
         flex-direction: column;
         text-align: center;
     }
+}
+
+.aviso-invitado.aviso-invitado--compacto {
+    width: fit-content;
+    max-width: 92vw;
+    min-width: 0;
+    flex-direction: row;
+    justify-content: center;
+    gap: 0;
+    padding: 8px;
+}
+
+.aviso-invitado--compacto #avisoInvitadoTexto {
+    display: none;
 }
