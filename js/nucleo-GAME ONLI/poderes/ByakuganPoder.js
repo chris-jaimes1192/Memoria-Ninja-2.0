@@ -1,9 +1,5 @@
-import { Poder } from "./Poder.js";
+﻿import { Poder } from "./Poder.js";
 
-// MISMAS rutas que BoardManager (board-manager.js): las carpetas reales
-// están en assets/img/cards/aldeas/ y el dorso en assets/img/back.png.
-const RUTA_ALDEAS = "assets/img/cards/aldeas/";
-const RUTA_BACK = "assets/img/back.png";
 const DURACION_BYAKUGAN = 3000;
 
 export class ByakuganPoder extends Poder {
@@ -38,7 +34,7 @@ export class ByakuganPoder extends Poder {
         this._activo = true;
 
         this._activarAnimacion(esSasuke);
-        this._revelarCartas(this._cartasParaRevelar);
+        this._revelarCartas(this._cartasParaRevelar, contexto);
 
         // Contraataque: si Genjutsu está activo, Byakugan lo detecta y lo cancela
         if (contexto.genjutsu.estaActivo()) {
@@ -64,21 +60,36 @@ export class ByakuganPoder extends Poder {
         setTimeout(() => simbolo.remove(), 900);
     }
 
-    _revelarCartas(cartas) {
+    _revelarCartas(cartas, contexto) {
+        const bm = contexto && contexto.BoardManager;
         cartas.forEach((carta) => {
-            const imagen = carta.querySelector("img");
+            carta.dataset.backOriginal = "1";
+            if (bm && typeof bm.revelarTemporal === "function") {
+                // usar API del tablero (maneja 2 caras/flip y tema)
+                const idx = Number(carta.dataset.index);
+                if (Number.isInteger(idx) && carta.dataset.valor) {
+                    bm.revelarTemporal(idx, carta.dataset.valor, carta.dataset.aldea || "arena", DURACION_BYAKUGAN);
+                    return;
+                }
+            }
+            const imagen = carta.querySelector("img.front, img.img-card.front, img");
             if (!imagen) return;
-            carta.dataset.backOriginal = imagen.src;
-            imagen.src = `${RUTA_ALDEAS}arena/${carta.dataset.valor}.png`;
+            carta.dataset._byakuganSrc = imagen.src;
+            const ruta = bm && typeof bm.obtenerRutaCarta === "function"
+                ? bm.obtenerRutaCarta(carta.dataset.valor, carta.dataset.aldea)
+                : `assets/img/cards/aldeas/${carta.dataset.aldea || "arena"}/${carta.dataset.valor}.png`;
+            imagen.src = ruta;
             carta.classList.add("byakugan-revelada");
         });
 
         setTimeout(() => {
             cartas.forEach((carta) => {
-                const imagen = carta.querySelector("img");
-                if (!imagen) return;
-                imagen.src = RUTA_BACK;
                 carta.classList.remove("byakugan-revelada");
+                if (bm && typeof bm.revelarTemporal === "function") return; // ya se restauró
+                const imagen = carta.querySelector("img.front, img.img-card.front, img");
+                if (!imagen) return;
+                const reverso = bm && typeof bm.obtenerReverso === "function" ? bm.obtenerReverso() : "assets/img/back.png";
+                imagen.src = carta.dataset._byakuganSrc || reverso;
             });
             this._activo = false;
         }, DURACION_BYAKUGAN);
