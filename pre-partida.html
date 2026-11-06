@@ -1,14 +1,15 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Memorice Duel</title>
     <link rel="stylesheet" href="css/pre-partida.css">
 
 <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Fredoka:wght@400;500;600;700&display=swap"
     rel="stylesheet">
-    <!-- GUARD DE SESIÓN (valida contra el servidor; nunca redirige) -->
+    <!-- GUARD DE SESI├ôN (valida contra el servidor; nunca redirige) -->
     <script src="js/sesion-guard.js"></script>
 </head>
 
@@ -26,11 +27,11 @@
         </div>
 
         <main id="panel-principal" class="panel-selection">
-            <p class="pre-title">¿JUGAR ESTE NIVEL?</p>
+            <p class="pre-title">┬┐JUGAR ESTE NIVEL?</p>
             <h2 id="clan-title" class="clan-name">CLAN UZUMAKI</h2>
             <div class="stats-grid">
                 <div><span>DIFICULTAD</span>
-                    <p id="dificultad">★★★★☆</p>
+                    <p id="dificultad">ÔÿàÔÿàÔÿàÔÿàÔÿå</p>
                 </div>
                 <div><span>ENEMIGOS</span>
                     <p>6</p>
@@ -42,7 +43,7 @@
             <p id="desc-text" class="desc-text">Domina el poder del chakra sellado...</p>
 
             <div class="action-buttons">
-                <button class="btn-secondary">CAMBIAR NIVEL</button>
+                <button id="btn-cambiar-nivel" class="btn-secondary">CAMBIAR NIVEL</button>
                 <button id="btn-confirmar" class="btn-primary">CONFIRMAR</button>
             </div>
         </main>
@@ -57,30 +58,22 @@
                 </div>
                 <div class="bar-stats-group">
                     <div class="stat-item"><span class="stat-label">ENEMIGOS</span>
-                        <p>👥 6</p>
+                        <p>­ƒæÑ 6</p>
                     </div>
                     <div class="stat-item"><span class="stat-label">RECOMPENSA</span>
-                        <p class="xp">⭐ <span id="bar-xp">500 XP</span></p>
+                        <p class="xp">Ô¡É <span id="bar-xp">500 XP</span></p>
                     </div>
                 </div>
             </div>
         </footer>
 
         <nav class="bottom-nav">
-            <button class="btn-back" id="btnVolverMenu">← VOLVER AL MENU</button>
-<button id="btn-iniciar" class="btn-start" style="display: none;">INICIAR JUEGO</button>        </nav>
+            <button class="btn-back" id="btnVolverMenu">ÔåÉ VOLVER AL MENU</button>
+            <button id="btn-iniciar" class="btn-start" hidden>INICIAR JUEGO</button>
+        </nav>
     </div>
 
-    <div
-        style="position: fixed; top: 10px; left: 10px; z-index: 9999; background: rgba(0,0,0,0.8); padding: 15px; border-radius: 10px; border: 1px solid #FF8C00;">
-        <h4 style="color: white; margin-bottom: 10px;">SIMULADOR</h4>
-        <button data-clan="uzumaki">Uzumaki</button>
-        <button data-clan="uchiha">Uchiha</button>
-        <button data-clan="akatsuki">Akatsuki</button>
-        <button data-clan="arena">Arena</button>
-        <button data-clan="roca">Roca</button>
-    </div>
-
-<script type="module" src="js/pre-partida.js"></script></body>
+    <script type="module" src="js/pre-partida.js"></script>
+</body>
 
 </html>

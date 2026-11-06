@@ -1,12 +1,12 @@
-import { RepositorioClanes } from "./core-navegacion/RepositorioClanes.js";
+﻿import { RepositorioClanes } from "./core-navegacion/RepositorioClanes.js";
 import { VistaClan } from "./core-navegacion/VistaClan.js";
 
 /**
  * PrePartidaController
  *
- * >>> SRP <<< Decide QUÉ clan mostrar (a partir de localStorage) y
- * QUÉ pasa al confirmar/iniciar. Delega el CÓMO se ve en VistaClan y
- * el DÓNDE están los datos en RepositorioClanes.
+ * >>> SRP <<< Decide QU├ë clan mostrar (a partir de localStorage) y
+ * QU├ë pasa al confirmar/iniciar. Delega el C├ôMO se ve en VistaClan y
+ * el D├ôNDE est├ín los datos en RepositorioClanes.
  * >>> DIP <<< Recibe ambas dependencias por constructor.
  */
 class PrePartidaController {
@@ -21,9 +21,6 @@ class PrePartidaController {
         const idInicial = this.repositorioClanes.existe(nivelGuardado) ? nivelGuardado : "uzumaki";
 
         this._seleccionarClan(idInicial);
-
-        // Ya viene con nivel elegido desde el mapa, así que se muestra el botón de una
-        this.vistaClan.mostrarBotonIniciar();
 
         document.getElementById("btn-iniciar").addEventListener("click", () => this._irAJugar());
     }
@@ -41,6 +38,8 @@ class PrePartidaController {
     }
 
     confirmarNivel() {
+        if (this.vistaClan.estaConfirmado()) return;
+
         this.vistaClan.mostrarBotonIniciar();
         this.vistaClan.marcarConfirmado();
     }
@@ -51,16 +50,16 @@ class PrePartidaController {
     }
 }
 
-// ================== RAÍZ DE COMPOSICIÓN ==================
+// ================== RA├ìZ DE COMPOSICI├ôN ==================
 const repositorioClanes = new RepositorioClanes();
 const vistaClan = new VistaClan();
 const prePartidaController = new PrePartidaController(repositorioClanes, vistaClan);
 
-// Se mantiene window.confirmarNivel por compatibilidad, pero el botón se
+// Se mantiene window.confirmarNivel por compatibilidad, pero el bot├│n se
 // conecta por listener (el CSP bloquea los onclick inline).
 window.confirmarNivel = () => prePartidaController.confirmarNivel();
 
-// --- Conexión real con el DOM (sin onclick inline: el CSP lo bloquea) ---
+// --- Conexi├│n real con el DOM (sin onclick inline: el CSP lo bloquea) ---
 document.getElementById("btn-confirmar")?.addEventListener("click", () =>
   prePartidaController.confirmarNivel()
 );
@@ -69,10 +68,28 @@ document.getElementById("btnVolverMenu")?.addEventListener("click", () => {
   window.location.href = "menu.html";
 });
 
-document.querySelectorAll("[data-clan]").forEach((boton) => {
-  boton.addEventListener("click", () =>
-    prePartidaController.seleccionarClan(boton.dataset.clan)
-  );
+document.getElementById("btn-cambiar-nivel")?.addEventListener("click", () => {
+  window.location.href = "niveles.html";
 });
 
 prePartidaController.iniciar();
+
+// Ajuste sin scroll (móvil H/V): escala el contenido como PC para que quepa en pantalla.
+function ajustarPrePartida() {
+    const cont = document.querySelector(".game-container");
+    if (!cont) return;
+    cont.style.transform = "";
+    cont.style.transformOrigin = "top center";
+    const baseW = 1100;
+    const baseH = cont.scrollHeight || 760;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const escala = Math.min(vw / baseW, vh / baseH, 1);
+    if (escala < 1) {
+        cont.style.transform = `scale(${escala})`;
+    }
+}
+window.addEventListener("resize", ajustarPrePartida);
+window.addEventListener("orientationchange", () => setTimeout(ajustarPrePartida, 120));
+setTimeout(ajustarPrePartida, 80);
+setTimeout(ajustarPrePartida, 350);

@@ -1,8 +1,8 @@
-/**
+﻿/**
  * VistaClan
  *
  * >>> SRP <<< Solo sabe pintar los datos de un clan en el DOM (panel
- * superior + footer). No decide qué clan mostrar ni a dónde navegar.
+ * superior + footer). No decide qu├® clan mostrar ni a d├│nde navegar.
  */
 export class VistaClan {
     mostrar(clan) {
@@ -16,15 +16,22 @@ export class VistaClan {
         document.getElementById("bar-xp").innerText = clan.xp;
         document.getElementById("bar-desc").innerText = clan.descripcion;
 
-        // Si la imagen no carga, se queda vacía sin romper el diseño (igual que antes)
+        // Si la imagen no carga, se queda vac├¡a sin romper el dise├▒o (igual que antes)
         document.getElementById("bar-logo").src = clan.logo;
     }
 
     mostrarBotonIniciar() {
-        document.getElementById("btn-iniciar").style.display = "block";
+        document.getElementById("btn-iniciar").hidden = false;
     }
 
     marcarConfirmado() {
-        document.getElementById("btn-confirmar").classList.add("confirmado");
+        const boton = document.getElementById("btn-confirmar");
+        boton.classList.add("confirmado");
+        boton.disabled = true;
+        boton.innerText = "NIVEL CONFIRMADO";
+    }
+
+    estaConfirmado() {
+        return document.getElementById("btn-confirmar").disabled;
     }
 }
