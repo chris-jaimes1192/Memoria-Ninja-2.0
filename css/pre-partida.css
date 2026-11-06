@@ -1,4 +1,4 @@
-﻿/* =====================================================
+/* =====================================================
    VARIABLES GLOBALES
    Inspiradas en la paleta de Figma
 ===================================================== */
@@ -101,7 +101,7 @@ body {
     text-align: center;
 }
 
-/* T├¡tulo principal */
+/* Título principal */
 
 .main-page-title {
 
@@ -115,7 +115,7 @@ body {
         0 0 30px #ff6a00;
 }
 
-/* Subt├¡tulo */
+/* Subtítulo */
 
 .subtitle {
 
@@ -183,7 +183,7 @@ body {
 }
 
 /* =====================================================
-   ESTAD├ìSTICAS
+   ESTADÍSTICAS
 ===================================================== */
 
 .stats-grid {
@@ -225,7 +225,7 @@ body {
 }
 
 /* =====================================================
-   DESCRIPCI├ôN
+   DESCRIPCIÓN
 ===================================================== */
 
 .desc-text {
@@ -252,7 +252,7 @@ body {
     margin-top: 25px;
 }
 
-/* Bot├│n Confirmar */
+/* Botón Confirmar */
 
 .btn-primary {
 
@@ -320,7 +320,7 @@ body {
     }
 }
 
-/* Bot├│n Cambiar Nivel */
+/* Botón Cambiar Nivel */
 
 .btn-secondary {
 
@@ -409,7 +409,7 @@ body {
     flex-shrink: 0;
 }
 
-/* Informaci├│n del clan */
+/* Información del clan */
 
 .bar-info-wrapper {
 
@@ -438,7 +438,7 @@ body {
 }
 
 /* =====================================================
-   ESTAD├ìSTICAS PANEL INFERIOR
+   ESTADÍSTICAS PANEL INFERIOR
 ===================================================== */
 
 .bar-stats-group {
@@ -548,39 +548,10 @@ body {
 
 @media (max-width: 768px), (max-height: 620px) {
 
-    .main-page-title {
-
-        font-size: clamp(1.6rem, 5vw, 2.6rem);
-    }
-
-    .clan-name {
-
-        font-size: clamp(1.3rem, 4.5vw, 2rem);
-    }
-
-    .panel-selection,
-    .panel-details {
-
-        padding: 12px 14px;
-    }
-
-    .bar-content {
-
-        gap: 12px;
-    }
-
-    .bar-logo-img {
-
-        width: 72px;
-        height: 72px;
-    }
-
-    .btn-primary,
-    .btn-secondary,
-    .btn-back,
-    .btn-start {
-
-        padding: 10px 18px;
-        font-size: .9rem;
-    }
+    .main-page-title { font-size: clamp(1.6rem, 5vw, 2.6rem); }
+    .clan-name { font-size: clamp(1.3rem, 4.5vw, 2rem); }
+    .panel-selection, .panel-details { padding: 12px 14px; }
+    .bar-content { gap: 12px; }
+    .bar-logo-img { width: 72px; height: 72px; }
+    .btn-primary, .btn-secondary, .btn-back, .btn-start { padding: 10px 16px; font-size: .9rem; }
 }

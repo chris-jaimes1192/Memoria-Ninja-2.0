@@ -1,8 +1,8 @@
-﻿/**
+/**
  * VistaClan
  *
  * >>> SRP <<< Solo sabe pintar los datos de un clan en el DOM (panel
- * superior + footer). No decide qu├® clan mostrar ni a d├│nde navegar.
+ * superior + footer). No decide qué clan mostrar ni a dónde navegar.
  */
 export class VistaClan {
     mostrar(clan) {
@@ -16,7 +16,7 @@ export class VistaClan {
         document.getElementById("bar-xp").innerText = clan.xp;
         document.getElementById("bar-desc").innerText = clan.descripcion;
 
-        // Si la imagen no carga, se queda vac├¡a sin romper el dise├▒o (igual que antes)
+        // Si la imagen no carga, se queda vacía sin romper el diseño (igual que antes)
         document.getElementById("bar-logo").src = clan.logo;
     }
 

@@ -1,12 +1,12 @@
-﻿import { RepositorioClanes } from "./core-navegacion/RepositorioClanes.js";
+import { RepositorioClanes } from "./core-navegacion/RepositorioClanes.js";
 import { VistaClan } from "./core-navegacion/VistaClan.js";
 
 /**
  * PrePartidaController
  *
- * >>> SRP <<< Decide QU├ë clan mostrar (a partir de localStorage) y
- * QU├ë pasa al confirmar/iniciar. Delega el C├ôMO se ve en VistaClan y
- * el D├ôNDE est├ín los datos en RepositorioClanes.
+ * >>> SRP <<< Decide QUÉ clan mostrar (a partir de localStorage) y
+ * QUÉ pasa al confirmar/iniciar. Delega el CÓMO se ve en VistaClan y
+ * el DÓNDE están los datos en RepositorioClanes.
  * >>> DIP <<< Recibe ambas dependencias por constructor.
  */
 class PrePartidaController {
@@ -50,16 +50,16 @@ class PrePartidaController {
     }
 }
 
-// ================== RA├ìZ DE COMPOSICI├ôN ==================
+// ================== RAÍZ DE COMPOSICIÓN ==================
 const repositorioClanes = new RepositorioClanes();
 const vistaClan = new VistaClan();
 const prePartidaController = new PrePartidaController(repositorioClanes, vistaClan);
 
-// Se mantiene window.confirmarNivel por compatibilidad, pero el bot├│n se
+// Se mantiene window.confirmarNivel por compatibilidad, pero el botón se
 // conecta por listener (el CSP bloquea los onclick inline).
 window.confirmarNivel = () => prePartidaController.confirmarNivel();
 
-// --- Conexi├│n real con el DOM (sin onclick inline: el CSP lo bloquea) ---
+// --- Conexión real con el DOM (sin onclick inline: el CSP lo bloquea) ---
 document.getElementById("btn-confirmar")?.addEventListener("click", () =>
   prePartidaController.confirmarNivel()
 );
@@ -74,22 +74,19 @@ document.getElementById("btn-cambiar-nivel")?.addEventListener("click", () => {
 
 prePartidaController.iniciar();
 
-// Ajuste sin scroll (móvil H/V): escala el contenido como PC para que quepa en pantalla.
 function ajustarPrePartida() {
     const cont = document.querySelector(".game-container");
     if (!cont) return;
     cont.style.transform = "";
     cont.style.transformOrigin = "top center";
     const baseW = 1100;
-    const baseH = cont.scrollHeight || 760;
+    const baseH = Math.max(cont.scrollHeight, 760);
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     const escala = Math.min(vw / baseW, vh / baseH, 1);
-    if (escala < 1) {
-        cont.style.transform = `scale(${escala})`;
-    }
+    if (escala < 1) cont.style.transform = `scale(${escala})`;
 }
 window.addEventListener("resize", ajustarPrePartida);
 window.addEventListener("orientationchange", () => setTimeout(ajustarPrePartida, 120));
 setTimeout(ajustarPrePartida, 80);
-setTimeout(ajustarPrePartida, 350);
+setTimeout(ajustarPrePartida, 400);
