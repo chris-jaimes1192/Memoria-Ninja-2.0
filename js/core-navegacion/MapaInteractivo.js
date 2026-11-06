@@ -1,9 +1,9 @@
-/**
+﻿/**
  * MapaInteractivo
  *
  * >>> SRP <<< Esta clase solo sabe escalar y posicionar los botones de
  * zona sobre el video de fondo, y avisar (con un callback) cuando se
- * hace click en una zona. No sabe nada de a dónde navegar — eso lo
+ * hace click en una zona. No sabe nada de a d├│nde navegar ÔÇö eso lo
  * decide quien la usa (NavegacionNivelesController).
  * >>> ENCAPSULAMIENTO <<< VIDEO_WIDTH/VIDEO_HEIGHT y el estado de
  * escala quedan adentro de la instancia, no sueltos en el archivo.

@@ -1,4 +1,4 @@
-*{
+﻿*{
     margin:0;
     padding:0;
     box-sizing:border-box;
@@ -150,9 +150,9 @@ body{
 
 }
 /* =========================================================
-   BOTÓN VOLVER AL MENÚ (shuriken ninja)
+   BOT├ôN VOLVER AL MEN├Ü (shuriken ninja)
    Fijo sobre el mapa, arriba a la izquierda. Es un <a> para
-   funcionar incluso sin JS. Al pasar el ratón el shuriken gira
+   funcionar incluso sin JS. Al pasar el rat├│n el shuriken gira
    y el aro late en rojo.
    ========================================================= */
 

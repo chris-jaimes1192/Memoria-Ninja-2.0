@@ -1,13 +1,13 @@
-import { ZONAS, DESTINO_COMUN } from "./core-navegacion/ConfiguracionZonas.js";
+﻿import { ZONAS, DESTINO_COMUN } from "./core-navegacion/ConfiguracionZonas.js";
 import { MapaInteractivo } from "./core-navegacion/MapaInteractivo.js";
 import { ModoCoordenadas } from "./core-navegacion/ModoCoordenadas.js";
 
 /**
  * NavegadorNiveles
  *
- * >>> SRP <<< Lo único que decide es "a dónde vamos cuando se
- * selecciona una zona" — guarda el nivel elegido y redirige. La
- * lógica de CÓMO se ve y se escala el mapa es de MapaInteractivo.
+ * >>> SRP <<< Lo ├║nico que decide es "a d├│nde vamos cuando se
+ * selecciona una zona" ÔÇö guarda el nivel elegido y redirige. La
+ * l├│gica de C├ôMO se ve y se escala el mapa es de MapaInteractivo.
  */
 class NavegadorNiveles {
     irA(idZona) {
@@ -16,7 +16,7 @@ class NavegadorNiveles {
     }
 }
 
-// ================== RAÍZ DE COMPOSICIÓN ==================
+// ================== RA├ìZ DE COMPOSICI├ôN ==================
 const navegadorNiveles = new NavegadorNiveles();
 
 const mapaInteractivo = new MapaInteractivo({
@@ -26,5 +26,5 @@ const mapaInteractivo = new MapaInteractivo({
     alSeleccionarZona: (idZona) => navegadorNiveles.irA(idZona),
 });
 
-// Herramienta de desarrollo (tecla "C"), separada de la navegación real.
+// Herramienta de desarrollo (tecla "C"), separada de la navegaci├│n real.
 new ModoCoordenadas({ idOverlay: "overlay", mapaInteractivo });
