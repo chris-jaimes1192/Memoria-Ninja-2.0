@@ -373,13 +373,13 @@ button,
 /* PANEL INFERIOR */
 /* ===================================== */
 .contenedor-inferior{
-    width:min(900px,95%);
-    margin:35px auto 0;
-    padding:18px;
-    border-radius:18px;
-    background:rgba(5,15,40,.85);
-    border:2px solid #0080ff;
-    box-shadow:0 0 15px rgba(0,128,255,.4);
+    width:min(1300px, calc(100% - 26px));
+    margin:28px auto 0;
+    padding:20px 18px 16px;
+    border-radius:22px;
+    background:rgba(7, 11, 20, 0.8);
+    border:3px solid #1a8dff;
+    box-shadow:0 0 0 1px rgba(135, 83, 255, 0.2), 0 0 18px rgba(0,145,255,.32);
 }
 
 /* ===================================== */
@@ -387,43 +387,57 @@ button,
 /* ===================================== */
 .barra-inferior{
     display:grid;
-    grid-template-columns: repeat(auto-fit,minmax(160px,1fr));
-    gap:15px;
+    grid-template-columns:repeat(4, minmax(0, 1fr));
+    gap:16px;
 }
 
 /* ===================================== */
 /* ITEMS */
 /* ===================================== */
 .item{
-    min-height:110px;
-    border-radius:12px;
-    background:rgba(255,255,255,.05);
-    border:1px solid rgba(255,255,255,.15);
+    min-height:140px;
+    border-radius:16px;
+    background:rgba(0,0,0,.7);
+    border:2px solid rgba(145, 85, 255, 0.9);
     display:flex;
     flex-direction:column;
     justify-content:center;
     align-items:center;
-    gap:8px;
+    gap:10px;
     text-align:center;
-    transition:.3s;
+    transition:.25s ease;
+    padding:10px 8px;
 }
 
 .item:hover{
     transform:translateY(-4px);
-    box-shadow:0 0 12px rgba(0,162,255,.4);
+    box-shadow:0 0 12px rgba(0,162,255,.25);
 }
 
 .item-icono{
-    font-size:28px;
+    font-size:34px;
+    line-height:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:54px;
 }
 
 .item h3{
-    font-size:16px;
+    font-size:clamp(1.15rem, 1.8vw, 2rem);
+    line-height:1.1;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    margin:0;
+    color:#ea9cff;
+    font-weight:700;
 }
 
 .item p{
-    font-size:12px;
-    color:#ccc;
+    font-size:clamp(0.8rem, 1vw, 1.15rem);
+    line-height:1.2;
+    margin:0;
+    color:#f0ebff;
 }
 
 /* ===================================== */
@@ -2829,4 +2843,372 @@ FECHA Y HORA (celda de la tabla)
 
 .aviso-invitado--compacto #avisoInvitadoTexto {
     display: none;
+}
+
+/* La pantalla principal se adapta al viewport; los modales conservan su propio scroll. */
+html,
+body {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    overscroll-behavior: none;
+}
+
+body {
+    display: block;
+    align-items: initial;
+    justify-content: initial;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+}
+
+.menu-principal {
+    width: min(1400px, 100%);
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    margin: 0 auto;
+    padding: clamp(8px, 1.8vh, 18px) clamp(10px, 2vw, 24px) calc(68px + env(safe-area-inset-bottom, 0px));
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: clamp(8px, 1.8vh, 16px);
+    overflow: hidden;
+}
+
+.header {
+    flex-wrap: nowrap;
+    align-items: center;
+    min-width: 0;
+}
+
+.modos-juego {
+    width: 100%;
+    height: min(42vh, 340px);
+    max-height: 100%;
+    min-height: 0;
+    align-self: center;
+    margin: 0;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: clamp(8px, 1.5vw, 20px);
+}
+
+.panel {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+    min-height: 0;
+    max-width: 250px;
+    height: 100%;
+    padding: clamp(8px, 1.5vw, 15px);
+}
+
+.panel-centro {
+    min-height: 0;
+    margin: 8px 0;
+    gap: clamp(4px, 1vh, 12px);
+}
+
+.contenedor-inferior {
+    width: min(1100px, 100%);
+    margin: 0 auto;
+    padding: clamp(8px, 1.4vh, 14px);
+}
+
+.barra-inferior {
+    gap: clamp(8px, 1.2vw, 15px);
+}
+
+.item {
+    min-height: clamp(116px, 14vh, 132px);
+    height: auto;
+    gap: clamp(4px, 0.8vh, 8px);
+    padding: 10px 8px;
+}
+
+.estado {
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    min-height: 44px;
+    padding: 8px 14px;
+}
+
+@media (max-width: 900px) {
+    .header {
+        display: grid;
+        grid-template-areas: "perfil logo acciones";
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        gap: 10px;
+    }
+
+    .perfil-panel {
+        grid-area: perfil;
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+        padding: 8px;
+        gap: 8px;
+    }
+
+    .avatar {
+        flex: 0 0 clamp(38px, 6vw, 54px);
+        width: clamp(38px, 6vw, 54px);
+        height: clamp(38px, 6vw, 54px);
+    }
+
+    .logo-panel {
+        grid-area: logo;
+    }
+
+    .logo-panel img {
+        width: clamp(90px, 16vw, 150px);
+        max-width: 100%;
+    }
+
+    .derecha {
+        grid-area: acciones;
+        width: 100%;
+        min-width: 0;
+        flex-direction: row;
+        justify-content: flex-end;
+        gap: 8px;
+    }
+
+    .menu-superior,
+    .ranking-panel {
+        min-width: 0;
+        width: 50%;
+        height: clamp(40px, 7vh, 58px);
+        padding: 6px;
+        font-size: clamp(11px, 1.5vw, 14px);
+    }
+
+    #btnConfiguracionMain {
+        display: none;
+    }
+}
+
+@media (max-width: 600px) {
+    .menu-principal {
+        padding: 8px 10px calc(62px + env(safe-area-inset-bottom, 0px));
+        gap: 8px;
+    }
+
+    .header {
+        grid-template-areas:
+            "perfil acciones"
+            "logo logo";
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 6px 10px;
+        padding: 0;
+    }
+
+    .perfil-panel {
+        justify-content: flex-start;
+        text-align: left;
+        border-radius: 12px;
+    }
+
+    .perfil-panel p {
+        font-size: 10px !important;
+    }
+
+    .nivel-badge {
+        font-size: 12px;
+    }
+
+    .logo-panel img {
+        width: clamp(84px, 23vw, 125px);
+    }
+
+    .derecha {
+        justify-content: stretch;
+        gap: 6px;
+    }
+
+    .menu-superior,
+    .ranking-panel {
+        height: 38px;
+        font-size: clamp(10px, 2.7vw, 12px);
+    }
+
+    .modos-juego {
+        gap: 7px;
+    }
+
+    .panel {
+        max-width: none;
+        border-radius: 14px;
+        padding: 7px 5px;
+    }
+
+    .panel-titulo {
+        font-size: clamp(9px, 2.8vw, 14px);
+        line-height: 1.15;
+    }
+
+    .panel-centro {
+        margin: 5px 0;
+        padding: 4px 2px;
+        gap: 4px;
+    }
+
+    .texto-centro {
+        padding: 0 2px;
+        font-size: clamp(8px, 2.3vw, 11px);
+        line-height: 1.2;
+    }
+
+    .icono-centro,
+    .vs {
+        font-size: clamp(22px, 7vw, 38px);
+    }
+
+    .panel-footer {
+        font-size: clamp(8px, 2vw, 10px);
+        line-height: 1.15;
+    }
+
+    .contenedor-inferior {
+        padding: 7px;
+    }
+
+    .barra-inferior {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+    }
+
+    .contenedor-inferior .item {
+        height: clamp(42px, 7vh, 58px);
+        min-height: 0;
+        flex-direction: row;
+        flex: initial;
+        justify-content: flex-start;
+        gap: 7px;
+        padding: 5px 8px;
+    }
+
+    .item-icono {
+        font-size: 19px;
+        min-height: 0;
+        height: auto;
+    }
+
+    .item h3 {
+        font-size: clamp(10px, 2.8vw, 12px);
+    }
+
+    .item p {
+        display: none;
+    }
+
+    .estado {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 4px 8px;
+        width: calc(100% - 20px);
+        padding: 7px 9px;
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 360px) {
+    .menu-principal {
+        padding-right: 7px;
+        padding-left: 7px;
+    }
+
+    .header {
+        gap: 5px 7px;
+    }
+
+    .perfil-panel {
+        gap: 5px;
+        padding: 6px;
+    }
+
+    .avatar {
+        flex-basis: 34px;
+        width: 34px;
+        height: 34px;
+    }
+
+    .menu-superior,
+    .ranking-panel {
+        padding: 4px 2px;
+    }
+
+    .panel {
+        padding-right: 3px;
+        padding-left: 3px;
+    }
+
+    .contenedor-inferior .item {
+        gap: 5px;
+        padding-right: 5px;
+        padding-left: 5px;
+    }
+}
+
+@media (max-height: 520px) {
+    .menu-principal {
+        padding-top: 5px;
+        padding-bottom: calc(58px + env(safe-area-inset-bottom, 0px));
+        gap: 6px;
+    }
+
+    .header {
+        gap: 6px;
+    }
+
+    .perfil-panel {
+        padding-top: 5px;
+        padding-bottom: 5px;
+    }
+
+    .logo-panel img {
+        width: clamp(72px, 10vw, 110px);
+    }
+
+    .modos-juego {
+        gap: 8px;
+    }
+
+    .panel-titulo {
+        font-size: clamp(11px, 1.5vw, 15px);
+    }
+
+    .icono-centro,
+    .vs {
+        font-size: clamp(22px, 5vh, 38px);
+    }
+
+    .contenedor-inferior {
+        padding: 6px;
+    }
+
+    .item {
+        height: auto;
+        min-height: 76px;
+    }
+
+    .item-icono {
+        font-size: 20px;
+        min-height: 0;
+        height: auto;
+    }
+
+    .item h3 {
+        font-size: 12px;
+    }
+
+    .item p {
+        display: none;
+    }
+
+    .estado {
+        min-height: 40px;
+        padding: 6px 10px;
+        font-size: 11px;
+    }
 }
