@@ -43,8 +43,9 @@ export class MapaInteractivo {
     _reposicionar() {
         const vw = window.innerWidth;
         const vh = window.innerHeight;
-        // Debe coincidir con object-fit: cover para conservar las zonas sobre el mapa.
-        const escala = Math.max(vw / this.anchoVideo, vh / this.altoVideo);
+        // "contain": el mapa completo queda visible (sin recortar zonas) y sin scroll,
+        // ajustado al viewport en horizontal o vertical.
+        const escala = Math.min(vw / this.anchoVideo, vh / this.altoVideo);
 
         const ancho = this.anchoVideo * escala;
         const alto = this.altoVideo * escala;
