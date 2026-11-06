@@ -74,19 +74,24 @@ document.getElementById("btn-cambiar-nivel")?.addEventListener("click", () => {
 
 prePartidaController.iniciar();
 
+// Vista igual que PC en móvil H/V: lienzo fijo escalado para que quepa TODO sin scroll.
 function ajustarPrePartida() {
     const cont = document.querySelector(".game-container");
     if (!cont) return;
-    cont.style.transform = "";
-    cont.style.transformOrigin = "top center";
+    cont.style.transform = "translate(-50%, -50%) scale(1)";
     const baseW = 1100;
-    const baseH = Math.max(cont.scrollHeight, 760);
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const escala = Math.min(vw / baseW, vh / baseH, 1);
-    if (escala < 1) cont.style.transform = `scale(${escala})`;
+    const baseH = 720;
+    const margen = 8;
+    const vw = Math.max((window.visualViewport && window.visualViewport.width) || window.innerWidth, 280);
+    const vh = Math.max((window.visualViewport && window.visualViewport.height) || window.innerHeight, 280);
+    const escala = Math.min((vw - margen) / baseW, (vh - margen) / baseH);
+    cont.style.transform = `translate(-50%, -50%) scale(${escala})`;
 }
 window.addEventListener("resize", ajustarPrePartida);
 window.addEventListener("orientationchange", () => setTimeout(ajustarPrePartida, 120));
-setTimeout(ajustarPrePartida, 80);
-setTimeout(ajustarPrePartida, 400);
+window.addEventListener("orientationchange", () => setTimeout(ajustarPrePartida, 400));
+if (window.visualViewport) window.visualViewport.addEventListener("resize", ajustarPrePartida);
+document.fonts && document.fonts.ready && document.fonts.ready.then(ajustarPrePartida);
+setTimeout(ajustarPrePartida, 60);
+setTimeout(ajustarPrePartida, 300);
+setTimeout(ajustarPrePartida, 700);

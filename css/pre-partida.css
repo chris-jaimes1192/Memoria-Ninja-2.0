@@ -74,9 +74,9 @@ body {
 
 .game-container {
 
-    width: 100vw;
-    height: 100vh;
-    height: 100dvh;
+    width: 1100px;
+    min-height: 720px;
+    height: 720px;
 
     display: flex;
     flex-direction: column;
@@ -84,13 +84,16 @@ body {
     align-items: center;
     justify-content: center;
 
-    gap: 12px;
+    gap: 14px;
 
-    padding: 14px 16px calc(86px + env(safe-area-inset-bottom, 0px));
+    padding: 18px 24px 76px;
 
-    position: relative;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform-origin: center center;
     z-index: 1;
-    overflow: hidden;
+    overflow: visible;
 }
 
 /* =====================================================
@@ -479,13 +482,13 @@ body {
 
 .bottom-nav {
 
-    position: fixed;
+    position: absolute;
 
-    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    bottom: 14px;
 
-    left: max(12px, env(safe-area-inset-left, 0px));
+    left: 24px;
 
-    right: max(12px, env(safe-area-inset-right, 0px));
+    right: 24px;
 
     display: flex;
 
@@ -546,12 +549,4 @@ body {
    RESPONSIVE
 ===================================================== */
 
-@media (max-width: 768px), (max-height: 620px) {
-
-    .main-page-title { font-size: clamp(1.6rem, 5vw, 2.6rem); }
-    .clan-name { font-size: clamp(1.3rem, 4.5vw, 2rem); }
-    .panel-selection, .panel-details { padding: 12px 14px; }
-    .bar-content { gap: 12px; }
-    .bar-logo-img { width: 72px; height: 72px; }
-    .btn-primary, .btn-secondary, .btn-back, .btn-start { padding: 10px 16px; font-size: .9rem; }
-}
+/* Mobile: misma composición que PC, sin reflow; el escalado lo aplica JS */
