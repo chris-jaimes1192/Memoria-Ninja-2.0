@@ -3,18 +3,24 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
-    <title>Juego — Memorice Duel</title>
+    <title>Juego ÔÇö Memorice Duel</title>
+
+    <!-- FUENTE -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="css/uchiha.css">
-    <!-- GUARD DE SESIÓN (valida contra el servidor; nunca redirige) -->
+    <link rel="stylesheet" href="css/tema-aldea.css">
+    <!-- GUARD DE SESI├ôN (valida contra el servidor; nunca redirige) -->
     <script src="js/sesion-guard.js"></script>
 </head>
 
 <body>
 
-    <!-- ================= MÚSICA ================= -->
+    <!-- ================= M├ÜSICA ================= -->
 
     <audio id="gameMusic" loop>
         <source src="assets/game music.mp3" type="audio/mpeg">
@@ -28,7 +34,7 @@
     </video>
 
 
-    <!-- ================= ESTADÍSTICAS ================= -->
+    <!-- ================= ESTAD├ìSTICAS ================= -->
 
     <div id="stats" class="stats">
 
@@ -65,10 +71,10 @@
 
         <div class="panel">
 
-            <h2>💀 ¡DERROTA!</h2>
+            <h2>­ƒÆÇ ┬íDERROTA!</h2>
 
             <h2>
-                No pudiste completar el desafío
+                No pudiste completar el desaf├¡o
             </h2>
 
             <p id="finalStats"></p>
@@ -76,11 +82,11 @@
             <div class="botones-modal">
 
                 <button id="restartGame">
-                    🔄 Intentar de nuevo
+                    ­ƒöä Intentar de nuevo
                 </button>
 
                 <button id="closeModal">
-                    Volver al menú
+                    Volver al men├║
                 </button>
 
             </div>
@@ -97,31 +103,31 @@
         <div class="victory-panel">
 
             <div class="victory-icon">
-                🏆
+                ­ƒÅå
             </div>
 
             <h2>
-                ¡VICTORIA!
+                ┬íVICTORIA!
             </h2>
 
             <div class="victory-line"></div>
 
             <p class="victory-message">
-                ¡Has completado el desafío del clan Uchiha!
+                ┬íHas completado el desaf├¡o del clan Uchiha!
             </p>
 
             <p class="victory-message">
-            tus ojos son casi tan fuertes como el sharingan estoy muy sorprendido de que hayas podido completar este desafío, eres un gran ninja
+            tus ojos son casi tan fuertes como el sharingan estoy muy sorprendido de que hayas podido completar este desaf├¡o, eres un gran ninja
             <p id="victoryStats" class="victory-stats"></p>
 
             <div class="victory-buttons">
 
                 <button id="victoryRestart">
-                    🔄 Jugar de nuevo
+                    ­ƒöä Jugar de nuevo
                 </button>
 
                 <button id="victoryClose">
-                    Volver al menú
+                    Volver al men├║
                 </button>
 
             </div>
@@ -131,7 +137,7 @@
     </div>
 
 
-    <!-- ================= BOTÓN VOLVER ================= -->
+    <!-- ================= BOT├ôN VOLVER ================= -->
 
     <a href="menu.html" class="boton">
         volver
