@@ -13,15 +13,16 @@ body {
   margin: 0;
 }
 #videofondo-glow { position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; object-fit: cover; filter: blur(22px) brightness(.55) saturate(1.1); z-index: -2; pointer-events: none; }
-.zona-fit-root { width: 100vw; height: 100vh; height: 100dvh; position: relative; overflow: hidden; z-index: 1; display: flex; align-items: center; justify-content: center; }
-.zona-fit-canvas { width: 960px; min-height: 700px; position: absolute; top: 50%; left: 50%; transform-origin: center center; padding: 10px 16px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.zona-fit-root { width: 100vw; height: 100vh; height: 100dvh; position: relative; overflow: hidden; z-index: 1; }
+.zona-fit-canvas { width: 660px; position: absolute; top: 50%; left: 50%; transform-origin: center center; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; }
+.zona-fit-canvas #boardFrame { margin: 10px auto; }
 
 
 /* =====================================================
    🔴 FONDO DE VIDEO
 ===================================================== */
 
-video {
+video, #videofondo {
   position: fixed;
 
   top: 0;
@@ -31,9 +32,8 @@ video {
   height: 100vh;
   height: 100dvh;
 
-  object-fit: contain;
+  object-fit: cover;
   object-position: center;
-  background: #0b0808;
 
   z-index: -1;
 }

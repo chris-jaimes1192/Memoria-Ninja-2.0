@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 
 <head>
@@ -30,9 +30,6 @@
 
     <!-- ================= VIDEO DE FONDO ================= -->
 
-    <video autoplay muted loop playsinline id="videofondo-glow" aria-hidden="true" tabindex="-1" style="position:fixed;inset:0;width:100vw;height:100vh;height:100dvh;object-fit:cover;filter:blur(22px) brightness(.55) saturate(1.1);z-index:-2;pointer-events:none;">
-        <source src="assets/fondo.mp4" type="video/mp4">
-    </video>
     <video autoplay muted loop playsinline id="videofondo">
         <source src="assets/fondo.mp4" type="video/mp4">
     </video>
@@ -152,7 +149,10 @@
 
     <script type="module" src="js/uchiha/Uchiha.js"></script>
 </div></div>
-<script>function _fitZona(){var c=document.querySelector('.zona-fit-canvas');if(!c)return;c.style.transform='translate(-50%,-50%) scale(1)';var b=c.getBoundingClientRect(),bw=Math.max(b.width,c.scrollWidth||960),bh=Math.max(b.height,c.scrollHeight||700),vw=(window.visualViewport&&window.visualViewport.width)||window.innerWidth,vh=(window.visualViewport&&window.visualViewport.height)||window.innerHeight,s=Math.min((vw-4)/bw,(vh-4)/bh);c.style.transform='translate(-50%,-50%) scale('+s+')';}window.addEventListener('resize',_fitZona);window.addEventListener('orientationchange',function(){setTimeout(_fitZona,120);setTimeout(_fitZona,400)});if(window.visualViewport)window.visualViewport.addEventListener('resize',_fitZona);setTimeout(_fitZona,60);setTimeout(_fitZona,350);setTimeout(_fitZona,800);</script>
+<script>
+function _fitZona(){var c=document.querySelector('.zona-fit-canvas');if(!c)return;c.style.transform='translate(-50%,-50%) scale(1)';var bw=Math.max(c.offsetWidth,660),bh=Math.max(c.scrollHeight,c.offsetHeight,720),vw=(window.visualViewport&&window.visualViewport.width)||window.innerWidth,vh=(window.visualViewport&&window.visualViewport.height)||window.innerHeight,s=Math.min(vw/bw,vh/bh);c.style.transform='translate(-50%,-50%) scale('+s+')';}
+window.addEventListener('resize',_fitZona);window.addEventListener('orientationchange',function(){setTimeout(_fitZona,80);setTimeout(_fitZona,300);setTimeout(_fitZona,700)});if(window.visualViewport)window.visualViewport.addEventListener('resize',_fitZona);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(_fitZona);setTimeout(_fitZona,40);setTimeout(_fitZona,200);setTimeout(_fitZona,500);setTimeout(_fitZona,1000);
+</script>
 </body>
 
 </html>
