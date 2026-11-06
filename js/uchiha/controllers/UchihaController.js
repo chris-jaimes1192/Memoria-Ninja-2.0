@@ -309,7 +309,7 @@ export class UchihaController {
 
 
             // =========================================
-            // AGREGAR IM├üGENES
+            // AGREGAR IMÁGENES
             // =========================================
 
             cartaDOM.appendChild(
@@ -480,7 +480,7 @@ export class UchihaController {
             );
 
 
-            // Activar animaci├│n
+            // Activar animación
             dom1.classList.add(
                 "found"
             );
@@ -766,7 +766,7 @@ export class UchihaController {
 
 
     // =================================================
-    // VOLVER AL MEN├Ü
+    // VOLVER AL MENÚ
     // =================================================
 
     irAlMenu() {
