@@ -18,7 +18,23 @@ body{
     width:100vw;
     height:100vh;
     overflow:hidden;
-    background:#000;
+    background:#0b1020;
+}
+
+.mapa-glow{
+    position:absolute;
+    top:50%;
+    left:50%;
+    width:110%;
+    height:110%;
+    transform:translate(-50%,-50%);
+    object-fit:cover;
+    object-position:center;
+    filter:blur(22px) brightness(.55) saturate(1.15);
+    opacity:.9;
+    pointer-events:none;
+    z-index:0;
+    display:none;
 }
 
 #mapaVideo{
@@ -31,6 +47,11 @@ body{
     /* Mapa completo visible (sin recortar zonas), sin scroll, en H/V. */
     object-fit:contain;
     object-position:center;
+    z-index:1;
+}
+
+@media (pointer:coarse), (max-width:1024px){
+    .mapa-glow{ display:block; }
 }
 
 #overlay{
