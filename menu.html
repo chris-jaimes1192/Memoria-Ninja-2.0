@@ -86,13 +86,13 @@
                         <div class="multijugador-titulo-texto">
                 <h2>DOS JUGADORES / SALAS</h2>
                 <p class="sub-verde">UNIRSE A SALAS · PARTIDA RÁPIDA</p>
-            </div></div>
+            </div>
         </div>
-                <div class="barra-acciones-lobby" id="barraAccionesLobby">
+        <div class="barra-acciones-lobby" id="barraAccionesLobby">
             <button type="button" class="btn-lobby btn-lobby-primario" id="btnUnirsePorCodigo">UNIRSE / SALAS ABIERTAS</button>
             <button type="button" class="btn-lobby btn-lobby-secundario" id="btnPartidaRapida">PARTIDA RÁPIDA</button>
         </div>
-        <div id="panelBuscarCodigo" class="panel-buscar-codigo" hidden><div id="panelBuscarCodigo" class="panel-buscar-codigo" hidden>
+        <div id="panelBuscarCodigo" class="panel-buscar-codigo" hidden>
             <div class="buscar-codigo-row">
                 <input type="text" id="inputBuscarCodigo" class="input-lobby" placeholder="INTRODUCE CÓDIGO" maxlength="6" autocomplete="off">
                 <button type="button" class="btn-lobby btn-lobby-primario" id="btnBuscarUnirse">UNIRSE</button>
@@ -100,7 +100,7 @@
             </div>
             <p class="error-codigo" id="errorLobbyCodigo" hidden></p>
         </div>
-                <div id="panelEsperandoRival" class="panel-esperando" hidden><div id="panelEsperandoRival" class="panel-esperando" hidden>
+        <div id="panelEsperandoRival" class="panel-esperando" hidden>
             <p class="esperando-titulo" id="esperandoTitulo">ESPERANDO RIVAL...</p>
             <p class="esperando-codigo">CÓDIGO: <span id="codigoSalaEspera">----</span></p>
             <p class="esperando-info" id="esperandoInfo">COMPARTE ESTE CÓDIGO CON TU AMIGO</p>
@@ -130,11 +130,11 @@
                 <p class="sub-verde">CREAR · PARTIDA RÁPIDA · INVITAR AMIGOS</p>
             </div>
         </div>
-                <div class="barra-acciones-lobby" id="barraAccionesMultijugador">
+        <div class="barra-acciones-lobby" id="barraAccionesMultijugador">
             <button type="button" class="btn-lobby btn-lobby-primario" id="btnCrearSalaVerdeModal">CREAR SALA</button>
             <button type="button" class="btn-lobby btn-lobby-secundario" id="btnInvitarAmigosVerdeModal">INVITAR AMIGOS</button>
         </div>
-        <div id="panelCrearSalaVerde" class="panel-crear-sala" hidden><div id="panelCrearSalaVerde" class="panel-crear-sala" hidden>
+        <div id="panelCrearSalaVerde" class="panel-crear-sala" hidden>
             <div class="crear-sala-grid">
                 <div class="crear-sala-fila"><label>MODO</label><div class="radio-grupo"><label><input type="radio" name="modoPartidaVerde" value="1v1" checked> 1 VS 1</label><label><input type="radio" name="modoPartidaVerde" value="2v2"> 2 VS 2</label></div></div>
                 <div class="crear-sala-fila"><label>TIPO DE MAZO</label><div class="radio-grupo"><label><input type="radio" name="tipoMazoVerde" value="mezclar" checked> MEZCLAR ALDEAS / CLANES</label><label><input type="radio" name="tipoMazoVerde" value="aldea"> UNA ALDEA</label></div></div>
@@ -147,13 +147,13 @@
                 <div class="crear-sala-acciones"><button type="button" class="btn-lobby btn-lobby-primario" id="btnConfirmarCrearSalaVerde">CREAR SALA</button></div>
             </div>
         </div>
-                        <div id="panelEsperandoRivalVerde" class="panel-esperando" hidden>
+        <div id="panelEsperandoRivalVerde" class="panel-esperando" hidden>
             <p class="esperando-titulo" id="esperandoTituloVerde">ESPERANDO JUGADORES...</p>
             <p class="esperando-codigo">CÓDIGO: <span id="codigoSalaEsperaVerde">----</span></p>
             <p class="esperando-info" id="esperandoInfoVerde">COMPARTE ESTE CÓDIGO O ENLACE PARA INVITAR AMIGOS</p>
             <p class="esperando-equipos" id="esperandoEquiposVerde" hidden></p>
             <div class="sala-compartir"><img id="qrSalaVerde" class="qr-sala" alt="QR para unirse a la sala" hidden><div class="sala-compartir-texto"><p class="esperando-url" id="urlSalaEsperaVerde"></p><div class="sala-compartir-botones"><button type="button" class="btn-lobby btn-lobby-secundario" id="btnCopiarCodigoSalaVerde">COPIAR CÓDIGO</button><button type="button" class="btn-lobby btn-lobby-secundario" id="btnCopiarEnlaceSalaVerde">COPIAR ENLACE</button></div></div></div>
-            <button type="button" class="btn-lobby btn-lobby-secundario" id="btnSalirEsperandoVerde">SALIR DE LA SALA</button>            <button type="button" class="btn-lobby btn-lobby-secundario" id="btnSalirEsperandoVerde">SALIR DE LA SALA</button>
+            <button type="button" class="btn-lobby btn-lobby-secundario" id="btnSalirEsperandoVerde">SALIR DE LA SALA</button>
         </div>
         <button class="btn-volver-modal color-fucsia" id="closeMultijugadorModalBtn">VOLVER</button>
     </div>
