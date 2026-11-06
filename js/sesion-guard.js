@@ -18,6 +18,16 @@
 (function () {
   "use strict";
 
+  // Si la página se abrió como archivo local (file://), las llamadas a /api
+  // no pueden funcionar. Redirigimos al mismo archivo servido por el backend.
+  if (window.location.protocol === "file:") {
+    var archivo = window.location.pathname.split("/").pop() || "login.html";
+    window.location.replace(
+      "http://localhost:3000/" + archivo + window.location.search + window.location.hash
+    );
+    return;
+  }
+
   var CLAVE_SESION = "usuarioActivo";
   var CLAVE_ESTADO = "estadoSesion";
   var DURACION_AVISO_MS = 5000;

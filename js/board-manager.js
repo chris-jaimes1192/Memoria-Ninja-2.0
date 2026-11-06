@@ -16,19 +16,13 @@ let movimientos = 0;
 let parejasEncontradas = 0;
 let puntajeActual = 0;
 
-let onResultado = null;        // avisa acierto o error
+let onResultado = null;
 let onPartidaCompletada = null;
-
-// NUEVO: callback que game-online.js manda para preguntar
-// "¿me toca jugar a mí ahora?". Si no se pasa (queda null),
-// el tablero funciona exactamente igual que antes, sin bloqueo.
 let onEsMiTurno = null;
 let temaActual = obtenerTemaAldea("arena");
 
-
-// ==========================================
-// BYAKUGAN
-// ==========================================
+let modoOnline = false;
+let alVoltearOnline = null;
 
 function obtenerCartasOcultas() {
     const tablero = document.getElementById("board");
@@ -47,30 +41,36 @@ function actualizarMovimientos() {
     if (el) el.textContent = movimientos;
 }
 
-export const BoardManager = {
-    // NUEVO: se agregó el tercer parámetro "callbackEsMiTurno".
-    // Los dos primeros parámetros (callbackResultado, callbackFinal)
-    // funcionan exactamente igual que antes.
-        obtenerCartasParaByakugan() {
+function cartaPorIndice(index) {
+    const tablero = document.getElementById("board");
+    if (!tablero) return null;
+    return tablero.querySelector(`.card[data-index="${Number(index)}"]`);
+}
 
+function mostrarFrente(carta, valor, aldea) {
+    if (!carta || !valor) return;
+    carta.dataset.valor = valor;
+    carta.dataset.aldea = aldea || ALDEA;
+    const img = carta.querySelector("img");
+    if (img) img.src = `${RUTA_ALDEAS}${aldea || ALDEA}/${valor}.png`;
+    carta.classList.add("volteada");
+}
+
+export const BoardManager = {
+    obtenerCartasParaByakugan() {
         const cartas = obtenerCartasOcultas();
 
         if (cartas.length < 2) {
             return [];
         }
 
-        // Mezclamos las cartas disponibles
         const mezcladas = [...cartas]
             .sort(() => Math.random() - 0.5);
 
-        // Tomamos solamente 2
         return mezcladas.slice(0, 2);
     },
 
-    // NUEVO: para el Sello de Bloqueo — elige UNA carta oculta random
-    // que todavía no esté sellada, para bloquearla 5 segundos.
     obtenerCartaParaSello() {
-
         const cartas = obtenerCartasOcultas()
             .filter(carta => !carta.classList.contains("carta-sellada"));
 
@@ -81,14 +81,122 @@ export const BoardManager = {
         const indice = Math.floor(Math.random() * cartas.length);
         return cartas[indice];
     },
-    
-    renderBoard(callbackResultado, callbackFinal, callbackEsMiTurno) {
+
+    habilitarModoOnline(opciones = {}) {
+        modoOnline = true;
+        alVoltearOnline = typeof opciones.alVoltear === "function" ? opciones.alVoltear : null;
+    },
+
+    deshabilitarModoOnline() {
+        modoOnline = false;
+        alVoltearOnline = null;
+    },
+
+    bloquearTablero(bloqueado) {
+        const tablero = document.getElementById("board");
+        if (tablero) tablero.classList.toggle("bloqueado-turno", !!bloqueado);
+    },
+
+    revelarCartaRemota(index, valor, aldea, emparejada = false) {
+        const carta = cartaPorIndice(index);
+        if (!carta) return;
+        mostrarFrente(carta, valor, aldea);
+        if (emparejada) carta.classList.add("emparejada");
+    },
+
+    marcarEmparejadas(index1, index2) {
+        for (const index of [index1, index2]) {
+            const carta = cartaPorIndice(index);
+            if (carta) carta.classList.add("emparejada");
+        }
+    },
+
+    ocultarCartasRemotas(index1, index2, espera = 800) {
+        setTimeout(() => {
+            for (const index of [index1, index2]) {
+                const carta = cartaPorIndice(index);
+                if (!carta || carta.classList.contains("emparejada")) continue;
+                carta.classList.remove("volteada");
+                const img = carta.querySelector("img");
+                if (img) img.src = RUTA_BACK;
+            }
+        }, espera);
+    },
+
+    revelarTemporal(index, valor, aldea, duracion = 3000) {
+        const carta = cartaPorIndice(index);
+        if (!carta || !valor || carta.classList.contains("emparejada")) return;
+        carta.dataset.valor = valor;
+        carta.dataset.aldea = aldea || ALDEA;
+        const img = carta.querySelector("img");
+        if (img) img.src = `${RUTA_ALDEAS}${aldea || ALDEA}/${valor}.png`;
+        carta.classList.add("byakugan-revelada");
+        setTimeout(() => {
+            if (carta.classList.contains("volteada") || carta.classList.contains("emparejada")) return;
+            const imagen = carta.querySelector("img");
+            if (imagen) imagen.src = RUTA_BACK;
+            carta.classList.remove("byakugan-revelada");
+        }, duracion);
+    },
+
+    sellarCarta(index, duracion = 5000) {
+        const carta = cartaPorIndice(index);
+        if (!carta || carta.classList.contains("emparejada")) return;
+        carta.classList.add("carta-sellada");
+        if (!carta.querySelector(".sello-icono-carta")) {
+            const icono = document.createElement("div");
+            icono.className = "sello-icono-carta";
+            icono.textContent = "封";
+            carta.appendChild(icono);
+        }
+        clearTimeout(carta._selloTimeout);
+        carta._selloTimeout = setTimeout(() => this.quitarSello(index), Math.max(0, duracion));
+    },
+
+    quitarSello(index) {
+        const carta = cartaPorIndice(index);
+        if (!carta) return;
+        carta.classList.remove("carta-sellada");
+        carta.querySelector(".sello-icono-carta")?.remove();
+        clearTimeout(carta._selloTimeout);
+        carta._selloTimeout = null;
+    },
+
+    aplicarMezcla(cartas) {
+        for (const datos of cartas || []) {
+            const carta = cartaPorIndice(datos.index);
+            if (!carta || !datos.valor) continue;
+            carta.dataset.valor = datos.valor;
+            carta.dataset.aldea = datos.aldea || ALDEA;
+            const img = carta.querySelector("img");
+            if (!img) continue;
+            const visible = carta.classList.contains("volteada") || carta.classList.contains("byakugan-revelada");
+            img.src = visible
+                ? `${RUTA_ALDEAS}${datos.aldea || ALDEA}/${datos.valor}.png`
+                : RUTA_BACK;
+        }
+    },
+
+    aplicarEstadoSello(sello) {
+        for (const carta of document.querySelectorAll(".card.carta-sellada")) {
+            this.quitarSello(Number(carta.dataset.index));
+        }
+        if (sello && Number.isInteger(sello.index)) {
+            this.sellarCarta(sello.index, Math.max(0, (sello.hasta || 0) - Date.now()));
+        }
+    },
+
+    renderBoard(callbackResultado, callbackFinal, callbackEsMiTurno, mazoExterno = null) {
         onResultado = callbackResultado || null;
         onPartidaCompletada = callbackFinal || null;
-        onEsMiTurno = callbackEsMiTurno || null; // NUEVO
+        onEsMiTurno = callbackEsMiTurno || null;
+
+        modoOnline = false;
+        alVoltearOnline = null;
+
         temaActual = obtenerTemaSeleccionado() || obtenerTemaAldea("arena");
         aplicarTemaAldea(localStorage.getItem("nivelActual"));
-
+  
         const tablero = document.getElementById('board');
         tablero.innerHTML = '';
 
@@ -98,18 +206,29 @@ export const BoardManager = {
         puntajeActual = 0;
         actualizarMovimientos();
 
-        const valores = [...IDS, ...IDS];
-        valores.sort(() => Math.random() - 0.5);
+        const usaMazo = Array.isArray(mazoExterno) && mazoExterno.length > 0;
+        const valores = usaMazo
+            ? mazoExterno
+            : [...IDS, ...IDS].sort(() => Math.random() - 0.5);
+
 
         precargarImagenes([
             ...IDS.map(valor => this.obtenerRutaCarta(valor)),
             this.obtenerReverso()
         ]);
 
-        valores.forEach(valor => {
+        valores.forEach((entrada, idx) => {
+            const valor = usaMazo && typeof entrada === "object" ? entrada.valor : entrada;
+            const aldea = usaMazo && typeof entrada === "object" ? entrada.aldea : ALDEA;
+
+            
             const carta = document.createElement('div');
             carta.className = 'card';
-            carta.dataset.valor = valor;
+            carta.dataset.index = idx;
+            if (valor) {
+                carta.dataset.valor = valor;
+                carta.dataset.aldea = aldea || ALDEA;
+            }
 
             const reverso = document.createElement('img');
             reverso.src = this.obtenerReverso();
@@ -125,21 +244,26 @@ export const BoardManager = {
             carta.appendChild(frente);
             carta.addEventListener('click', () => this.voltearCarta(carta));
             tablero.appendChild(carta);
+
+            if (usaMazo && entrada?.emparejada && valor) {
+                mostrarFrente(carta, valor, aldea);
+                carta.classList.add("emparejada");
+            }
         });
     },
 
     voltearCarta(carta) {
-        // NUEVO: si hay un callback de turno y dice que no te toca,
-        // no se deja voltear la carta. Si no hay callback (onEsMiTurno
-        // sigue en null), esta línea no hace nada y el juego se
-        // comporta exactamente igual que antes.
         if (onEsMiTurno && !onEsMiTurno()) return;
+        if (carta.classList.contains("carta-sellada")) return;
+        if (carta.classList.contains("volteada") || carta.classList.contains("emparejada")) return;
 
-        // NUEVO: si la carta está sellada por el poder de Sello de
-        // Bloqueo, no se puede voltear hasta que se cumpla el tiempo.
-        if (carta.classList.contains('carta-sellada')) return;
+        if (modoOnline) {
+            if (!alVoltearOnline) return;
+            alVoltearOnline(parseInt(carta.dataset.index, 10));
+            return;
+        }
 
-        if (carta.classList.contains('volteada') || cartasVolteadas.length === 2) return;
+        if (cartasVolteadas.length === 2) return;
 
         carta.classList.add('volteada', 'flip');
 
@@ -154,6 +278,7 @@ export const BoardManager = {
 
     verificarCoincidencia() {
         const [c1, c2] = cartasVolteadas;
+        if (!c1 || !c2) { cartasVolteadas = []; return; }
         const esAcierto = c1.dataset.valor === c2.dataset.valor;
 
         if (esAcierto) {
@@ -175,6 +300,7 @@ export const BoardManager = {
             setTimeout(() => {
                 c1.classList.remove('volteada', 'flip');
                 c2.classList.remove('volteada', 'flip');
+                
                 cartasVolteadas = [];
             }, 800);
         }

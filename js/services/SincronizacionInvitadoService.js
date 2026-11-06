@@ -22,25 +22,58 @@ const URL_BASE = "/api";
 const CLAVE_PERFIL_INVITADO = "perfil:invitado";
 
 export class SincronizacionInvitadoService {
+  constructor() {
+    this.sincronizando = false;
+    this.registrarEventosOnline();
+  }
+
+  registrarEventosOnline() {
+    if (typeof window === 'undefined') return;
+    window.addEventListener('online', () => {
+      this.sincronizarAutomatico();
+    });
+  }
+
+  async sincronizarAutomatico() {
+    if (this.sincronizando) return;
+    const sesion = window.SesionNinja;
+    const estado = sesion?.estadoActual?.();
+    if (estado !== 'activa') return;
+    
+    const usuarioActivo = localStorage.getItem('usuarioActivo');
+    if (!usuarioActivo) return;
+    
+    try {
+      const usuario = JSON.parse(usuarioActivo);
+      if (usuario?.id) {
+        await this.sincronizar(usuario.id);
+      }
+    } catch {}
+  }
+
   /**
    * @param {string} idUsuario cuenta recién iniciada (el backend valida
    *        que la cookie de sesión le pertenezca).
    * @returns {Promise<object>} nunca lanza.
    */
   async sincronizar(idUsuario) {
+    if (this.sincronizando) return { sincronizado: false, motivo: "ya_sincronizando" };
     if (!idUsuario) return { sincronizado: false, motivo: "sin_usuario" };
 
+    this.sincronizando = true;
     let cola = [];
     let perfil = null;
     try {
       cola = JSON.parse(localStorage.getItem(CLAVE_COLA_PENDIENTE)) || [];
       perfil = JSON.parse(localStorage.getItem(CLAVE_PERFIL_INVITADO));
     } catch {
+      this.sincronizando = false;
       return { sincronizado: false, motivo: "datos_locales_corruptos" };
     }
     if (!Array.isArray(cola)) cola = [];
-
+ 
     if (cola.length === 0 && !perfil) {
+      this.sincronizando = false;
       return { sincronizado: true, nada_que_importar: true };
     }
 
@@ -55,18 +88,21 @@ export class SincronizacionInvitadoService {
         }
       );
       if (!respuesta.ok) {
+        this.sincronizando = false;
         return { sincronizado: false, motivo: "servidor_rechazo" };
       }
 
       const cuerpo = await respuesta.json().catch(() => ({}));
       localStorage.removeItem(CLAVE_COLA_PENDIENTE);
       localStorage.removeItem(CLAVE_PERFIL_INVITADO);
+      this.sincronizando = false;
       return {
         sincronizado: true,
         importados: cuerpo.importados ?? 0,
         omitidos: cuerpo.omitidos ?? 0
       };
     } catch {
+      this.sincronizando = false;
       return { sincronizado: false, motivo: "sin_conexion" };
     }
   }

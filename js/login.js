@@ -14,6 +14,13 @@ import { SesionService } from "./servicios/SesionService.js";
 import { LoginController } from "./controladores/LoginController.js";
 import { alternarVisibilidadPassword } from "./utils/TogglePasswordHelper.js";
 
+if (window.location.protocol === "file:") {
+  const archivo = window.location.pathname.split("/").pop() || "login.html";
+  window.location.replace(
+    "http://localhost:3000/" + archivo + window.location.search + window.location.hash
+  );
+}
+
 // --- Composición (Dependency Injection manual) ---
 // Login REAL contra PostgreSQL: buscaPorCredenciales() llama a
 // /api/auth/login, que valida la contraseña (hash con escrypt), crea la

@@ -56,6 +56,15 @@ export class Poder {
     activar() {
         const contexto = this.contexto;
 
+        if (contexto.esOnline) {
+            if (typeof contexto.activarPoderOnline === "function") {
+                contexto.activarPoderOnline(this.id);
+                return;
+            }
+            this.mostrarMensaje("LOS PODERES NO SE PUEDEN ACTIVAR AHORA");
+            return;
+        }
+
         if (this.estaBloqueado(contexto)) return;
 
         if (!contexto.esMiTurno()) {

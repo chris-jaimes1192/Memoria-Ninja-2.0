@@ -32,6 +32,13 @@ export class Carta {
     }
 
 
+    desmarcarCorrecta() {
+
+        this.correcta = false;
+
+    }
+
+
     estaActiva() {
 
         return this.activa;

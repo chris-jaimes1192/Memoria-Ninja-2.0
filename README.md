@@ -4,7 +4,8 @@ Juego de memoria temático de Naruto. **Frontend vanilla** (HTML/CSS/JS, sin
 bundler) + **backend Node.js + Express sobre PostgreSQL**.
 
 - Interfaz y comentarios en **español**.
-- Sin build system, sin linter, sin CI: cada página es un HTML + su CSS + su JS.
+- Sin build system, sin linter ni CI: cada página es un HTML + su CSS + su JS.
+  Hay un chequeo de sintaxis con `npm run check:js` desde `backend-poderes/`.
 - El backend también sirve el frontend (mismo origen), así las cookies
   httpOnly de sesión funcionan sin líos de CORS.
 
@@ -47,7 +48,8 @@ Luego abrí `http://localhost:3000/login.html`.
 
 ```bash
 cd backend-poderes
-npm test                    # 98 tests / 22 suites (incluye un e2e de auth)
+npm test                    # 166 tests / 25 suites (incluye un e2e de auth)
+npm run check:js            # sintaxis de todo el JS del repo (frontend + backend)
 ```
 
 ## Documentación

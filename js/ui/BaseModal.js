@@ -6,7 +6,7 @@ const ELEMENTOS_FOCUSABLES = [
   'input[type="radio"]:not([disabled])',
   'input[type="checkbox"]:not([disabled])',
   'select:not([disabled])',
-  '[tabindex]:not([tabindex="-1"])'
+  '[tabindex]:not([tabindex="-1"]):not([disabled])'
 ].join(', ');
 
 export class BaseModal {

@@ -42,9 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
     dosJugadoresModal: crearModalSiExiste('twoPlayersModal', () =>
       new TwoPlayersModal('twoPlayersModal', salaService)
     ),
-    multijugadorModal: crearModalSiExiste('multiplayerModal', () =>
-      new BaseModal('multiplayerModal')
-    ),
     rankingModal: crearModalSiExiste('rankingModal', () =>
       new RankingModal('rankingModal')
     ),
@@ -64,4 +61,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const menuController = new MenuController(modales);
   menuController.inicializarEventos();
+
+  const url = new URL(window.location.href);
+  const codigoInvitacion = url.searchParams.get('codigo');
+  if (codigoInvitacion) {
+    url.searchParams.delete('codigo');
+    window.history.replaceState({}, '', url);
+    modales.dosJugadoresModal?.abrirConCodigo(codigoInvitacion);
+  }
 });
