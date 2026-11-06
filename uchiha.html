@@ -19,6 +19,7 @@
 </head>
 
 <body>
+<div class="zona-fit-root"><div class="zona-fit-canvas">
 
     <!-- ================= MÚSICA ================= -->
 
@@ -147,7 +148,8 @@
  
 
     <script type="module" src="js/uchiha/Uchiha.js"></script>
-
+</div></div>
+<script>function _fitZona(){var c=document.querySelector('.zona-fit-canvas');if(!c)return;c.style.transform='translate(-50%,-50%) scale(1)';var b=c.getBoundingClientRect(),bw=Math.max(b.width,1100),bh=Math.max(b.height,760),vw=(window.visualViewport&&window.visualViewport.width)||window.innerWidth,vh=(window.visualViewport&&window.visualViewport.height)||window.innerHeight,s=Math.min((vw-8)/bw,(vh-8)/bh);c.style.transform='translate(-50%,-50%) scale('+s+')';}window.addEventListener('resize',_fitZona);window.addEventListener('orientationchange',function(){setTimeout(_fitZona,120);setTimeout(_fitZona,400)});if(window.visualViewport)window.visualViewport.addEventListener('resize',_fitZona);setTimeout(_fitZona,60);setTimeout(_fitZona,350);setTimeout(_fitZona,800);</script>
 </body>
 
 </html>
