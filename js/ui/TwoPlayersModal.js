@@ -62,7 +62,7 @@ export class TwoPlayersModal extends BaseModal {
     try {
       await clienteMultijugador.conectar();
     } catch {
-      this.mostrarMensajeVacio('El multijugador requiere el backend corriendo (npm start).');
+      this.mostrarMensajeVacio('El multijugador requiere el backend corriendo (npm start).', 'error');
       this.ocultarPaneles();
       document.getElementById('listaSalasContainer')?.removeAttribute('hidden');
       return;
@@ -90,10 +90,11 @@ export class TwoPlayersModal extends BaseModal {
     });
   }
 
-  mostrarMensajeVacio(mensaje) {
+  mostrarMensajeVacio(mensaje, tipo = 'info') {
     const vacio = document.getElementById('salasVacio');
     if (!vacio) return;
     vacio.hidden = false;
+    vacio.classList.toggle('salas-vacio-error', tipo === 'error');
     vacio.textContent = mensaje;
   }
 

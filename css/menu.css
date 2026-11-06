@@ -373,13 +373,13 @@ button,
 /* PANEL INFERIOR */
 /* ===================================== */
 .contenedor-inferior{
-    width:min(900px,95%);
-    margin:35px auto 0;
-    padding:18px;
-    border-radius:18px;
-    background:rgba(5,15,40,.85);
-    border:2px solid #0080ff;
-    box-shadow:0 0 15px rgba(0,128,255,.4);
+    width:min(1300px, calc(100% - 26px));
+    margin:28px auto 0;
+    padding:20px 18px 16px;
+    border-radius:22px;
+    background:rgba(7, 11, 20, 0.8);
+    border:3px solid #1a8dff;
+    box-shadow:0 0 0 1px rgba(135, 83, 255, 0.2), 0 0 18px rgba(0,145,255,.32);
 }
 
 /* ===================================== */
@@ -387,43 +387,57 @@ button,
 /* ===================================== */
 .barra-inferior{
     display:grid;
-    grid-template-columns: repeat(auto-fit,minmax(160px,1fr));
-    gap:15px;
+    grid-template-columns:repeat(4, minmax(0, 1fr));
+    gap:16px;
 }
 
 /* ===================================== */
 /* ITEMS */
 /* ===================================== */
 .item{
-    min-height:110px;
-    border-radius:12px;
-    background:rgba(255,255,255,.05);
-    border:1px solid rgba(255,255,255,.15);
+    min-height:140px;
+    border-radius:16px;
+    background:rgba(0,0,0,.7);
+    border:2px solid rgba(145, 85, 255, 0.9);
     display:flex;
     flex-direction:column;
     justify-content:center;
     align-items:center;
-    gap:8px;
+    gap:10px;
     text-align:center;
-    transition:.3s;
+    transition:.25s ease;
+    padding:10px 8px;
 }
 
 .item:hover{
     transform:translateY(-4px);
-    box-shadow:0 0 12px rgba(0,162,255,.4);
+    box-shadow:0 0 12px rgba(0,162,255,.25);
 }
 
 .item-icono{
-    font-size:28px;
+    font-size:34px;
+    line-height:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:54px;
 }
 
 .item h3{
-    font-size:16px;
+    font-size:clamp(1.15rem, 1.8vw, 2rem);
+    line-height:1.1;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    margin:0;
+    color:#ea9cff;
+    font-weight:700;
 }
 
 .item p{
-    font-size:12px;
-    color:#ccc;
+    font-size:clamp(0.8rem, 1vw, 1.15rem);
+    line-height:1.2;
+    margin:0;
+    color:#f0ebff;
 }
 
 /* ===================================== */
@@ -829,6 +843,50 @@ button,
     text-shadow: 0 0 8px #00a2ff;
 }
 
+.modo-volver-caja {
+    width: fit-content;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 6px;
+    border: 1px solid rgba(0, 162, 255, 0.65);
+    border-radius: 20px;
+    background: linear-gradient(145deg, rgba(0, 162, 255, 0.14), rgba(0, 85, 204, 0.04));
+    box-shadow: inset 0 0 18px rgba(0, 162, 255, 0.08), 0 0 16px rgba(0, 162, 255, 0.12);
+}
+
+#closeGameModeBtn {
+    display: block;
+    min-height: 46px;
+    padding: 10px 22px;
+    border: 2px solid #78d7ff;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #008cff, #0055cc);
+    box-shadow: 0 0 18px rgba(0, 140, 255, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    color: #fff !important;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-shadow: none;
+    transition: transform 0.2s, box-shadow 0.2s, filter 0.2s;
+}
+
+#closeGameModeBtn:hover {
+    color: #fff !important;
+    text-shadow: none;
+    transform: translateY(-2px);
+    filter: brightness(1.12);
+    box-shadow: 0 0 26px rgba(0, 162, 255, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+#closeGameModeBtn:focus-visible {
+    outline: 3px solid #d5f4ff;
+    outline-offset: 4px;
+}
+
+#closeGameModeBtn:active {
+    transform: translateY(0);
+}
+
 
 
 /* ========================================================================== */
@@ -1087,6 +1145,50 @@ button,
 .color-fucsia:hover {
     color: #ff66ff !important;
     text-shadow: 0 0 8px #d633ff;
+}
+
+.multijugador-volver-caja {
+    width: fit-content;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 6px;
+    border: 1px solid rgba(214, 51, 255, 0.65);
+    border-radius: 20px;
+    background: linear-gradient(145deg, rgba(214, 51, 255, 0.14), rgba(130, 30, 180, 0.04));
+    box-shadow: inset 0 0 18px rgba(214, 51, 255, 0.08), 0 0 16px rgba(214, 51, 255, 0.12);
+}
+
+#closeTwoPlayersBtn {
+    display: block;
+    min-height: 46px;
+    padding: 10px 22px;
+    border: 2px solid #f0a0ff;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #d633ff, #8b24c7);
+    box-shadow: 0 0 18px rgba(214, 51, 255, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    color: #fff !important;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-shadow: none;
+    transition: transform 0.2s, box-shadow 0.2s, filter 0.2s;
+}
+
+#closeTwoPlayersBtn:hover {
+    color: #fff !important;
+    text-shadow: none;
+    transform: translateY(-2px);
+    filter: brightness(1.12);
+    box-shadow: 0 0 26px rgba(214, 51, 255, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+#closeTwoPlayersBtn:focus-visible {
+    outline: 3px solid #fae0ff;
+    outline-offset: 4px;
+}
+
+#closeTwoPlayersBtn:active {
+    transform: translateY(0);
 }
 
 
@@ -1394,15 +1496,53 @@ button,
 
 /* Parte 3: estado vacío honesto del multijugador (sin salas falsas) */
 .salas-vacio {
-    text-align: center;
-    padding: 30px 10px;
-    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    width: min(100%, 560px);
+    min-height: 84px;
+    padding: 18px 24px;
+    margin: 12px auto;
     color: #9ad9bd;
-    font-size: 13px;
-    line-height: 1.6;
-    border: 1px dashed #005f37;
-    border-radius: 20px;
-    background: rgba(0, 0, 0, 0.3);
+    font-size: 14px;
+    line-height: 1.5;
+    text-align: left;
+    border: 1px solid rgba(0, 255, 153, 0.4);
+    border-radius: 16px;
+    background: linear-gradient(110deg, rgba(0, 255, 153, 0.1), rgba(0, 0, 0, 0.48) 65%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.salas-vacio[hidden] {
+    display: none;
+}
+
+.salas-vacio::before {
+    content: "!";
+    display: grid;
+    flex: 0 0 34px;
+    width: 34px;
+    height: 34px;
+    place-items: center;
+    border: 1px solid rgba(0, 255, 153, 0.55);
+    border-radius: 50%;
+    background: rgba(0, 255, 153, 0.12);
+    color: #00ff99;
+    font-size: 19px;
+    font-weight: 700;
+}
+
+.salas-vacio-error {
+    border-color: rgba(255, 183, 77, 0.55);
+    background: linear-gradient(110deg, rgba(255, 153, 0, 0.12), rgba(0, 0, 0, 0.52) 65%);
+    color: #ffe2b3;
+}
+
+.salas-vacio-error::before {
+    border-color: rgba(255, 183, 77, 0.7);
+    background: rgba(255, 153, 0, 0.14);
+    color: #ffc15c;
 }
 
 /* Botón Salir específico */
@@ -2322,7 +2462,46 @@ FECHA Y HORA (celda de la tabla)
 
 #closeConfigBtn {
     display: block;
-    margin: 40px auto;
+    min-height: 46px;
+    padding: 10px 22px;
+    border: 2px solid #ffd36a;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #ffb000, #ff7200);
+    box-shadow: 0 0 18px rgba(255, 123, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+    color: #241000 !important;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-shadow: none;
+    transition: transform 0.2s, box-shadow 0.2s, filter 0.2s;
+}
+
+.config-guardar-caja {
+    width: fit-content;
+    max-width: 100%;
+    margin: 22px auto 0;
+    padding: 6px;
+    border: 1px solid rgba(255, 183, 0, 0.65);
+    border-radius: 20px;
+    background: linear-gradient(145deg, rgba(255, 183, 0, 0.12), rgba(255, 123, 0, 0.04));
+    box-shadow: inset 0 0 18px rgba(255, 123, 0, 0.08), 0 0 16px rgba(255, 123, 0, 0.12);
+}
+
+#closeConfigBtn:hover {
+    color: #241000 !important;
+    text-shadow: none;
+    transform: translateY(-2px);
+    filter: brightness(1.12);
+    box-shadow: 0 0 26px rgba(255, 153, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+#closeConfigBtn:focus-visible {
+    outline: 3px solid #fff4cf;
+    outline-offset: 4px;
+}
+
+#closeConfigBtn:active {
+    transform: translateY(0);
 }
 
 /* Botón Cerrar sesión dentro de la configuración */
