@@ -1,4 +1,4 @@
-import { JuegoService } from "../services/JuegoService.js";
+﻿import { JuegoService } from "../services/JuegoService.js";
 import { CartaService } from "../services/CartaService.js";
 import { PuntajeService } from "../services/PuntajeService.js";
 import { TiempoService } from "../services/TiempoService.js";
@@ -8,6 +8,12 @@ import { Partida } from "../entities/partida.js";
 
 import { historialApi } from "../../infraestructura/repositorios/HttpHistorialRepositorio.js";
 import { progresoService } from "../../services/progresoService.js";
+import {
+    aplicarTemaAldea,
+    prepararImagenCarta,
+    precargarImagenes
+} from "../../core-navegacion/TemaAldea.js";
+import { conectarPausa } from "../../ui/PauseModal.js";
 
 
 export class UzumakiController {
@@ -19,7 +25,8 @@ export class UzumakiController {
         // ==========================================
 
         this.rutaBack =
-            "assets/img/back.png";
+            "assets/cartas niveles/carta uzumaki.png";
+        aplicarTemaAldea("uzumaki");
 
 
         this.rutaUzumaki =
@@ -72,6 +79,9 @@ export class UzumakiController {
                 this.cartaService,
                 this.puntajeService
             );
+
+
+        conectarPausa(this.tiempoService);
 
 
         // ==========================================
@@ -200,6 +210,12 @@ export class UzumakiController {
             this.juegoService.iniciar();
 
 
+        precargarImagenes([
+            this.rutaBack,
+            ...cartas.map((carta) => carta.getImagen())
+        ]);
+
+
         this.generarTablero(cartas);
 
 
@@ -260,6 +276,8 @@ export class UzumakiController {
 
             imagenBack.classList.add("back");
 
+            prepararImagenCarta(imagenBack);
+
 
             // =========================================
             // PARTE FRONTAL
@@ -275,6 +293,8 @@ export class UzumakiController {
 
             imagenFront.classList.add("front");
 
+            prepararImagenCarta(imagenFront);
+
 
             // =========================================
             // DATOS
@@ -289,7 +309,7 @@ export class UzumakiController {
 
 
             // =========================================
-            // AGREGAR IMÁGENES
+            // AGREGAR IM├üGENES
             // =========================================
 
             cartaDOM.appendChild(
@@ -460,7 +480,7 @@ export class UzumakiController {
             );
 
 
-            // Activar animación
+            // Activar animaci├│n
             dom1.classList.add(
                 "found"
             );
@@ -746,7 +766,7 @@ export class UzumakiController {
 
 
     // =================================================
-    // VOLVER AL MENÚ
+    // VOLVER AL MEN├Ü
     // =================================================
 
     irAlMenu() {
