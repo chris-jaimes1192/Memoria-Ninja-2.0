@@ -33,14 +33,14 @@ body {
 /* AJUSTAR TABLERO/CARTAS (Sarutobi): base carta 100x140 */
 #board {
   display: grid;
-  grid-template-columns: repeat(4, 100px); /* AJUSTAR ancho carta */
-  gap: 30px; /* AJUSTAR separación */
-  padding: 30px; /* AJUSTAR padding */
+  grid-template-columns: repeat(4, 108px); /* AJUSTAR ancho carta (base 100px) */
+  gap: 28px; /* AJUSTAR separación (base 30px) */
+  padding: 28px; /* AJUSTAR padding (base 30px) */
   background: #1b1b1b; border-radius: 10px;
 }
 .card {
-  width: 100px;  /* AJUSTAR ancho carta */
-  height: 140px; /* AJUSTAR alto carta */
+  width: 108px;  /* AJUSTAR ancho carta (base 100px) */
+  height: 151px; /* AJUSTAR alto carta (base 140px) */
   position: relative; transform-style: preserve-3d; transition: transform .45s ease;
   cursor: pointer; border-radius: 8px; perspective: 900px;
 }

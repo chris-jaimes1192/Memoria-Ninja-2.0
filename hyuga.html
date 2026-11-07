@@ -12,9 +12,9 @@
     <script src="js/sesion-guard.js"></script>
 </head>
 <body>
+    <video autoplay muted loop playsinline id="videofondo"><source src="assets/fondo.mp4" type="video/mp4"></video>
 <div class="zona-fit-root"><div class="zona-fit-canvas">
     <audio id="gameMusic" loop><source src="assets/game music.mp3" type="audio/mpeg"></audio>
-    <video autoplay muted loop playsinline id="videofondo"><source src="assets/fondo.mp4" type="video/mp4"></video>
     <div id="stats" class="stats"><span>Tiempo: <span id="timer">00:00</span></span><span>Movimientos: <span id="moves">0</span></span><span>Puntaje: <span id="score">0</span></span></div>
     <div id="boardFrame"><div id="board"></div></div>
     <div id="modal" class="hidden"><div class="panel"><h2>💀 ¡DERROTA!</h2><h2>No pudiste completar el desafío</h2><p id="finalStats"></p><div class="botones-modal"><button id="restartGame">🔄 Intentar de nuevo</button><button id="closeModal">Volver al menú</button></div></div></div>
