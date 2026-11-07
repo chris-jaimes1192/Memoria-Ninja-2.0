@@ -52,3 +52,9 @@ body::before{ content:""; position:fixed; inset:0; pointer-events:none; z-index:
   .game-shell{ padding-top:calc(4px + env(safe-area-inset-top)); padding-bottom:calc(4px + env(safe-area-inset-bottom)); }
 }
 @supports (height: 1svh){ .stats-panel{ max-height:calc(100svh - 16px); } }
+/* Activar reglas responsive de tema-aldea (#board/#boardFrame) y neutralizar inline 100px del controller */
+body[data-tema-aldea] #board,
+body[data-tema-aldea] #boardFrame #board { grid-template-columns: repeat(4, var(--carta-ancho)) !important; gap: var(--gap-cartas, 18px) !important; padding: clamp(10px, 2vmin, 22px) !important; }
+body[data-tema-aldea] #boardFrame { border-color: var(--n-frame-border, #640101) !important; }
+/* Si el nivel genera distinto nº de cartas, el controller pisa columnas: forzamos tamaño carta responsive */
+#board .card { width: var(--carta-ancho, 100px) !important; height: calc(var(--carta-ancho, 100px) * 1.4) !important; }
