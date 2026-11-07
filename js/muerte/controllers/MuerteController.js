@@ -8,6 +8,7 @@ import { TiempoService } from "../services/TiempoService.js";
 
 import { historialApi } from "../../infraestructura/repositorios/HttpHistorialRepositorio.js";
 import { progresoService } from "../../services/progresoService.js";
+import { conectarPausa } from "../../ui/PauseModal.js";
 
 
 export class MuerteController {
@@ -178,6 +179,8 @@ export class MuerteController {
 
         this.tiempoService =
             new TiempoService(60);
+
+        conectarPausa(this.tiempoService);
 
 
         // =========================
