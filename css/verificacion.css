@@ -193,3 +193,20 @@ html, body {
 @media (max-width: 860px) and (min-aspect-ratio: 1/1) {
   .panel-verificacion { --escala-v: min(calc((100vw - 12px) / 860), calc((100dvh - 12px) / 460)); --escala-v: min(calc((100svw - 12px) / 860), calc((100svh - 12px) / 460)); transform: scale(min(1, var(--escala-v))); }
 }
+/* === Verificacion: texto más legible/resaltado (sin oscurecer fondo del panel) === */
+.panel-verificacion h1, .panel-verificacion h2, .panel-verificacion h3,
+.lado-izquierdo h1, .lado-derecho h3 { color: #ffffff !important; text-shadow: 0 2px 6px rgba(0,0,0,.75), 0 1px 2px rgba(0,0,0,.9); }
+.panel-verificacion p, .lado-izquierdo p, .lado-derecho p, .texto-temporizador, .texto-reenviar {
+  color: #ffffff !important; opacity: 1 !important; font-weight: 500;
+  text-shadow: 0 1px 4px rgba(0,0,0,.8), 0 0 6px rgba(0,0,0,.35);
+}
+.texto-reenviar #btn-reenviar { color: #7dd3ff !important; font-weight: 700; text-shadow: 0 1px 3px rgba(0,0,0,.85); }
+.texto-reenviar #btn-reenviar:hover { color: #ffe066 !important; }
+.input-codigo, #input-correo {
+  color: #ffffff !important; font-weight: 600;
+  background: rgba(0,0,0,0.28) !important;
+  border: 1px solid rgba(255,255,255,0.45) !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,.5);
+}
+.input-codigo::placeholder, #input-correo::placeholder { color: rgba(255,255,255,.9) !important; opacity: 1; font-weight: 500; }
+.btn-acceso, .btn-verificar { color: #0b1020 !important; font-weight: 700; }
