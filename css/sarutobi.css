@@ -1,18 +1,18 @@
-﻿/* Sarutobi - layout/posiciones/tamaños = uchiha 83efb20; contenido (colores/cartas/respaldo) propio del clan */
+﻿/* Sarutobi - = uchiha layout/posiciones/tamaños; contenido(colores/cartas/respaldo) propio */
 html, body { height: 100%; overflow: hidden; }
 body { font-family: Arial, sans-serif; background-color: #342141; color: #f0f6ff; text-align: center; padding: 0; margin: 0; }
 .zona-fit-root { width: 100vw; height: 100vh; height: 100dvh; position: relative; overflow: hidden; z-index: 1; }
 .zona-fit-canvas { width: 660px; position: absolute; top: 50%; left: 50%; transform-origin: center center; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; }
 .zona-fit-canvas #boardFrame { margin: 10px auto; }
 #videofondo { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh; object-fit: cover; object-position: center; z-index: -1; pointer-events: none; }
-.game-header { display:flex; justify-content:space-between; align-items:center; gap:12px; max-width:980px; margin:0 auto 10px; }
-.player-info { text-align:left; }
-.turn-info { font-weight:700; color:#ffd166; }
-.stats span { margin-left:12px; color:#bcd3ff; }
+.game-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; max-width: 980px; margin: 0 auto 10px; }
+.player-info { text-align: left; }
+.turn-info { font-weight: 700; color: #ffd166; }
+.stats span { margin-left: 12px; color: #bcd3ff; }
 #boardFrame { display: flex; justify-content: center; margin: 24px auto; padding: 18px; width: max-content; background: linear-gradient(180deg,#3b2f20,#2d2418); border-radius: 14px; border: 8px solid #b8843b; box-shadow: 0 18px 60px rgba(0,0,0,0.6); }
-/* AJUSTAR TABLERO/CARTAS (contenido=respaldo propio; tamaño/posición=uchiha) */
-#board { display: grid; grid-template-columns: repeat(4, 100px); gap: 30px; padding: 30px; background: #1b1b1b; border-radius: 10px; }
-.card { width: 100px; height: 140px; position: relative; transform-style: preserve-3d; transition: transform .45s ease; cursor: pointer; border-radius: 8px; perspective: 900px; }
+/* AJUSTAR TABLERO/CARTAS (layout=tamaño uchiha; contenido=respaldo propio) */
+#board { display: grid; grid-template-columns: repeat(4, 108px); gap: 28px; padding: 28px; background: #1b1b1b; border-radius: 10px; }
+.card { width: 108px; height: 151px; position: relative; transform-style: preserve-3d; transition: transform .45s ease; cursor: pointer; border-radius: 8px; perspective: 900px; }
 .card.flipped { transform: rotateY(180deg); }
 .card img { width: 100%; height: 100%; position: absolute; left: 0; top: 0; border-radius: 8px; object-fit: fill; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
 .back { transform: rotateY(0deg); }
@@ -31,8 +31,8 @@ body { font-family: Arial, sans-serif; background-color: #342141; color: #f0f6ff
 @keyframes fuego-3d-volumen { 0%{transform:rotateX(65deg) translateZ(45px) scaleY(.8);opacity:.5} 50%{transform:rotateX(70deg) translateZ(65px) scaleY(1.4);opacity:1} 100%{transform:rotateX(65deg) translateZ(45px) scaleY(.8);opacity:.5} }
 @keyframes carta-fade-3d { 0%{opacity:1;transform:scale(1)} 60%{opacity:.5;transform:scale(.9)} 100%{opacity:0;transform:scale(.6)} }
 @keyframes desaparecerCarta { 0%{opacity:1;transform:rotateY(180deg) scale(1)} 40%{opacity:1;transform:rotateY(180deg) scale(1.08)} 100%{opacity:0;transform:rotateY(180deg) scale(.4)} }
-.boton{ display:inline-block; padding:12px 25px; background-color:#7300f7; color:white; text-decoration:none; border-radius:10px; font-size:18px; font-weight:bold; transition:.3s; }
-.boton:hover{ background-color:#7300f7; transform:scale(1.05); }
+.boton{ display:inline-block; padding:12px 25px; background: linear-gradient(135deg,#3b2f20,#b8843b); color:white; text-decoration:none; border-radius:10px; border:2px solid #d4a45a; font-size:18px; font-weight:bold; transition:.3s; box-shadow:0 0 10px rgba(184,132,59,0.35); }
+.boton:hover{ background: linear-gradient(135deg,#b8843b,#e0c070); color:#fff; transform:scale(1.05); box-shadow:0 0 15px #e0c070, 0 0 30px rgba(184,132,59,0.5); }
 #victoryModal { position: fixed; inset: 0; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle at center, rgba(238, 172, 76, 0.20), rgba(35, 18, 7, 0.92)); z-index: 15000; }
 #victoryModal.hidden { display: none !important; }
 .victory-panel { width: 420px; max-width: 90%; padding: 30px; text-align: center; background: linear-gradient(145deg,#2b1609,#704019,#351b0b); border: 3px solid #e6b85c; border-radius: 18px; box-shadow: 0 0 15px rgba(230,184,92,.85), 0 0 40px rgba(198,108,32,.6), inset 0 0 25px rgba(255,210,120,.10); animation: victoriaArenaAparecer .5s ease; }
