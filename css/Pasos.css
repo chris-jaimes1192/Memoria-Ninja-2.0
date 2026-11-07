@@ -55,4 +55,18 @@
     height: 2px;
     background: rgba(255, 255, 255, 0.25);
     margin-bottom: 16px;
+}/* Recuperar: compacto en mobile V/H sin scroll */
+.indicador-pasos { gap: clamp(2px, 0.8vw, 6px); margin: clamp(2px, 0.8vh, 6px) 0 clamp(6px, 1.4vh, 18px); flex-wrap: nowrap; }
+.paso-texto { font-size: clamp(9px, 1.3vh, 10px); }
+.paso-numero { width: clamp(22px, 3.2vh, 26px); height: clamp(22px, 3.2vh, 26px); font-size: clamp(11px, 1.6vh, 13px); }
+.paso-linea { width: clamp(10px, 3vw, 24px); margin-bottom: clamp(10px, 2vh, 16px); }
+#paso1 p, #paso2 p, #paso3 p { margin: clamp(2px, 0.6vh, 8px) 0; }
+@media (max-height: 700px) {
+  .indicador-pasos { margin: 2px 0 6px; }
+  .paso-linea { margin-bottom: 10px; }
+}
+@media (max-height: 620px) and (orientation: landscape) {
+  .paso-texto { display: none; }
+  .paso-linea { margin-bottom: 0; }
+  .indicador-pasos { margin: 0 0 4px; }
 }
