@@ -3,28 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Juego — Memorice Duel</title>
+    <title>uzumaki - Memorice Duel</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/uzumaki.css">
+    <link rel="stylesheet" href="css/nivel-base.css">
     <link rel="stylesheet" href="css/tema-aldea.css">
     <script src="js/sesion-guard.js"></script>
 </head>
 <body>
-    <video autoplay muted loop playsinline id="videofondo"><source src="assets/fondo.mp4" type="video/mp4"></video>
-<div class="zona-fit-root"><div class="zona-fit-canvas">
     <audio id="gameMusic" loop><source src="assets/game music.mp3" type="audio/mpeg"></audio>
-    <div id="stats" class="stats"><span>Tiempo: <span id="timer">00:00</span></span><span>Movimientos: <span id="moves">0</span></span><span>Puntaje: <span id="score">0</span></span></div>
-    <div id="boardFrame"><div id="board"></div></div>
-    <div id="modal" class="hidden"><div class="panel"><h2>💀 ¡DERROTA!</h2><h2>No pudiste completar el desafío</h2><p id="finalStats"></p><div class="botones-modal"><button id="restartGame">🔄 Intentar de nuevo</button><button id="closeModal">Volver al menú</button></div></div></div>
-    <div id="victoryModal" class="hidden"><div class="victory-panel"><div class="victory-icon">🏆</div><h2>¡VICTORIA!</h2><div class="victory-line"></div><p class="victory-message">¡Has completado el desafío del clan Uzumaki!</p><p class="victory-message">Tu determinación arde como el chakra de un verdadero ninja de Konoha.</p><p id="victoryStats" class="victory-stats"></p><div class="victory-buttons"><button id="victoryRestart">🔄 Jugar de nuevo</button><button id="victoryClose">Volver al menú</button></div></div></div>
-    <a href="menu.html" class="boton">volver</a>
-    <script type="module" src="js/uzumaki/Uzumaki.js"></script>
-</div></div>
-<script>
-function _fitZona(){var c=document.querySelector('.zona-fit-canvas');if(!c)return;c.style.transform='translate(-50%,-50%) scale(1)';var bw=Math.max(c.offsetWidth,660),bh=Math.max(c.scrollHeight,c.offsetHeight,720),vw=(window.visualViewport&&window.visualViewport.width)||window.innerWidth,vh=(window.visualViewport&&window.visualViewport.height)||window.innerHeight,s=Math.min(vw/bw,vh/bh);c.style.transform='translate(-50%,-50%) scale('+s+')';}
-window.addEventListener('resize',_fitZona);window.addEventListener('orientationchange',function(){setTimeout(_fitZona,80);setTimeout(_fitZona,300);setTimeout(_fitZona,700)});if(window.visualViewport)window.visualViewport.addEventListener('resize',_fitZona);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(_fitZona);setTimeout(_fitZona,40);setTimeout(_fitZona,200);setTimeout(_fitZona,500);setTimeout(_fitZona,1000);
-</script>
+    <video autoplay muted loop playsinline id="videofondo"><source src="assets/fondo.mp4" type="video/mp4"></video>
+    <div class="game-shell">
+        <div id="stats" class="stats">
+            <span>Tiempo: <span id="timer">00:00</span></span>
+            <span>Movimientos: <span id="moves">0</span></span>
+            <span>Puntaje: <span id="score">0</span></span>
+        </div>
+        <div id="boardFrame"><div id="board"></div></div>
+        <a href="menu.html" class="boton">volver</a>
+    </div>
+    <div id="modal" class="hidden">
+        <div class="panel">
+            <h2>💀 ¡DERROTA!</h2>
+            <h2 id="defeatMsg">No pudiste completar el desafío</h2>
+            <p id="finalStats"></p>
+            <div class="botones-modal">
+                <button id="restartGame">🔄 Intentar de nuevo</button>
+                <button id="closeModal">Volver al menú</button>
+            </div>
+        </div>
+    </div>
+    <div id="victoryModal" class="hidden">
+        <div class="victory-panel">
+            <div class="victory-icon">🏆</div>
+            <h2>¡VICTORIA!</h2>
+            <div class="victory-line"></div>
+            <p id="victoryMsg1" class="victory-message"></p>
+            <p id="victoryMsg2" class="victory-message"></p>
+            <p id="victoryStats" class="victory-stats"></p>
+            <div class="victory-buttons">
+                <button id="victoryRestart">🔄 Jugar de nuevo</button>
+                <button id="victoryClose">Volver al menú</button>
+            </div>
+        </div>
+    </div>
+    <script type="module">import { ControladorNivel } from "./js/niveles/ControladorNivel.js"; document.addEventListener("DOMContentLoaded",()=>new ControladorNivel("uzumaki"));</script>
 </body>
 </html>
