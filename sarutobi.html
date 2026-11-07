@@ -12,6 +12,7 @@
     <script src="js/sesion-guard.js"></script>
 </head>
 <body>
+<div class="zona-fit-root"><div class="zona-fit-canvas">
     <audio id="gameMusic" loop>
         <source src="assets/game music.mp3" type="audio/mpeg">
     </audio>
@@ -20,18 +21,14 @@
         <source src="assets/fondo.mp4" type="video/mp4">
     </video>
 
-    <div class="game-shell">
-        <div id="stats" class="stats">
-            <span>Tiempo: <span id="timer">00:00</span></span>
-            <span>Movimientos: <span id="moves">0</span></span>
-            <span>Puntaje: <span id="score">0</span></span>
-        </div>
+    <div id="stats" class="stats">
+        <span>Tiempo: <span id="timer">00:00</span></span>
+        <span>Movimientos: <span id="moves">0</span></span>
+        <span>Puntaje: <span id="score">0</span></span>
+    </div>
 
-        <div id="boardFrame">
-            <div id="board"></div>
-        </div>
-
-        <a href="menu.html" class="boton">volver</a>
+    <div id="boardFrame">
+        <div id="board"></div>
     </div>
 
     <div id="modal" class="hidden">
@@ -61,6 +58,13 @@
         </div>
     </div>
 
+    <a href="menu.html" class="boton">volver</a>
+
     <script type="module" src="js/sarutobi/Sarutobi.js"></script>
+</div></div>
+<script>
+function _fitZona(){var c=document.querySelector('.zona-fit-canvas');if(!c)return;c.style.transform='translate(-50%,-50%) scale(1)';var bw=Math.max(c.offsetWidth,660),bh=Math.max(c.scrollHeight,c.offsetHeight,720),vw=(window.visualViewport&&window.visualViewport.width)||window.innerWidth,vh=(window.visualViewport&&window.visualViewport.height)||window.innerHeight,s=Math.min(vw/bw,vh/bh);c.style.transform='translate(-50%,-50%) scale('+s+')';}
+window.addEventListener('resize',_fitZona);window.addEventListener('orientationchange',function(){setTimeout(_fitZona,80);setTimeout(_fitZona,300);setTimeout(_fitZona,700)});if(window.visualViewport)window.visualViewport.addEventListener('resize',_fitZona);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(_fitZona);setTimeout(_fitZona,40);setTimeout(_fitZona,200);setTimeout(_fitZona,500);setTimeout(_fitZona,1000);
+</script>
 </body>
 </html>

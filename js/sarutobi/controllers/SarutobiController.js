@@ -1,4 +1,4 @@
-import { JuegoService } from "../services/JuegoService.js";
+﻿import { JuegoService } from "../services/JuegoService.js";
 import { CartaService } from "../services/CartaService.js";
 import { PuntajeService } from "../services/PuntajeService.js";
 import { TiempoService } from "../services/TiempoService.js";
@@ -8,6 +8,12 @@ import { Partida } from "../entities/partida.js";
 
 import { historialApi } from "../../infraestructura/repositorios/HttpHistorialRepositorio.js";
 import { progresoService } from "../../services/progresoService.js";
+import {
+    aplicarTemaAldea,
+    prepararImagenCarta,
+    precargarImagenes
+} from "../../core-navegacion/TemaAldea.js";
+import { conectarPausa } from "../../ui/PauseModal.js";
 
 
 export class SarutobiController {
@@ -19,7 +25,9 @@ export class SarutobiController {
         // ==========================================
 
         this.rutaBack =
-            "assets/img/back.png";
+            "assets/cartas niveles/carta sarutobi.png";
+
+        aplicarTemaAldea("sarutobi");
 
 
         this.rutaSarutobi =
@@ -72,6 +80,9 @@ export class SarutobiController {
                 this.cartaService,
                 this.puntajeService
             );
+
+
+        conectarPausa(this.tiempoService);
 
 
         // ==========================================
@@ -236,6 +247,11 @@ export class SarutobiController {
 
         this.cartasDOM = [];
 
+        precargarImagenes([
+            this.rutaBack,
+            ...cartas.map((carta) => carta.getImagen())
+        ]);
+
 
         cartas.forEach((carta, indice) => {
 
@@ -257,6 +273,8 @@ export class SarutobiController {
             imagenBack.src =
                 this.rutaBack;
 
+            prepararImagenCarta(imagenBack);
+
 
             imagenBack.classList.add("back");
 
@@ -271,6 +289,8 @@ export class SarutobiController {
 
             imagenFront.src =
                 carta.getImagen();
+
+            prepararImagenCarta(imagenFront);
 
 
             imagenFront.classList.add("front");
@@ -289,7 +309,7 @@ export class SarutobiController {
 
 
             // =========================================
-            // AGREGAR IMÁGENES
+            // AGREGAR IM├üGENES
             // =========================================
 
             cartaDOM.appendChild(
@@ -460,7 +480,7 @@ export class SarutobiController {
             );
 
 
-            // Activar animación
+            // Activar animaci├│n
             dom1.classList.add(
                 "found"
             );
@@ -746,7 +766,7 @@ export class SarutobiController {
 
 
     // =================================================
-    // VOLVER AL MENÚ
+    // VOLVER AL MEN├Ü
     // =================================================
 
     irAlMenu() {
