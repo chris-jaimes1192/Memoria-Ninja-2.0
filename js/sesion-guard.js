@@ -30,7 +30,7 @@
 
   var CLAVE_SESION = "usuarioActivo";
   var CLAVE_ESTADO = "estadoSesion";
-  var DURACION_AVISO_MS = 5000;
+  var DURACION_AVISO_MS = 10000;
   var temporizadorAviso = null;
 
   function leerEstado() {
@@ -41,39 +41,31 @@
     }
   }
 
-  function ocultarAviso() {
-    var aviso = document.getElementById("avisoInvitado");
-    if (!aviso) return;
-    aviso.hidden = true;
-    aviso.classList.remove("aviso-ocultando");
+  function cancelarTemporizadorAviso() {
+    if (temporizadorAviso !== null) {
+      window.clearTimeout(temporizadorAviso);
+      temporizadorAviso = null;
+    }
   }
 
-  function programarOcultadoAviso() {
-    if (temporizadorAviso) clearTimeout(temporizadorAviso);
-    var aviso = document.getElementById("avisoInvitado");
-    if (!aviso) return;
-
-    aviso.classList.remove("aviso-ocultando");
-    temporizadorAviso = setTimeout(function () {
-      aviso.classList.add("aviso-ocultando");
-      aviso.addEventListener("animationend", ocultarAviso, { once: true });
+  function programarOcultarAviso(aviso) {
+    cancelarTemporizadorAviso();
+    temporizadorAviso = window.setTimeout(function () {
+      aviso.hidden = true;
+      temporizadorAviso = null;
     }, DURACION_AVISO_MS);
   }
 
   function actualizarAviso() {
     var aviso = document.getElementById("avisoInvitado");
     if (!aviso) return;
-
     if (leerEstado() === "activa") {
-      if (temporizadorAviso) clearTimeout(temporizadorAviso);
-      temporizadorAviso = null;
       aviso.hidden = true;
-      aviso.classList.remove("aviso-ocultando");
+      cancelarTemporizadorAviso();
       return;
     }
-
     aviso.hidden = false;
-    programarOcultadoAviso();
+    programarOcultarAviso(aviso);
   }
 
   function marcar(estado) {
@@ -133,11 +125,11 @@
         return;
       }
       aviso.hidden = false;
+      programarOcultarAviso(aviso);
       aviso.classList.remove("aviso-pulso");
       void aviso.offsetWidth;
       aviso.classList.add("aviso-pulso");
       aviso.scrollIntoView({ behavior: "smooth", block: "nearest" });
-      programarOcultadoAviso();
     },
     /** Logout REAL: revoca la cookie en el servidor y limpia la copia local. */
     cerrarSesion: async function () {

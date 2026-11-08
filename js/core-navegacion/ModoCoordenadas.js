@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ModoCoordenadas
  *
  * >>> SRP <<< Es una herramienta de DESARROLLO (tocar "C" para ver
@@ -23,7 +23,7 @@ export class ModoCoordenadas {
 
             this.activo = !this.activo;
             console.clear();
-            console.log(this.activo ? "🟢 Modo coordenadas ACTIVADO" : "🔴 Modo coordenadas DESACTIVADO");
+            console.log(this.activo ? "🗺️ Modo coordenadas ACTIVADO" : "✖️ Modo coordenadas DESACTIVADO");
         });
     }
 

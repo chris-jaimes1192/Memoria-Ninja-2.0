@@ -1,4 +1,4 @@
-import { JuegoService } from "../services/JuegoService.js";
+﻿import { JuegoService } from "../services/JuegoService.js";
 import { CartaService } from "../services/CartaService.js";
 import { PuntajeService } from "../services/PuntajeService.js";
 import { TiempoService } from "../services/TiempoService.js";
@@ -309,7 +309,7 @@ export class UzumakiController {
 
 
             // =========================================
-            // AGREGAR IMÁGENES
+            // AGREGAR IM├üGENES
             // =========================================
 
             cartaDOM.appendChild(
@@ -480,7 +480,7 @@ export class UzumakiController {
             );
 
 
-            // Activar animación
+            // Activar animaci├│n
             dom1.classList.add(
                 "found"
             );
@@ -766,7 +766,7 @@ export class UzumakiController {
 
 
     // =================================================
-    // VOLVER AL MENÚ
+    // VOLVER AL MEN├Ü
     // =================================================
 
     irAlMenu() {

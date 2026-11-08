@@ -1,6 +1,7 @@
 const ELEMENTOS_FOCUSABLES = [
   'a[href]',
   'button:not([disabled])',
+  'summary',
   'textarea:not([disabled])',
   'input[type="text"]:not([disabled])',
   'input[type="radio"]:not([disabled])',

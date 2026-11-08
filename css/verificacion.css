@@ -150,4 +150,63 @@ body {
     border-radius: 8px;
     color: white;
     font-size: 15px;
+}/* =========================================
+   VERIFICACION MOBILE V/H SIN SCROLL
+   PC: igual (2 columnas). Mobile: opcion A = panel escalado identico al PC.
+   ========================================= */
+html, body {
+    height: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    min-height: 100svh;
+    overflow: hidden;
+    padding: max(6px, env(safe-area-inset-top)) max(6px, env(safe-area-inset-right))
+             max(6px, env(safe-area-inset-bottom)) max(6px, env(safe-area-inset-left));
+    box-sizing: border-box;
 }
+#videofondo { width: 100vw; height: 100dvh; height: 100svh; }
+/* Escenario de centrado + escala (JS-free) */
+.auth-verify-viewport { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; pointer-events: none; }
+.auth-verify-viewport .panel-verificacion { pointer-events: auto; }
+
+/* PC intacto */
+@media (min-width: 861px) and (min-height: 520px) {
+  .auth-verify-viewport { position: static; inset: auto; display: contents; }
+}
+
+/* Fit-to-viewport: conserva layout 2 columnas (como PC) sin scroll */
+@media (max-width: 860px), (max-height: 519px) {
+  body { align-items: center; justify-content: center; }
+  .panel-verificacion {
+    flex: 0 0 auto;
+    width: 860px;
+    max-width: none;
+    min-height: 400px;
+    transform-origin: center center;
+    /* escala para que quepa completo en V u H, sin recortar */
+    --escala-v: min(calc((100vw - 16px) / 860), calc((100dvh - 16px) / 400));
+    --escala-v: min(calc((100svw - 16px) / 860), calc((100svh - 16px) / 400));
+    transform: scale(min(1, var(--escala-v)));
+  }
+}
+/* Ajuste fino: si el contenido crece un poco (paso 2), permitir leve holgura */
+@media (max-width: 860px) and (min-aspect-ratio: 1/1) {
+  .panel-verificacion { --escala-v: min(calc((100vw - 12px) / 860), calc((100dvh - 12px) / 460)); --escala-v: min(calc((100svw - 12px) / 860), calc((100svh - 12px) / 460)); transform: scale(min(1, var(--escala-v))); }
+}
+/* === Verificacion: texto más legible/resaltado (sin oscurecer fondo del panel) === */
+.panel-verificacion h1, .panel-verificacion h2, .panel-verificacion h3,
+.lado-izquierdo h1, .lado-derecho h3 { color: #ffffff !important; text-shadow: 0 2px 6px rgba(0,0,0,.75), 0 1px 2px rgba(0,0,0,.9); }
+.panel-verificacion p, .lado-izquierdo p, .lado-derecho p, .texto-temporizador, .texto-reenviar {
+  color: #ffffff !important; opacity: 1 !important; font-weight: 500;
+  text-shadow: 0 1px 4px rgba(0,0,0,.8), 0 0 6px rgba(0,0,0,.35);
+}
+.texto-reenviar #btn-reenviar { color: #7dd3ff !important; font-weight: 700; text-shadow: 0 1px 3px rgba(0,0,0,.85); }
+.texto-reenviar #btn-reenviar:hover { color: #ffe066 !important; }
+.input-codigo, #input-correo {
+  color: #ffffff !important; font-weight: 600;
+  background: rgba(0,0,0,0.28) !important;
+  border: 1px solid rgba(255,255,255,0.45) !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,.5);
+}
+.input-codigo::placeholder, #input-correo::placeholder { color: rgba(255,255,255,.9) !important; opacity: 1; font-weight: 500; }
+.btn-acceso, .btn-verificar { color: #0b1020 !important; font-weight: 700; }

@@ -1,4 +1,4 @@
-import {
+﻿import {
     aplicarTemaAldea,
     obtenerTemaAldea,
     obtenerTemaSeleccionado,
@@ -6,7 +6,7 @@ import {
     precargarImagenes
 } from "./core-navegacion/TemaAldea.js";
 
-const RUTA_BACK = "assets/img/back.png";
+const RUTA_BACK_FALLBACK = "assets/img/back.png";
 const IDS = ["1","2","3","4","5","6","7","8"];
 const TOTAL_PAREJAS = 8;
 const PUNTOS_POR_PAREJA = 10;
@@ -19,10 +19,10 @@ let puntajeActual = 0;
 let onResultado = null;
 let onPartidaCompletada = null;
 let onEsMiTurno = null;
-let temaActual = obtenerTemaAldea("arena");
 
 let modoOnline = false;
 let alVoltearOnline = null;
+let temaActual = obtenerTemaAldea("arena");
 
 function obtenerCartasOcultas() {
     const tablero = document.getElementById("board");
@@ -32,7 +32,8 @@ function obtenerCartasOcultas() {
     return [...tablero.querySelectorAll(".card")]
         .filter(carta =>
             !carta.classList.contains("volteada") &&
-            !carta.classList.contains("emparejada")
+            !carta.classList.contains("emparejada") &&
+            !carta.classList.contains("matched")
         );
 }
 
@@ -47,13 +48,32 @@ function cartaPorIndice(index) {
     return tablero.querySelector(`.card[data-index="${Number(index)}"]`);
 }
 
+function aldeaDeCarta(carta, aldea) {
+    return aldea || (carta && carta.dataset && carta.dataset.aldea) || "arena";
+}
+
+function setImagenesCarta(carta, valor, aldea) {
+    if (!carta || !valor) return;
+    const aldeaFinal = aldeaDeCarta(carta, aldea);
+    carta.dataset.valor = String(valor);
+    carta.dataset.aldea = aldeaFinal;
+    const back = carta.querySelector("img.back, img.img-card.back");
+    const front = carta.querySelector("img.front, img.img-card.front");
+    const reverso = BoardManager.obtenerReverso();
+    const ruta = BoardManager.obtenerRutaCarta(valor, aldeaFinal);
+    if (back) back.src = reverso;
+    if (front) front.src = ruta;
+    // compat: cartas con una sola imagen
+    if (!back && !front) {
+        const img = carta.querySelector("img");
+        if (img) img.src = carta.classList.contains("volteada") ? ruta : reverso;
+    }
+}
+
 function mostrarFrente(carta, valor, aldea) {
     if (!carta || !valor) return;
-    carta.dataset.valor = valor;
-    carta.dataset.aldea = aldea || ALDEA;
-    const img = carta.querySelector("img");
-    if (img) img.src = `${RUTA_ALDEAS}${aldea || ALDEA}/${valor}.png`;
-    carta.classList.add("volteada");
+    setImagenesCarta(carta, valor, aldea);
+    carta.classList.add("volteada", "flip");
 }
 
 export const BoardManager = {
@@ -116,9 +136,8 @@ export const BoardManager = {
             for (const index of [index1, index2]) {
                 const carta = cartaPorIndice(index);
                 if (!carta || carta.classList.contains("emparejada")) continue;
-                carta.classList.remove("volteada");
-                const img = carta.querySelector("img");
-                if (img) img.src = RUTA_BACK;
+                carta.classList.remove("volteada", "flip");
+                setImagenesCarta(carta, carta.dataset.valor, carta.dataset.aldea);
             }
         }, espera);
     },
@@ -126,16 +145,16 @@ export const BoardManager = {
     revelarTemporal(index, valor, aldea, duracion = 3000) {
         const carta = cartaPorIndice(index);
         if (!carta || !valor || carta.classList.contains("emparejada")) return;
-        carta.dataset.valor = valor;
-        carta.dataset.aldea = aldea || ALDEA;
-        const img = carta.querySelector("img");
-        if (img) img.src = `${RUTA_ALDEAS}${aldea || ALDEA}/${valor}.png`;
+        mostrarFrente(carta, valor, aldea);
         carta.classList.add("byakugan-revelada");
         setTimeout(() => {
-            if (carta.classList.contains("volteada") || carta.classList.contains("emparejada")) return;
-            const imagen = carta.querySelector("img");
-            if (imagen) imagen.src = RUTA_BACK;
+            if (carta.classList.contains("emparejada")) return;
+            if (!carta.classList.contains("volteada") || carta.classList.contains("byakugan-revelada")) {
+                // si solo estaba revelada temporalmente, ocultar
+                if (!carta.dataset._volteadaPorJuego) carta.classList.remove("volteada", "flip");
+            }
             carta.classList.remove("byakugan-revelada");
+            setImagenesCarta(carta, carta.dataset.valor, carta.dataset.aldea);
         }, duracion);
     },
 
@@ -166,14 +185,7 @@ export const BoardManager = {
         for (const datos of cartas || []) {
             const carta = cartaPorIndice(datos.index);
             if (!carta || !datos.valor) continue;
-            carta.dataset.valor = datos.valor;
-            carta.dataset.aldea = datos.aldea || ALDEA;
-            const img = carta.querySelector("img");
-            if (!img) continue;
-            const visible = carta.classList.contains("volteada") || carta.classList.contains("byakugan-revelada");
-            img.src = visible
-                ? `${RUTA_ALDEAS}${datos.aldea || ALDEA}/${datos.valor}.png`
-                : RUTA_BACK;
+            setImagenesCarta(carta, datos.valor, datos.aldea || carta.dataset.aldea);
         }
     },
 
@@ -194,10 +206,15 @@ export const BoardManager = {
         modoOnline = false;
         alVoltearOnline = null;
 
-        temaActual = obtenerTemaSeleccionado() || obtenerTemaAldea("arena");
-        aplicarTemaAldea(localStorage.getItem("nivelActual"));
-  
+        try {
+            temaActual = obtenerTemaSeleccionado() || obtenerTemaAldea("arena");
+            aplicarTemaAldea(localStorage.getItem("nivelActual"));
+        } catch (e) {
+            temaActual = obtenerTemaAldea("arena");
+        }
+
         const tablero = document.getElementById('board');
+        if (!tablero) return;
         tablero.innerHTML = '';
 
         cartasVolteadas = [];
@@ -211,41 +228,43 @@ export const BoardManager = {
             ? mazoExterno
             : [...IDS, ...IDS].sort(() => Math.random() - 0.5);
 
-
-        precargarImagenes([
-            ...IDS.map(valor => this.obtenerRutaCarta(valor)),
-            this.obtenerReverso()
-        ]);
+        try {
+            precargarImagenes([
+                ...IDS.map(valor => this.obtenerRutaCarta(valor, "arena")),
+                this.obtenerReverso()
+            ]);
+        } catch (e) {}
 
         valores.forEach((entrada, idx) => {
             const valor = usaMazo && typeof entrada === "object" ? entrada.valor : entrada;
-            const aldea = usaMazo && typeof entrada === "object" ? entrada.aldea : ALDEA;
+            const aldea = usaMazo && typeof entrada === "object" ? (entrada.aldea || "arena") : "arena";
 
-            
             const carta = document.createElement('div');
             carta.className = 'card';
             carta.dataset.index = idx;
-            if (valor) {
-                carta.dataset.valor = valor;
-                carta.dataset.aldea = aldea || ALDEA;
+            if (valor != null) {
+                carta.dataset.valor = String(valor);
+                carta.dataset.aldea = aldea || "arena";
             }
 
             const reverso = document.createElement('img');
             reverso.src = this.obtenerReverso();
             reverso.className = 'img-card back';
-            prepararImagenCarta(reverso);
+            reverso.alt = "";
+            try { prepararImagenCarta(reverso); } catch (e) {}
 
             const frente = document.createElement('img');
-            frente.src = this.obtenerRutaCarta(valor);
+            frente.src = valor != null ? this.obtenerRutaCarta(valor, aldea) : this.obtenerReverso();
             frente.className = 'img-card front';
-            prepararImagenCarta(frente);
+            frente.alt = "";
+            try { prepararImagenCarta(frente); } catch (e) {}
 
             carta.appendChild(reverso);
             carta.appendChild(frente);
             carta.addEventListener('click', () => this.voltearCarta(carta));
             tablero.appendChild(carta);
 
-            if (usaMazo && entrada?.emparejada && valor) {
+            if (usaMazo && entrada && entrada.emparejada && valor != null) {
                 mostrarFrente(carta, valor, aldea);
                 carta.classList.add("emparejada");
             }
@@ -254,8 +273,8 @@ export const BoardManager = {
 
     voltearCarta(carta) {
         if (onEsMiTurno && !onEsMiTurno()) return;
-        if (carta.classList.contains("carta-sellada")) return;
-        if (carta.classList.contains("volteada") || carta.classList.contains("emparejada")) return;
+        if (!carta || carta.classList.contains("carta-sellada")) return;
+        if (carta.classList.contains("volteada") || carta.classList.contains("emparejada") || carta.classList.contains("matched")) return;
 
         if (modoOnline) {
             if (!alVoltearOnline) return;
@@ -265,6 +284,8 @@ export const BoardManager = {
 
         if (cartasVolteadas.length === 2) return;
 
+        carta.dataset._volteadaPorJuego = "1";
+        setImagenesCarta(carta, carta.dataset.valor, carta.dataset.aldea);
         carta.classList.add('volteada', 'flip');
 
         cartasVolteadas.push(carta);
@@ -298,19 +319,35 @@ export const BoardManager = {
             if (onResultado) onResultado(false, puntajeActual);
 
             setTimeout(() => {
-                c1.classList.remove('volteada', 'flip');
-                c2.classList.remove('volteada', 'flip');
-                
+                try {
+                    c1.classList.remove('volteada', 'flip');
+                    c2.classList.remove('volteada', 'flip');
+                    delete c1.dataset._volteadaPorJuego;
+                    delete c2.dataset._volteadaPorJuego;
+                    setImagenesCarta(c1, c1.dataset.valor, c1.dataset.aldea);
+                    setImagenesCarta(c2, c2.dataset.valor, c2.dataset.aldea);
+                } catch (e) {}
                 cartasVolteadas = [];
             }, 800);
         }
-        },
+    },
 
-    obtenerRutaCarta(valor) {
-        return `${temaActual.cartas}${valor}.png`;
+    obtenerRutaCarta(valor, aldea) {
+        if (!valor) return this.obtenerReverso();
+        const aldeaFinal = aldea || "arena";
+        try {
+            if (temaActual && typeof temaActual.cartas === "string" && aldeaFinal === "arena") {
+                return `${temaActual.cartas}${valor}.png`;
+            }
+        } catch (e) {}
+        return `assets/img/cards/aldeas/${aldeaFinal}/${valor}.png`;
     },
 
     obtenerReverso() {
-        return temaActual.reverso || RUTA_BACK;
+        try {
+            return (temaActual && temaActual.reverso) ? temaActual.reverso : RUTA_BACK_FALLBACK;
+        } catch (e) {
+            return RUTA_BACK_FALLBACK;
+        }
     }
 };

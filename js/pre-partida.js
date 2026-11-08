@@ -73,3 +73,25 @@ document.getElementById("btn-cambiar-nivel")?.addEventListener("click", () => {
 });
 
 prePartidaController.iniciar();
+
+// Vista igual que PC en móvil H/V: lienzo fijo escalado para que quepa TODO sin scroll.
+function ajustarPrePartida() {
+    const cont = document.querySelector(".game-container");
+    if (!cont) return;
+    cont.style.transform = "translate(-50%, -50%) scale(1)";
+    const baseW = 1100;
+    const baseH = 720;
+    const margen = 8;
+    const vw = Math.max((window.visualViewport && window.visualViewport.width) || window.innerWidth, 280);
+    const vh = Math.max((window.visualViewport && window.visualViewport.height) || window.innerHeight, 280);
+    const escala = Math.min((vw - margen) / baseW, (vh - margen) / baseH);
+    cont.style.transform = `translate(-50%, -50%) scale(${escala})`;
+}
+window.addEventListener("resize", ajustarPrePartida);
+window.addEventListener("orientationchange", () => setTimeout(ajustarPrePartida, 120));
+window.addEventListener("orientationchange", () => setTimeout(ajustarPrePartida, 400));
+if (window.visualViewport) window.visualViewport.addEventListener("resize", ajustarPrePartida);
+document.fonts && document.fonts.ready && document.fonts.ready.then(ajustarPrePartida);
+setTimeout(ajustarPrePartida, 60);
+setTimeout(ajustarPrePartida, 300);
+setTimeout(ajustarPrePartida, 700);

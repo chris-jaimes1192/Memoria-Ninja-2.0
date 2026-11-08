@@ -9,12 +9,6 @@ import { Partida } from "../entities/Partida.js";
 
 import { historialApi } from "../../infraestructura/repositorios/HttpHistorialRepositorio.js";
 import { progresoService } from "../../services/progresoService.js";
-import {
-    aplicarTemaAldea,
-    prepararImagenCarta,
-    precargarImagenes
-} from "../../core-navegacion/TemaAldea.js";
-import { conectarPausa } from "../../ui/PauseModal.js";
 
 
 export class ArenaController {
@@ -25,9 +19,8 @@ export class ArenaController {
         // RUTAS
         // ==========================================
 
-        this.rutaBack = "assets/cartas niveles/carta arena.png";
+        this.rutaBack = "assets/img/back.png";
         this.rutaArena = "assets/img/cards/aldeas/arena/";
-        aplicarTemaAldea("arena");
 
 
         // ==========================================
@@ -69,9 +62,6 @@ export class ArenaController {
                 this.cartaService,
                 this.puntajeService
             );
-
-
-        conectarPausa(this.tiempoService);
 
 
         // ==========================================
@@ -188,12 +178,6 @@ export class ArenaController {
         const cartas =
             this.juegoService.iniciar();
 
-        // Calentar caché para que el volteo sea instantáneo
-        precargarImagenes([
-            this.rutaBack,
-            ...cartas.map((carta) => carta.getImagen())
-        ]);
-
         // Generar tablero
         this.generarTablero(cartas);
 
@@ -254,8 +238,6 @@ export class ArenaController {
 
             imagenBack.classList.add("back");
 
-            prepararImagenCarta(imagenBack);
-
 
             // ------------------------------------------
             // PARTE FRONTAL
@@ -268,8 +250,6 @@ export class ArenaController {
                 carta.getImagen();
 
             imagenFront.classList.add("front");
-
-            prepararImagenCarta(imagenFront);
 
 
             // ------------------------------------------
@@ -690,3 +670,4 @@ export class ArenaController {
             "menu.html";
     }
 }
+

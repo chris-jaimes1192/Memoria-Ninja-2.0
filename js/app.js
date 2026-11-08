@@ -6,6 +6,7 @@ import { GameModeModal } from './ui/Gamemodemodal.js';
 import { RankingModal } from './ui/RankingModal.js';
 import { HistoryModal } from './ui/HistoryModal.js';
 import { TwoPlayersModal } from './ui/TwoPlayersModal.js';
+import { MultijugadorModal } from './ui/MultijugadorModal.js';
 import { ConfigModal } from './ui/ConfigModal.js';
 import { BaseModal } from './ui/BaseModal.js';
 import { MenuController } from './ui/MenuController.js';
@@ -41,6 +42,9 @@ document.addEventListener('DOMContentLoaded', () => {
     ),
     dosJugadoresModal: crearModalSiExiste('twoPlayersModal', () =>
       new TwoPlayersModal('twoPlayersModal', salaService)
+    ),
+    multijugadorModal: crearModalSiExiste('multijugadorModal', () =>
+      new MultijugadorModal('multijugadorModal')
     ),
     rankingModal: crearModalSiExiste('rankingModal', () =>
       new RankingModal('rankingModal')

@@ -1,9 +1,9 @@
-/**
+﻿/**
  * MapaInteractivo
  *
  * >>> SRP <<< Esta clase solo sabe escalar y posicionar los botones de
  * zona sobre el video de fondo, y avisar (con un callback) cuando se
- * hace click en una zona. No sabe nada de a dónde navegar — eso lo
+ * hace click en una zona. No sabe nada de a d├│nde navegar ÔÇö eso lo
  * decide quien la usa (NavegacionNivelesController).
  * >>> ENCAPSULAMIENTO <<< VIDEO_WIDTH/VIDEO_HEIGHT y el estado de
  * escala quedan adentro de la instancia, no sueltos en el archivo.
@@ -43,8 +43,9 @@ export class MapaInteractivo {
     _reposicionar() {
         const vw = window.innerWidth;
         const vh = window.innerHeight;
-        // Debe coincidir con object-fit: cover para conservar las zonas sobre el mapa.
-        const escala = Math.max(vw / this.anchoVideo, vh / this.altoVideo);
+        // "contain": el mapa completo queda visible (sin recortar zonas) y sin scroll,
+        // ajustado al viewport en horizontal o vertical.
+        const escala = Math.min(vw / this.anchoVideo, vh / this.altoVideo);
 
         const ancho = this.anchoVideo * escala;
         const alto = this.altoVideo * escala;
