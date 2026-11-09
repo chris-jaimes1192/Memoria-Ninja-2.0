@@ -2966,3 +2966,544 @@ FECHA Y HORA (celda de la tabla)
 .aviso-invitado--compacto #avisoInvitadoTexto {
     display: none;
 }
+
+
+/* ==========================================================================
+   AJUSTE GLOBAL: MENÚ COMPLETO SIN SCROLL Y ESTABLE ANTE ZOOM
+   ========================================================================== */
+
+html,
+body{
+    height:100%;
+}
+
+body{
+    display:block;
+    overflow:hidden;
+    min-height:0;
+    margin:0;
+    padding:0;
+}
+
+.menu-principal{
+    width:min(1500px, 96vw);
+    height:100dvh;
+    min-height:0;
+    margin:0 auto;
+    padding:clamp(6px, 1.4vmin, 15px);
+    padding-bottom:calc(clamp(6px, 1.4vmin, 15px) + clamp(46px, 7vh, 66px));
+    display:flex;
+    flex-direction:column;
+    gap:clamp(6px, 1.2vh, 16px);
+    overflow:hidden;
+}
+
+.header{
+    flex:0 0 auto;
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:space-between;
+    align-items:center;
+    gap:clamp(8px, 1.4vw, 20px);
+}
+
+.perfil-panel{
+    min-width:0;
+    max-width:clamp(230px, 26vw, 330px);
+    padding:clamp(8px, 1.4vmin, 15px);
+    gap:clamp(8px, 1.4vmin, 15px);
+}
+
+.avatar{
+    width:clamp(42px, 6vmin, 60px);
+    height:clamp(42px, 6vmin, 60px);
+    font-size:clamp(20px, 3vmin, 28px);
+}
+
+.logo-panel img{
+    width:clamp(96px, 13vw, 210px);
+}
+
+.menu-superior,
+.ranking-panel{
+    min-width:clamp(130px, 15vw, 180px);
+    height:clamp(44px, 7vmin, 65px);
+}
+
+.modos-juego{
+    flex:1 1 auto;
+    min-height:0;
+    margin-top:clamp(4px, 1.2vh, 20px);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:clamp(10px, 1.8vw, 20px);
+    flex-wrap:nowrap;
+    overflow:hidden;
+}
+
+.panel{
+    flex:1 1 0;
+    max-width:250px;
+    min-height:clamp(140px, 28vh, 260px);
+    max-height:min(340px, 100%);
+    padding:clamp(8px, 1.4vmin, 15px);
+}
+
+.panel-centro{
+    margin:clamp(4px, .8vh, 10px) 0;
+    gap:clamp(4px, .8vmin, 12px);
+}
+
+.icono-centro{
+    font-size:clamp(26px, 3.6vmin, 55px);
+}
+
+.vs{
+    font-size:clamp(28px, 4.4vmin, 60px);
+}
+
+.texto-centro{
+    font-size:clamp(10px, 1.3vmin, 15px);
+    padding:0 6px;
+}
+
+.panel-titulo{
+    font-size:clamp(11px, 1.5vmin, 18px);
+}
+
+.panel-footer{
+    font-size:clamp(9px, 1.1vmin, 12px);
+}
+
+.contenedor-inferior{
+    flex:0 0 auto;
+    width:min(1300px, 100%);
+    margin:clamp(4px, 1vh, 16px) auto 0;
+    padding:clamp(8px, 1.4vmin, 18px);
+}
+
+.barra-inferior{
+    gap:clamp(6px, 1vmin, 16px);
+}
+
+.item{
+    min-height:clamp(62px, 11vh, 140px);
+    gap:clamp(3px, .7vmin, 10px);
+    padding:clamp(5px, .9vmin, 10px) clamp(4px, .7vmin, 8px);
+    border-radius:14px;
+}
+
+.item-icono{
+    font-size:clamp(20px, 3vmin, 34px);
+    min-height:0;
+}
+
+.item h3{
+    font-size:clamp(.78rem, 1.7vmin, 2rem);
+}
+
+.item p{
+    font-size:clamp(.62rem, 1.05vmin, 1.15rem);
+}
+
+.estado{
+    min-height:clamp(38px, 5.5vh, 48px);
+    padding:6px 12px;
+    font-size:clamp(9px, 1.05vmin, 13px);
+}
+
+/* ==========================================================================
+   MODALES: TODOS AJUSTADOS AL VIEWPORT (SIN SCROLL DE PÁGINA)
+   ========================================================================== */
+
+.modal-overlay{
+    padding:clamp(8px, 2.4vmin, 28px);
+    overflow:hidden;
+}
+
+.modal-content-juego,
+.modal-content-multijugador,
+.modal-content-ranking,
+.modal-content-config,
+.modal-content-perfil,
+.modal-content-info-puntaje,
+.modal-content-contrasena{
+    max-width:calc(100vw - clamp(16px, 4.8vmin, 56px));
+    max-height:calc(100dvh - clamp(16px, 4.8vmin, 56px));
+    overflow-x:hidden;
+}
+
+/* --- Modal de modos de juego: compacto para no desbordar al hacer zoom --- */
+.modal-content-juego{
+    width:min(720px, 100%);
+    padding:clamp(12px, 2.6vmin, 30px);
+}
+
+.avatar-modal-juego{
+    font-size:clamp(22px, 4.4vmin, 35px);
+    margin-bottom:clamp(0px, .6vmin, 5px);
+}
+
+.modal-juego-titulo{
+    font-size:clamp(13px, 2.8vmin, 24px);
+    letter-spacing:clamp(1px, .4vmin, 4px);
+    margin-bottom:clamp(8px, 2vmin, 25px);
+}
+
+.opciones-juego-container{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:clamp(6px, 1.6vmin, 20px);
+    padding:clamp(2px, 1vmin, 18px);
+    margin-bottom:clamp(8px, 1.8vmin, 25px);
+}
+
+.opcion-card{
+    min-height:clamp(78px, 19vmin, 200px);
+    max-width:none;
+    padding:clamp(7px, 1.2vmin, 15px);
+    border-radius:clamp(12px, 1.6vmin, 20px);
+}
+
+.opcion-card h3{
+    font-size:clamp(10px, 1.7vmin, 16px);
+    letter-spacing:.02em;
+}
+
+.opcion-centro-box{
+    margin:clamp(3px, .8vmin, 12px) 0;
+    border-radius:clamp(8px, 1.2vmin, 14px);
+}
+
+.cartas-icon,
+.carpetas-icon{
+    font-size:clamp(15px, 2.6vmin, 24px);
+}
+
+.cerebro-icon,
+.tumba-icon{
+    font-size:clamp(22px, 4vmin, 38px);
+}
+
+.opcion-desc{
+    font-size:clamp(9px, 1.35vmin, 12px);
+}
+
+.modo-volver-caja{
+    margin-top:clamp(6px, 1.4vmin, 20px);
+}
+
+#closeGameModeBtn{
+    min-height:clamp(38px, 5vmin, 46px);
+    padding:clamp(6px, 1vmin, 10px) clamp(14px, 2vmin, 22px);
+    font-size:clamp(12px, 1.7vmin, 16px);
+}
+
+/* --- Lobby / multijugador: scroll interno, nunca de página --- */
+.modal-content-multijugador{
+    width:min(720px, 100%);
+    display:flex;
+    flex-direction:column;
+    padding:clamp(12px, 2.4vmin, 30px);
+    overflow-y:auto;
+    scrollbar-width:thin;
+    scrollbar-color:rgba(0,255,153,.5) transparent;
+}
+
+.multijugador-header-box{
+    flex:0 0 auto;
+    gap:clamp(10px, 1.8vmin, 20px);
+    margin-bottom:clamp(8px, 1.8vmin, 25px);
+}
+
+.globo-icon{
+    font-size:clamp(28px, 5vmin, 48px);
+}
+
+.multijugador-titulo-texto h2{
+    font-size:clamp(15px, 2.4vmin, 24px);
+}
+
+.barra-acciones-lobby{
+    flex:0 0 auto;
+    gap:clamp(6px, 1vmin, 10px);
+    margin:clamp(4px, 1vmin, 15px) 0;
+}
+
+.btn-lobby{
+    padding:clamp(7px, 1.2vmin, 10px) clamp(10px, 1.8vmin, 18px);
+    font-size:clamp(10px, 1.4vmin, 13px);
+}
+
+.lista-salas-container{
+    flex:0 1 auto;
+    max-height:min(38vh, 320px);
+    margin-bottom:clamp(8px, 1.4vmin, 20px);
+}
+
+.lista-salas{
+    max-height:none;
+    overflow:visible;
+}
+
+.multijugador-volver-caja,
+.modal-content-multijugador > .btn-volver-modal{
+    flex:0 0 auto;
+    margin-top:clamp(4px, 1vmin, 12px);
+}
+
+/* --- Ranking --- */
+.modal-content-ranking{
+    width:min(520px, 100%);
+    display:flex;
+    flex-direction:column;
+    padding:clamp(12px, 2.4vmin, 25px);
+    overflow:hidden;
+}
+
+.ranking-header-box{
+    flex:0 0 auto;
+    margin-bottom:clamp(8px, 1.6vmin, 20px);
+}
+
+.medalla-icon{
+    font-size:clamp(28px, 4.6vmin, 38px);
+}
+
+.tabla-ranking-container{
+    flex:1 1 auto;
+    min-height:0;
+    max-height:none;
+    overflow-y:auto;
+    margin-bottom:clamp(8px, 1.4vmin, 20px);
+}
+
+/* --- Configuración --- */
+.modal-content-config{
+    width:min(560px, 100%);
+    padding:clamp(12px, 2.4vmin, 30px);
+    overflow-y:auto;
+    scrollbar-width:thin;
+}
+
+.config-header-box{
+    margin-bottom:clamp(10px, 2vmin, 25px);
+    gap:clamp(10px, 1.6vmin, 15px);
+}
+
+.config-icon{
+    font-size:clamp(28px, 4.6vmin, 44px);
+}
+
+.config-opciones{
+    gap:clamp(7px, 1.2vmin, 14px);
+    margin-bottom:clamp(10px, 1.8vmin, 25px);
+}
+
+.config-fila{
+    padding:clamp(8px, 1.2vmin, 14px) clamp(10px, 1.6vmin, 18px);
+}
+
+/* --- Perfil --- */
+.modal-content-perfil{
+    width:min(420px, 100%);
+    padding:clamp(12px, 2.2vmin, 25px);
+    overflow-y:auto;
+    scrollbar-width:thin;
+}
+
+.perfil-header-modal{
+    padding:clamp(10px, 1.6vmin, 15px);
+    gap:clamp(12px, 1.8vmin, 20px);
+    margin:clamp(6px, 1vmin, 15px) 0 clamp(10px, 1.6vmin, 20px);
+}
+
+.avatar-modal{
+    width:clamp(54px, 8vmin, 75px);
+    height:clamp(54px, 8vmin, 75px);
+    font-size:clamp(24px, 3.6vmin, 32px);
+}
+
+/* --- Guía de puntaje --- */
+.modal-content-info-puntaje{
+    width:min(640px, 100%);
+    padding:clamp(12px, 2.4vmin, 30px);
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+}
+
+.puntaje-header-box{
+    flex:0 0 auto;
+    margin-bottom:clamp(8px, 1.6vmin, 20px);
+    gap:clamp(10px, 1.6vmin, 15px);
+}
+
+.puntaje-icon{
+    font-size:clamp(30px, 4.8vmin, 44px);
+}
+
+.puntaje-separador{
+    flex:0 0 auto;
+    margin-bottom:clamp(10px, 1.8vmin, 22px);
+}
+
+.puntaje-cuerpo-guia{
+    flex:1 1 auto;
+    min-height:0;
+    max-height:none;
+    overflow-y:auto;
+}
+
+/* --- Contraseña de sala --- */
+.modal-content-contrasena{
+    width:min(420px, 100%);
+    padding:clamp(12px, 2vmin, 20px);
+}
+
+/* --- Historial --- */
+.modal-historial{
+    padding:clamp(8px, 2.4vmin, 20px);
+    overflow:hidden;
+}
+
+.historial-caja{
+    width:min(620px, 100%);
+    max-height:calc(100dvh - clamp(16px, 4.8vmin, 40px));
+    padding:clamp(14px, 2.4vmin, 28px);
+}
+
+/* ==========================================================================
+   AJUSTES EXTRA PARA PANTALLAS BAJAS O ZOOM ALTO
+   ========================================================================== */
+
+@media (max-height: 720px){
+    .perfil-panel{ max-width:clamp(200px, 24vw, 280px); }
+    .menu-superior,
+    .ranking-panel{ height:clamp(38px, 6vmin, 54px); }
+    .logo-panel img{ width:clamp(80px, 11vw, 160px); }
+    .panel{ min-height:clamp(110px, 24vh, 210px); }
+    .item{ min-height:clamp(52px, 9vh, 110px); }
+    .avatar-modal-juego{ display:none; }
+    .opcion-card{ min-height:clamp(64px, 16vmin, 140px); }
+}
+
+@media (max-height: 560px){
+    .item p{ display:none; }
+    .panel-footer{ display:none; }
+    .opcion-desc{ display:none; }
+    .modal-juego-titulo{ margin-bottom:6px; }
+}
+
+@media (max-width: 900px){
+    .modos-juego{
+        flex-wrap:wrap;
+        align-items:stretch;
+    }
+
+    .panel{
+        flex:1 1 200px;
+        min-height:clamp(110px, 22vh, 200px);
+        max-height:none;
+    }
+}
+
+@media (max-width: 768px){
+    .menu-principal{
+        padding-bottom:calc(clamp(6px, 1.4vmin, 15px) + clamp(52px, 8vh, 70px));
+    }
+
+    .modos-juego{
+        flex:1 1 auto;
+        flex-direction:column;
+        flex-wrap:nowrap;
+        gap:clamp(5px, 1vh, 12px);
+        overflow:hidden;
+    }
+
+    .panel{
+        flex:1 1 0;
+        width:100%;
+        max-width:420px;
+        min-height:0;
+        max-height:none;
+    }
+
+    .panel-centro{
+        margin:0;
+        flex-direction:row;
+        gap:8px;
+    }
+
+    .icono-centro,
+    .vs{
+        font-size:clamp(18px, 5vw, 32px);
+    }
+
+    .texto-centro{
+        display:none;
+    }
+
+    .panel-footer{
+        display:none;
+    }
+
+    .contenedor-inferior{
+        margin-top:clamp(4px, .8vh, 10px);
+    }
+
+    .panel-titulo{ font-size:clamp(10px, 3vw, 14px); }
+    .opciones-juego-container{ padding:0; }
+}
+
+@media (max-width: 560px){
+    .header{
+        gap:6px;
+    }
+
+    .logo-panel{
+        order:-1;
+        flex-basis:100%;
+    }
+
+    .logo-panel img{
+        width:clamp(88px, 26vw, 140px);
+    }
+
+    .perfil-panel{
+        flex:1 1 100%;
+        max-width:none;
+    }
+
+    .derecha{
+        flex:1 1 100%;
+        flex-direction:row;
+    }
+
+    .menu-superior,
+    .ranking-panel{
+        flex:1 1 0;
+        min-width:0;
+    }
+
+    .opciones-juego-container{
+        grid-template-columns:1fr;
+    }
+
+    .opcion-card{
+        min-height:clamp(56px, 13vmin, 90px);
+    }
+
+    .opcion-desc{
+        display:none;
+    }
+
+    .barra-inferior{
+        grid-template-columns:repeat(2, minmax(0, 1fr));
+    }
+
+    .historial-caja{
+        padding:14px;
+    }
+}

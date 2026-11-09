@@ -52,8 +52,9 @@
     </div>
 
     <!-- Menú de pausa -->
-    <div id="pauseMenu" class="pause-menu hidden">
+    <div id="pauseMenu" class="pause-menu hidden" role="dialog" aria-modal="true" aria-labelledby="pauseTitle">
         <div class="pause-box">
+            <h1 id="pauseTitle">Juego en pausa</h1>
             <button id="btnResume">Reanudar</button>
             <button data-accion="modo">Modo de juego</button>
             <button data-accion="salir">Salir del juego</button>
@@ -61,14 +62,15 @@
     </div>
 
     <!-- Pantalla Final -->
-    <div id="finalScreen" class="final-screen hidden">
-        <h1 id="finalMessage"></h1>
-        <button data-accion="reintentar">Reintentar</button>
-        <button data-accion="modo">Modo de juego</button>
-        <button data-accion="salir">Salir del juego</button>
+    <div id="finalScreen" class="final-screen hidden" role="dialog" aria-modal="true" aria-labelledby="finalMessage">
+        <div class="final-box">
+            <h1 id="finalMessage"></h1>
+            <button data-accion="reintentar">Reintentar</button>
+            <button data-accion="modo">Modo de juego</button>
+            <button data-accion="salir">Salir del juego</button>
+        </div>
     </div>
 
     <script src="js/facil.js"></script>
 </body>
 </html>
-

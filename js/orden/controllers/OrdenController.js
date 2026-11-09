@@ -7,6 +7,7 @@ import { JuegoService } from "../services/JuegoService.js";
 import { PuntajeService } from "../services/PuntajeService.js";
 import { TiempoService } from "../services/TiempoService.js";
 import { progresoService } from "../../services/progresoService.js";
+import { conectarPausa } from "../../ui/PauseModal.js";
 
 
 export class OrdenController {
@@ -178,6 +179,8 @@ export class OrdenController {
         this.configurarMusica();
 
         this.iniciarTiempo();
+
+        conectarPausa(this.tiempoService);
 
         this.iniciarJuego();
 
