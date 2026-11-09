@@ -4,8 +4,8 @@ import { CartaService } from "../services/CartaService.js";
 import { PuntajeService } from "../services/PuntajeService.js";
 import { TiempoService } from "../services/TiempoService.js";
 
-import { Jugador } from "../entities/Jugador.js";
-import { Partida } from "../entities/Partida.js";
+import { Jugador } from "../entities/jugador.js";
+import { Partida } from "../entities/partida.js";
 
 import { historialApi } from "../../infraestructura/repositorios/HttpHistorialRepositorio.js";
 import { progresoService } from "../../services/progresoService.js";

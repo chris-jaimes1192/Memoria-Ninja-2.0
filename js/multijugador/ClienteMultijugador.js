@@ -78,7 +78,7 @@ export class ClienteMultijugador {
         const temporizador = setTimeout(() => {
           this.ultimoError = "Tiempo de espera agotado al conectar con el servidor.";
           reject(new Error(this.ultimoError));
-        }, 10000);
+        }, 30000);
 
         this.socket.once("connect", () => {
           clearTimeout(temporizador);

@@ -34,11 +34,14 @@ export class ProveedorDatosServidor extends ProveedorDatos {
 
     async obtenerDatos() {
         const fallo = () => this.respaldo.obtenerDatos();
+        const controlador = new AbortController();
+        const temporizador = setTimeout(() => controlador.abort(), 8000);
 
         try {
             const respuesta = await fetch(`${URL_BASE}/partida`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
+                signal: controlador.signal,
                 body: JSON.stringify({
                     idJugador1: ID_JUGADOR_SASUKE,
                     nombre1: this.jugador.nombre,
@@ -77,6 +80,8 @@ export class ProveedorDatosServidor extends ProveedorDatos {
         } catch (error) {
             console.warn("No se pudo crear la partida en el backend (se usa el proveedor simulado):", error.message);
             return fallo();
+        } finally {
+            clearTimeout(temporizador);
         }
     }
 
