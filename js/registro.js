@@ -11,6 +11,7 @@ import { MensajeDomNotificador } from "./infraestructura/notificadores/MensajeDo
 import { RegistroService } from "./servicios/RegistroService.js";
 import { RegistroController } from "./controladores/RegistroController.js";
 import { abrirModal, cerrarModal, inicializarCierreClicFuera } from "./utils/ModalHelper.js";
+import { alternarVisibilidadPassword } from "./utils/TogglePasswordHelper.js";
 
 if (window.location.protocol === "file:") {
   const archivo = window.location.pathname.split("/").pop() || "registro.html";
@@ -55,9 +56,30 @@ async function registrar() {
   }
 }
 
+function togglePassword(idInput, icono) {
+  alternarVisibilidadPassword(idInput, icono);
+}
+
+function conectarOjo(idOjo, idInput) {
+  const ojo = document.getElementById(idOjo);
+  if (!ojo) return;
+
+  ojo.addEventListener("click", () => togglePassword(idInput, ojo));
+  ojo.addEventListener("keydown", (evento) => {
+    if (evento.key === "Enter" || evento.key === " ") {
+      evento.preventDefault();
+      togglePassword(idInput, ojo);
+    }
+  });
+}
+
+conectarOjo("ojoPass", "pass");
+conectarOjo("ojoPass2", "pass2");
+
 window.registrar = registrar;
 window.abrirModal = abrirModal;
 window.cerrarModal = cerrarModal;
+window.togglePassword = togglePassword;
 
 // --- Conexión real con el DOM (sin onclick inline: el CSP lo bloquea) ---
 document.getElementById("btnRegistrar")?.addEventListener("click", registrar);

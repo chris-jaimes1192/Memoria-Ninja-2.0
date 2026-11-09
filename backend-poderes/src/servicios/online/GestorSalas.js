@@ -45,9 +45,20 @@ class GestorSalas {
   constructor(httpServer, opciones = {}) {
     this.io = new Server(httpServer, {
       cors: {
-        origin: process.env.CORS_ORIGINS
-          ? process.env.CORS_ORIGINS.split(",").map((o) => o.trim()).filter(Boolean)
-          : ["http://localhost:3000", "http://127.0.0.1:3000"],
+        origin: (() => {
+          const origenes = [
+            process.env.CORS_ORIGINS,
+            process.env.PUBLIC_FRONTEND_URL,
+          ]
+            .filter(Boolean)
+            .join(",")
+            .split(",")
+            .map((o) => o.trim())
+            .filter(Boolean);
+          return origenes.length
+            ? origenes
+            : ["http://localhost:3000", "http://127.0.0.1:3000"];
+        })(),
         credentials: true,
       },
     });

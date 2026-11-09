@@ -16,12 +16,17 @@ module.exports = function crearRutasSalas() {
     }
 
     try {
-      const url = construirUrlCompartir({
-        codigo,
-        protocolo: req.protocol,
-        host: req.get("host"),
-        ips: obtenerIpsLocales(),
-      });
+      // En producción el frontend vive en Vercel: el QR debe apuntar ahí,
+      // no al host interno de Render.
+      const basePublica = String(process.env.PUBLIC_FRONTEND_URL || "").replace(/\/+$/, "");
+      const url = basePublica
+        ? `${basePublica}/menu.html?codigo=${encodeURIComponent(codigo)}`
+        : construirUrlCompartir({
+            codigo,
+            protocolo: req.protocol,
+            host: req.get("host"),
+            ips: obtenerIpsLocales(),
+          });
       const qrDataUrl = await generarQrDataUrl(url);
       return res.json({ exito: true, codigo, url, qrDataUrl });
     } catch (error) {

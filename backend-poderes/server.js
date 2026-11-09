@@ -64,9 +64,12 @@ const crearRutasSalas = require("./src/routes/salasRoutes");
 if ((process.env.DB_TYPE || "postgres").toLowerCase() !== "postgres") {
   throw new Error("Este backend usa SOLO PostgreSQL. Configura DB_TYPE=postgres en .env");
 }
-if (!process.env.PGPASSWORD || !process.env.PGDATABASE) {
+if (
+  !process.env.DATABASE_URL &&
+  (!process.env.PGPASSWORD || !process.env.PGDATABASE)
+) {
   throw new Error(
-    "Faltan credenciales de PostgreSQL. Copia .env.example a .env y completa PGPASSWORD/PGDATABASE."
+    "Faltan credenciales de PostgreSQL. Copia .env.example a .env y completa PGPASSWORD/PGDATABASE (o define DATABASE_URL)."
   );
 }
 
@@ -171,7 +174,7 @@ const limitadorGeneral = rateLimit({
 });
 const limitadorAuth = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 40,
+  max: Number(process.env.AUTH_RATE_MAX || 40),
   standardHeaders: true,
   legacyHeaders: false,
   skip: saltarRateLimit,
@@ -179,6 +182,9 @@ const limitadorAuth = rateLimit({
 });
 
 const app = express();
+// Detrás de Vercel/Render hay proxies: sin esto req.ip es el del proxy y los
+// rate-limiters comparten un solo contador entre todos los usuarios.
+app.set("trust proxy", 1);
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -196,7 +202,9 @@ app.use(helmet({
 // En LAN (celulares/tablets abriendo http://IP:3000) tampoco aplica: es
 // mismo origen. configurable con CORS_ORIGINS en .env (coma-separado).
 const origenesPermitidos = (
-  process.env.CORS_ORIGINS || "http://localhost:3000,http://127.0.0.1:3000"
+  [process.env.CORS_ORIGINS, process.env.PUBLIC_FRONTEND_URL]
+    .filter(Boolean)
+    .join(",") || "http://localhost:3000,http://127.0.0.1:3000"
 )
   .split(",")
   .map((origen) => origen.trim())
@@ -224,7 +232,11 @@ app.use("/api", crearRutasProcedimientos(procedimientoController, autorizacion))
 app.use("/api", crearRutasSalas());
 
 // El backend también sirve el frontend (mismo origen -> cookies httpOnly OK).
-app.use(express.static(path.join(__dirname, "..")));
+// En producción (Render) el frontend vive en Vercel: SERVIR_FRONTEND=0 evita
+// exponer el código del backend y el esquema SQL.
+if (process.env.SERVIR_FRONTEND !== "0") {
+  app.use(express.static(path.join(__dirname, "..")));
+}
 
 // Ruta de prueba: crea una partida de ejemplo con 2 jugadores y 50 de chakra
 // cada uno, para poder probar /api/poder/activar sin armar todo el flujo.
@@ -241,7 +253,7 @@ app.post("/api/partida/prueba", autorizacion.requiereSesion, async (req, res) =>
   res.json({ idPartida: partida.id, jugadores: ["naruto", "sasuke"] });
 });
 
-const PUERTO = Number(process.env.SERVER_PORT || 3000);
+const PUERTO = Number(process.env.PORT || process.env.SERVER_PORT || 3000);
 const http = require("http");
 const GestorSalas = require("./src/servicios/online/GestorSalas");
 
@@ -254,10 +266,18 @@ async function iniciar() {
   const servidorHttp = http.createServer(app);
   const gestorSalas = new GestorSalas(servidorHttp);
   
-  servidorHttp.listen(PUERTO, () => {
-    console.log(`Backend de poderes escuchando en http://localhost:${PUERTO}`);
-    console.log(`Motor de base de datos: postgres (${process.env.PGPORT || 5432}/${process.env.PGDATABASE})`);
-    console.log(`Frontend servido en el mismo puerto (mismo origen)`);
+  servidorHttp.listen(PUERTO, "0.0.0.0", () => {
+    console.log(`Backend de poderes escuchando en el puerto ${PUERTO}`);
+    console.log(
+      process.env.DATABASE_URL
+        ? "Motor de base de datos: postgres (DATABASE_URL)"
+        : `Motor de base de datos: postgres (${process.env.PGPORT || 5432}/${process.env.PGDATABASE})`
+    );
+    console.log(
+      process.env.SERVIR_FRONTEND !== "0"
+        ? "Frontend servido en el mismo puerto (mismo origen)"
+        : "Frontend NO servido aquí (SERVIR_FRONTEND=0): vive en Vercel"
+    );
     console.log(`WebSocket activo para multijugador online`);
   });
 }

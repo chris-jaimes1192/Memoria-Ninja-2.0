@@ -1,5 +1,25 @@
 const CLAVE_TOKEN = "memoriaNinjaTokenJugador";
 
+// En local/LAN/túnel el socket va al mismo origen que sirve la página.
+// En producción (Vercel) va directo a Render, porque Vercel no mantiene
+// WebSockets. La URL se define en js/config.js.
+const HOST = typeof window !== "undefined" ? window.location.hostname : "";
+const ES_HOST_LOCAL =
+  HOST === "localhost" ||
+  HOST === "127.0.0.1" ||
+  HOST === "::1" ||
+  /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(HOST) ||
+  HOST.endsWith(".devtunnels.ms");
+const URL_BACKEND_CONFIGURADA = String(
+  (typeof globalThis !== "undefined" && globalThis.MEMORIA_NINJA_BACKEND_URL) || ""
+).trim();
+const ES_PLACEHOLDER =
+  !URL_BACKEND_CONFIGURADA || URL_BACKEND_CONFIGURADA.includes("TU-BACKEND");
+const URL_BACKEND =
+  ES_HOST_LOCAL || ES_PLACEHOLDER
+    ? (typeof window !== "undefined" ? window.location.origin : "")
+    : URL_BACKEND_CONFIGURADA;
+
 function generarToken() {
   try {
     if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -40,13 +60,13 @@ export class ClienteMultijugador {
     this.promesaConexion = (async () => {
       let io;
       try {
-        const modulo = await import("/socket.io/socket.io.esm.min.js");
+        const modulo = await import("../vendor/socket.io.esm.min.js");
         io = modulo.io;
       } catch (error) {
-        throw new Error("El multijugador requiere el backend corriendo en este mismo servidor.");
+        throw new Error("No se pudo cargar el cliente de multijugador.");
       }
 
-      this.socket = io(window.location.origin, {
+      this.socket = io(URL_BACKEND, {
         auth: { token: this.token },
         withCredentials: true,
         reconnection: true,
