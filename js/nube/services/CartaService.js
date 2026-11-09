@@ -1,4 +1,4 @@
-import { Carta } from "../entities/Carta.js";
+import { Carta } from "../entities/carta.js";
 
 export class CartaService {
 

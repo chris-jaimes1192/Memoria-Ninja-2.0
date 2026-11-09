@@ -167,10 +167,10 @@ const estadoController = new EstadoController();
 const saltarRateLimit = () => process.env.RATE_LIMIT_DESACTIVADO === "1";
 const limitadorGeneral = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 300,
+  max: Number(process.env.API_RATE_MAX || 300),
   standardHeaders: true,
   legacyHeaders: false,
-  skip: saltarRateLimit,
+  skip: (req) => saltarRateLimit() || req.originalUrl.split("?")[0] === "/api/estado",
 });
 const limitadorAuth = rateLimit({
   windowMs: 15 * 60 * 1000,

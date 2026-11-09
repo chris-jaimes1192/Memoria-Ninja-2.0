@@ -1,6 +1,5 @@
 # Backend, material interno y archivos que no se sirven desde Vercel
 backend-poderes/
-Agrupar/
 docs/
 sql/
 -files
