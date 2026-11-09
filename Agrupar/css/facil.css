@@ -10,7 +10,8 @@ body {
   background-position: center;
   margin: 0;
   padding: 0;
-  height: 100vh;
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 #imagenfondo {
@@ -125,9 +126,14 @@ p {
     outline-offset: 2px;
 }
 
-.objeto.seleccionado {
+.objeto.seleccionado,
+.objeto.colocado {
     border-color: #00ffcc;
     box-shadow: 0 0 12px #00ffcc;
+    background: rgba(0, 255, 204, 0.16);
+}
+
+.objeto.seleccionado {
     transform: scale(1.08);
 }
 
@@ -140,9 +146,6 @@ p {
     width: 52px;
     padding: 2px;
     cursor: default;
-    border-color: #00ff66;
-    box-shadow: 0 0 12px rgba(0, 255, 102, 0.7);
-    opacity: 0.85;
 }
 
 .fantasma-objeto {
@@ -206,39 +209,74 @@ p {
 
 .pause-menu {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.6);
+    inset: 0;
+    z-index: 10000;
+    box-sizing: border-box;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 18px;
+    overflow-y: auto;
+    background: rgba(8, 10, 12, 0.78);
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-.pause-box {
-    background: transparent;
-    padding: 30px;
-    border-radius: 12px;
+.pause-box,
+.final-box {
+    box-sizing: border-box;
+    width: min(420px, 100%);
+    max-height: calc(100vh - 36px);
+    max-height: calc(100dvh - 36px);
+    overflow-y: auto;
+    padding: clamp(20px, 5vw, 32px);
+    border: 2px solid rgba(225, 232, 238, 0.72);
+    border-radius: 20px;
+    background: linear-gradient(145deg, rgba(37, 41, 46, 0.98), rgba(75, 80, 86, 0.98));
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55), inset 0 1px rgba(255, 255, 255, 0.12);
     text-align: center;
-
-    border: 3px solid #7F56F3,;      /* color neon */
-    box-shadow: 0 0 15px #7F56F3,
-                0 0 30px #7F56F3,
-                inset 0 0 15px #7F56F3;
 }
 
+.pause-box h1,
+.final-box h1 {
+    margin: 0 0 20px;
+    color: #fff;
+    font-size: clamp(1.5rem, 5vw, 2rem);
+    line-height: 1.2;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+}
 
-.pause-box button {
+.pause-box button,
+.final-box button {
     font-family: "Fredoka", sans-serif;
     display: block;
-    background: linear-gradient(#8D49FD, #7F56F3, #5691f3);
+    box-sizing: border-box;
+    width: min(260px, 100%);
+    min-height: 46px;
+    margin: 10px auto 0;
+    padding: 10px 16px;
+    border: 1px solid #c5cbd1;
+    background: linear-gradient(180deg, #777e85, #4b5158);
     color: white;
     border-radius: 10px;
-    width: 200px;
-    margin: 10px auto;
-    padding: 10px;
     font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.28);
+    transition: background .18s ease, transform .18s ease, box-shadow .18s ease;
+}
+
+.pause-box button:hover,
+.final-box button:hover {
+    background: linear-gradient(180deg, #9299a0, #60676e);
+    transform: translateY(-2px);
+    box-shadow: 0 7px 16px rgba(0, 0, 0, 0.35);
+}
+
+.pause-box button:focus-visible,
+.final-box button:focus-visible {
+    outline: 3px solid #00ffcc;
+    outline-offset: 3px;
 }
 
 .hidden {
@@ -247,25 +285,45 @@ p {
 
 .final-screen {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.75);
+    inset: 0;
+    z-index: 11000;
+    box-sizing: border-box;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 18px;
+    overflow-y: auto;
+    background: rgba(8, 10, 12, 0.84);
     color: white;
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 25px;
 }
 
-.final-screen button {
-    font-family: "Fredoka", sans-serif;
-    background: linear-gradient(#8D49FD, #7F56F3, #5691f3);
-    border-radius: 10px;
-    color: white;
-    width: 200px;
-    padding: 12px;
-    font-size: 18px;
+@media (max-width: 420px), (max-height: 520px) {
+    .pause-menu,
+    .final-screen {
+        padding: 8px;
+    }
+
+    .pause-box,
+    .final-box {
+        max-height: calc(100vh - 16px);
+        max-height: calc(100dvh - 16px);
+        padding: 16px;
+        border-radius: 16px;
+    }
+
+    .pause-box h1,
+    .final-box h1 {
+        margin-bottom: 12px;
+        font-size: clamp(1.25rem, 5vh, 1.6rem);
+    }
+
+    .pause-box button,
+    .final-box button {
+        min-height: 42px;
+        margin-top: 7px;
+        padding: 8px 12px;
+        font-size: 16px;
+    }
 }

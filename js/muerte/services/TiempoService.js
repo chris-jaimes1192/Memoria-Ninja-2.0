@@ -8,12 +8,32 @@ export class TiempoService {
 
         this.temporizador = null;
 
+        this.callback = null;
+
     }
 
 
     iniciar(callback) {
 
+        this.callback =
+            typeof callback === "function"
+                ? callback
+                : null;
+
         this.detener();
+
+        this.crearIntervalo();
+
+    }
+
+
+    crearIntervalo() {
+
+        if (this.temporizador) {
+
+            return;
+
+        }
 
 
         this.temporizador =
@@ -21,9 +41,9 @@ export class TiempoService {
 
                 this.segundos--;
 
-                if (callback) {
+                if (this.callback) {
 
-                    callback(
+                    this.callback(
                         this.segundos
                     );
 
@@ -39,6 +59,26 @@ export class TiempoService {
                 }
 
             }, 1000);
+
+    }
+
+
+    pausar() {
+
+        this.detener();
+
+    }
+
+
+    reanudar() {
+
+        if (this.segundos <= 0) {
+
+            return;
+
+        }
+
+        this.crearIntervalo();
 
     }
 

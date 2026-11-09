@@ -13,9 +13,9 @@
    B) TOCAR: se toca la carta (queda resaltada) y luego se toca
       la carpeta. Sirve como respaldo en cualquier dispositivo.
 
-   Acierto  -> la carta se guarda dentro de la carpeta.
-   Fallo    -> la carta vuelve a su lugar y la carpeta "tiembla".
-   Ganas al agrupar todas; pierdes si se acaba el tiempo.
+   Las cartas se pueden colocar en cualquiera de las carpetas.
+   Ganas si todas quedaron bien clasificadas; si alguna quedó
+   mal o se acaba el tiempo, pierdes.
    ========================================================= */
 
 (function () {
@@ -56,6 +56,7 @@
   let terminado = false;
   let seleccionado = null; // objeto actualmente resaltado
   let colocados = 0;
+  let correctos = 0;
   let arrastreTactil = null;
   let suprimirClickHasta = 0;
 
@@ -266,16 +267,9 @@
     if (!boton || estaColocada(boton)) return;
     if (carpetaId !== "mitologia" && carpetaId !== "scifi") return;
 
-    const acierto = boton.dataset.carpeta === carpetaId;
-
     if (seleccionado) {
       marcarSeleccion(seleccionado, false);
       seleccionado = null;
-    }
-
-    if (!acierto) {
-      sacudir(carpetaEl);
-      return;
     }
 
     boton.dataset.estado = "colocado";
@@ -287,9 +281,14 @@
     (destino || carpetaEl).appendChild(boton);
 
     colocados += 1;
+    if (boton.dataset.carpeta === carpetaId) {
+      correctos += 1;
+    } else {
+      sacudir(carpetaEl);
+    }
 
     if (colocados === totalObjetos) {
-      terminar(true);
+      terminar(correctos === totalObjetos, "clasificacion");
     }
   }
 
@@ -335,13 +334,13 @@
 
       if (segundos <= 0) {
         segundos = 0;
-        terminar(false);
+        terminar(false, "tiempo");
       }
     }, 1000);
   }
 
   // ================== FINAL ==================
-  function terminar(victoria) {
+  function terminar(victoria, motivo) {
     if (terminado) return;
     terminado = true;
 
@@ -354,7 +353,9 @@
 
     finalMessage.textContent = victoria
       ? "¡Perfecto, ninja! Agrupaste todos los objetos."
-      : "¡Tiempo agotado! Inténtalo de nuevo.";
+      : motivo === "clasificacion"
+        ? "Hay objetos en carpetas incorrectas. ¡Inténtalo de nuevo!"
+        : "¡Tiempo agotado! Inténtalo de nuevo.";
 
     finalScreen.classList.remove("hidden");
   }
