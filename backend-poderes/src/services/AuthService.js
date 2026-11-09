@@ -77,7 +77,23 @@ class AuthService {
       nacimiento,
       passwordHash: this.passwordHasher.generarHash(password),
     });
-    await this.usuarioRepository.guardar(nuevo);
+    try {
+      await this.usuarioRepository.guardar(nuevo);
+    } catch (error) {
+      // Carrera de registros simultáneos: los chequeos de arriba pueden pasar
+      // a la vez y PostgreSQL decide con sus UNIQUE (código 23505).
+      if (error && error.code === "23505") {
+        const detalle = String(error.detail || "").toLowerCase();
+        if (detalle.includes("correo")) {
+          throw new Error("El correo ya está registrado");
+        }
+        if (detalle.includes("usuario")) {
+          throw new Error("El nombre de usuario ya está en uso");
+        }
+        throw new Error("La cuenta ya existe");
+      }
+      throw error;
+    }
 
     // Código de verificación de 1 solo uso (el trigger invalida el previo).
     const codigo = await this.#codigoEnvio(id);
